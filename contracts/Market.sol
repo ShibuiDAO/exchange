@@ -33,6 +33,14 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 	/// @param price The price in wei of the given ERC721 asset.
 	event SellOrderBooked(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
 
+	/// @notice Emitted when `updateSellOrder` is called.
+	/// @param seller Address of the ERC721 asset owner and seller.
+	/// @param tokenContractAddress Address of the ERC721 token contract.
+	/// @param tokenId ID of ERC721 asset for sale.
+	/// @param expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param price The price in wei of the given ERC721 asset.
+	event SellOrderUpdated(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
+
 	/// @notice Emitted when `cancelSellOrder` is called or when `executeSellOrder` completes.
 	/// @param seller Address of SellOrder seller.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
@@ -124,6 +132,15 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		_createSellOrder(sellOrder);
 	}
 
+    function updateSellOrder(
+		address tokenContractAddress,
+		uint256 tokenId,
+		uint256 expiration,
+		uint256 price
+    ) external whenNotPaused {
+		SellOrder memory sellOrder = SellOrder(payable(_msgSender()), tokenContractAddress, tokenId, expiration, price);
+    }
+
 	/// @param seller The seller address of the desired SellOrder.
 	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param tokenId ID of the desired ERC721 asset.
@@ -147,18 +164,15 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
 	/// @notice Can only be executed by the listed SellOrder seller.
-	/// @param seller Address of the sell order owner.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of the token being sold.
 	function cancelSellOrder(
-		address seller,
 		address tokenContractAddress,
 		uint256 tokenId
 	) external whenNotPaused {
-		require(_msgSender() == seller, 'You are not the sell order seller.');
-		require(sellOrderExists(seller, tokenContractAddress, tokenId), 'This sell order does not exist.');
+		require(sellOrderExists(_msgSender(), tokenContractAddress, tokenId), 'This sell order does not exist.');
 
-		_cancelSellOrder(seller, tokenContractAddress, tokenId);
+		_cancelSellOrder(_msgSender(), tokenContractAddress, tokenId);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -205,7 +219,7 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 
 		require(sellOrder.tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
-		require((block.timestamp < sellOrder.expiration), 'This sell order has expired.');
+		require((block.timestamp < sellOrder.expiration), 'This sell order is expired.');
 
 		IERC721 erc721 = IERC721(sellOrder.tokenContractAddress);
 
@@ -215,6 +229,24 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 
 		sellOrders[_formOrderId(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId)] = sellOrder;
 		emit SellOrderBooked(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId, sellOrder.expiration, sellOrder.price);
+	}
+
+	/// @param sellOrder Filled in SellOrder to replace/update existing.
+    function _updateSellOrder(SellOrder memory sellOrder) internal {
+		require(sellOrderExists(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId), "This order doesn't exists.");
+
+		require(sellOrder.tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
+
+		require((block.timestamp < sellOrder.expiration), 'This sell order is expired.');
+
+		IERC721 erc721 = IERC721(sellOrder.tokenContractAddress);
+
+		require((erc721.ownerOf(sellOrder.tokenId) == sellOrder.seller), 'The seller does not own this ERC721 token.');
+
+		require(erc721.getApproved(sellOrder.tokenId) == address(this), 'The ERC721Market contract is not approved to operate this ERC721 token.');
+
+		sellOrders[_formOrderId(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId)] = sellOrder;
+		emit SellOrderUpdated(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId, sellOrder.expiration, sellOrder.price);
 	}
 
 	/// @param _sellOrder Filled in SellOrder to be compared to the stored one.
@@ -314,7 +346,7 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
         emit CollectionRoyaltyPayoutAddressUpdated(_tokenContractAddress, _msgSender(), _payoutAddress, collectionPayoutAddresses[_tokenContractAddress]);
 		collectionPayoutAddresses[_tokenContractAddress] = _payoutAddress;
 
-        emit CollectionRoyaltyFeeAmountUpdated(_tokenContractAddress, _msgSender(), _payoutPerMille, payoutPerMille[_tokenContractAddress);
+        emit CollectionRoyaltyFeeAmountUpdated(_tokenContractAddress, _msgSender(), _payoutPerMille, payoutPerMille[_tokenContractAddress]);
 		payoutPerMille[_tokenContractAddress] = _payoutPerMille;
 	}
 
