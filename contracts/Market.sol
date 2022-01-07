@@ -48,6 +48,16 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 	event SellOrderFufilled(address indexed seller, address recipient, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
 
 	/*///////////////////////////////////////////////////////////////
+                                FEE VALUES
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice The wallet address to which system fees get paid.
+    address payable _systemFeeWallet;
+
+    /// @notice System fee per million.
+    uint256 private _systemFeePerMille = 25;
+
+	/*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE
     //////////////////////////////////////////////////////////////*/
 
@@ -69,7 +79,7 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 	}
 
     /*///////////////////////////////////////////////////////////////
-                   PUBLIC ORDER MANIPULATION FUNCTIONS
+                   PUBLIC SELL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
@@ -126,7 +136,7 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 	}
 
     /*///////////////////////////////////////////////////////////////
-                            ORDER VIEW FUNCTIONS
+                          SELL ORDER VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
 	/// @param seller Address of the sell order owner.
@@ -198,8 +208,12 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 
 		require(erc721.getApproved(sellOrder.tokenId) == address(this), 'The ERC721Market contract is not approved to operate this ERC721 token.');
 
-		// TODO: Account for royalties and fee
-		uint256 remainingPayout = msg.value;
+        uint256 systemFeePayout = (_systemFeePerMille * msg.value) / 1000;
+		// TODO: Account for royalties
+		uint256 remainingPayout = msg.value - systemFeePayout;
+
+		(bool systemFeeSent, bytes memory systemFeeData) = _systemFeeWallet.call{value: systemFeePayout}('');
+		require(systemFeeSent, 'Failed to send ETH to system fee wallet.');
 
 		(bool sellerSent, bytes memory sellerData) = sellOrder.seller.call{value: remainingPayout}('');
 		require(sellerSent, 'Failed to send ETH to seller.');
@@ -245,6 +259,22 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 	function _compareSellOrders(SellOrder memory _left, SellOrder memory _right) internal pure returns (bool) {
 		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
 	}
+
+    /*///////////////////////////////////////////////////////////////
+                                FEE  FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Sets the new wallet to which all system fees get transfered.
+    /// @param _newSystemFeeWallet Address of the new system fee wallet.
+    function setSystemFeeWallet(address payable _newSystemFeeWallet) external onlyOwner {
+        _systemFeeWallet = _newSystemFeeWallet;
+    }
+
+    /// @notice Sets the new overall fee per million value.
+    /// @param _newSystemFeePerMille New fee amount.
+    function setSystemFeePerMille(uint256 _newSystemFeePerMille) external onlyOwner {
+        _systemFeePerMille = _newSystemFeePerMille;
+    }
 
 	/*///////////////////////////////////////////////////////////////
                         ADMINISTRATIVE FUNCTIONS
