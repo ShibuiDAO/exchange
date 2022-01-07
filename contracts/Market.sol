@@ -47,22 +47,49 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 	/// @param price The price in wei at which the ERC721 asset was bought.
 	event SellOrderFufilled(address indexed seller, address recipient, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
 
+    /// @notice Emitted when `setRoyalty` is called.
+    /// @param executor Address that triggered the royalty change.
+	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
+    /// @param newPayoutAddress The newly set royalties payout address.
+    /// @param oldPayoutAddress The previously set royalties payout address.
+    event CollectionRoyaltyPayoutAddressUpdated(address indexed tokenContractAddress, address indexed executor, address indexed newPayoutAddress, address oldPayoutAddress);
+
+    /// @notice Emitted when `setRoyalty` is called.
+	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
+    /// @param executor Address that triggered the royalty change.
+    /// @param newRoyaltiesAmount The newly set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+    /// @param oldRoyaltiesAmount The previously set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+    event CollectionRoyaltyFeeAmountUpdated(address indexed tokenContractAddress, address indexed executor, uint256 newRoyaltiesAmount, uint256 oldRoyaltiesAmount);
+
 	/*///////////////////////////////////////////////////////////////
-                                FEE VALUES
+                                 SYSTEM FEE
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice The wallet address to which system fees get paid.
-    address payable _systemFeeWallet;
+	/// @notice The wallet address to which system fees get paid.
+	address payable _systemFeeWallet;
 
-    /// @notice System fee per million.
-    uint256 private _systemFeePerMille = 25;
+	/// @notice System fee in %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	uint256 private _systemFeePerMille = 25;
+
+	/*///////////////////////////////////////////////////////////////
+                            COLLECTION ROYALTIES
+    //////////////////////////////////////////////////////////////*/
+
+	/// @notice Maximum collection royalty fee. The maximum fee value is equal to 30%. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	uint256 private _maxRoyaltyPerMille = 300;
+
+	/// @notice Maps a ERC721 contract address to its payout address.
+	mapping(address => address payable) private collectionPayoutAddresses;
+
+	/// @notice Maps a ERC721 contract address to its fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	mapping(address => uint256) private payoutPerMille;
 
 	/*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // TODO: possibly convert to multi level mapping.
-    /// @notice Maps orderId (composed of `{sellerAddress}-{tokenContractAddress}-{tokenId}`) to the SellOrder.
+	// TODO: possibly convert to multi level mapping.
+	/// @notice Maps orderId (composed of `{sellerAddress}-{tokenContractAddress}-{tokenId}`) to the SellOrder.
 	mapping(bytes => SellOrder) sellOrders;
 
 	/// @param seller Address of the ERC721 asset owner and seller.
@@ -78,12 +105,12 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		uint256 price;
 	}
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                    PUBLIC SELL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-    /// @param tokenId ID of the desired ERC721 asset.
+	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param tokenId ID of the desired ERC721 asset.
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param price The price in wei of the given ERC721 asset.
 	function createSellOrder(
@@ -97,12 +124,12 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		_createSellOrder(sellOrder);
 	}
 
-    /// @param seller The seller address of the desired SellOrder.
-    /// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-    /// @param tokenId ID of the desired ERC721 asset.
+	/// @param seller The seller address of the desired SellOrder.
+	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param tokenId ID of the desired ERC721 asset.
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param price The price in wei of the given ERC721 asset.
-    /// @param recipient The address of the ERC721 asset recipient.
+	/// @param recipient The address of the ERC721 asset recipient.
 	function executeSellOrder(
 		address payable seller,
 		address tokenContractAddress,
@@ -127,15 +154,14 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		address seller,
 		address tokenContractAddress,
 		uint256 tokenId
-        // TODO: Should cancelling only be allowed while the Market isn't paused?
-	) external {
+	) external whenNotPaused {
 		require(_msgSender() == seller, 'You are not the sell order seller.');
-        require(sellOrderExists(seller, tokenContractAddress, tokenId), 'This sell order does not exist.');
+		require(sellOrderExists(seller, tokenContractAddress, tokenId), 'This sell order does not exist.');
 
 		_cancelSellOrder(seller, tokenContractAddress, tokenId);
 	}
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                           SELL ORDER VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
@@ -169,11 +195,11 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		return block.timestamp < sellOrder.expiration;
 	}
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                    INTERNAL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @param sellOrder Filled in SellOrder to be listed.
+	/// @param sellOrder Filled in SellOrder to be listed.
 	function _createSellOrder(SellOrder memory sellOrder) internal {
 		require(!sellOrderExists(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId), 'This order already exists.');
 
@@ -191,8 +217,8 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		emit SellOrderBooked(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId, sellOrder.expiration, sellOrder.price);
 	}
 
-    /// @param _sellOrder Filled in SellOrder to be compared to the stored one.
-    /// @param recipient The address of the ERC721 asset recipient.
+	/// @param _sellOrder Filled in SellOrder to be compared to the stored one.
+	/// @param recipient The address of the ERC721 asset recipient.
 	function _executeSellOrder(SellOrder memory _sellOrder, address payable recipient) internal {
 		SellOrder memory sellOrder = getSellOrder(_sellOrder.seller, _sellOrder.tokenContractAddress, _sellOrder.tokenId);
 
@@ -208,9 +234,15 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 
 		require(erc721.getApproved(sellOrder.tokenId) == address(this), 'The ERC721Market contract is not approved to operate this ERC721 token.');
 
-        uint256 systemFeePayout = (_systemFeePerMille * msg.value) / 1000;
-		// TODO: Account for royalties
-		uint256 remainingPayout = msg.value - systemFeePayout;
+		uint256 royaltyPayout = (payoutPerMille[sellOrder.tokenContractAddress] * msg.value) / 1000;
+		uint256 systemFeePayout = (_systemFeePerMille * msg.value) / 1000;
+		uint256 remainingPayout = msg.value - royaltyPayout - systemFeePayout;
+
+		if (royaltyPayout > 0) {
+			address payable royaltyPayoutAddress = collectionPayoutAddresses[sellOrder.tokenContractAddress];
+			(bool royaltyPayoutSent, bytes memory royaltyPayoutData) = royaltyPayoutAddress.call{value: royaltyPayout}('');
+			require(royaltyPayoutSent, 'Failed to send ETH to collectiond royalties wallet.');
+		}
 
 		(bool systemFeeSent, bytes memory systemFeeData) = _systemFeeWallet.call{value: systemFeePayout}('');
 		require(systemFeeSent, 'Failed to send ETH to system fee wallet.');
@@ -260,39 +292,77 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
 	}
 
-    /*///////////////////////////////////////////////////////////////
-                                FEE  FUNCTIONS
+	/*///////////////////////////////////////////////////////////////
+                        COLLECTION ROYALTY FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Sets the new wallet to which all system fees get transfered.
-    /// @param _newSystemFeeWallet Address of the new system fee wallet.
-    function setSystemFeeWallet(address payable _newSystemFeeWallet) external onlyOwner {
-        _systemFeeWallet = _newSystemFeeWallet;
-    }
+	/// @notice Sets a new or initial value for the collection royalty fee.
+	/// @param _tokenContractAddress The ERC721 contract (collection) for which to set the fee/royalty.
+	/// @param _payoutAddress The address to which royalties get paid.
+	/// @param _payoutPerMille The royalty/fee amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	function setRoyalty(
+		address _tokenContractAddress,
+		address payable _payoutAddress,
+		uint256 _payoutPerMille
+	) external {
+		require((_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille), 'Royalty must be between 0 and 30%');
+		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
-    /// @notice Sets the new overall fee per million value.
-    /// @param _newSystemFeePerMille New fee amount.
-    function setSystemFeePerMille(uint256 _newSystemFeePerMille) external onlyOwner {
-        _systemFeePerMille = _newSystemFeePerMille;
-    }
+		Ownable ownableNFTContract = Ownable(_tokenContractAddress);
+		require(_msgSender() == ownableNFTContract.owner() || _msgSender() == owner(), 'ADDRESS_NOT_AUTHORIZED');
+
+        emit CollectionRoyaltyPayoutAddressUpdated(_tokenContractAddress, _msgSender(), _payoutAddress, collectionPayoutAddresses[_tokenContractAddress]);
+		collectionPayoutAddresses[_tokenContractAddress] = _payoutAddress;
+
+        emit CollectionRoyaltyFeeAmountUpdated(_tokenContractAddress, _msgSender(), _payoutPerMille, payoutPerMille[_tokenContractAddress);
+		payoutPerMille[_tokenContractAddress] = _payoutPerMille;
+	}
+
+	/// @param _tokenContractAddress The ERC721 contract (collection) for which to get the payout address.
+	/// @return The collection payout address.
+	function getRoyaltyPayoutAddress(address _tokenContractAddress) public view returns (address) {
+		return collectionPayoutAddresses[_tokenContractAddress];
+	}
+
+	/// @param _tokenContractAddress The ERC721 contract (collection) for which to get the fee/royalties amount.
+	/// @return The collection fee/royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	function getRoyaltyPayoutRate(address _tokenContractAddress) public view returns (uint256) {
+		return payoutPerMille[_tokenContractAddress];
+	}
+
+	/*///////////////////////////////////////////////////////////////
+                              SYSTEM FEE FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+	/// @notice Sets the new wallet to which all system fees get paid.
+	/// @param _newSystemFeeWallet Address of the new system fee wallet.
+	function setSystemFeeWallet(address payable _newSystemFeeWallet) external onlyOwner {
+		_systemFeeWallet = _newSystemFeeWallet;
+	}
+
+	/// @notice Sets the new overall fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	/// @param _newSystemFeePerMille New fee amount.
+	function setSystemFeePerMille(uint256 _newSystemFeePerMille) external onlyOwner {
+		_systemFeePerMille = _newSystemFeePerMille;
+	}
 
 	/*///////////////////////////////////////////////////////////////
                         ADMINISTRATIVE FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Pauses the execution and creation of sell orders on the market. Should only be used in emergencies.
+	/// @notice Pauses the execution and creation of sell orders on the market. Should only be used in emergencies.
 	function pause() external onlyOwner {
 		_pause();
 	}
 
-    /// @notice Unpauses the execution and creation of sell orders on the market. Should only be used in emergencies.
+	/// @notice Unpauses the execution and creation of sell orders on the market. Should only be used in emergencies.
 	function unpause() external onlyOwner {
 		_unpause();
 	}
 
-    /// @notice Withdraws any Ether in-case it's ever accidentaly sent to the contract.
-    function withdraw() public onlyOwner {
-        uint balance = address(this).balance;
-        payable(msg.sender).transfer(balance);
-    }
+	/// @notice Withdraws any Ether in-case it's ever accidentaly sent to the contract.
+	function withdraw() public onlyOwner {
+		uint256 balance = address(this).balance;
+		payable(msg.sender).transfer(balance);
+	}
 }
