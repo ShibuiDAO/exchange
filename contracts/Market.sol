@@ -139,6 +139,8 @@ contract ERC721Market is Context, Ownable, Pausable, ReentrancyGuard {
 		uint256 price
     ) external whenNotPaused {
 		SellOrder memory sellOrder = SellOrder(payable(_msgSender()), tokenContractAddress, tokenId, expiration, price);
+
+        _updateSellOrder(sellOrder);
     }
 
 	/// @param seller The seller address of the desired SellOrder.
