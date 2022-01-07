@@ -24,9 +24,27 @@ contract ERC721Market is Pausable, ReentrancyGuard {
                                   EVENTS
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Emitted when `createSellOrder` is called.
+    /// @param seller Address of the ERC721 asset owner and seller.
+    /// @param tokenContractAddress Address of the ERC721 token contract.
+    /// @param tokenId ID of ERC721 asset for sale.
+    /// @param expiration Time of order expiration defined as a UNIX timestamp.
+    /// @param price The price in wei of the given ERC721 asset.
     event SellOrderBooked(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
+
+    /// @notice Emitted when `cancelSellOrder` is called or when `executeSellOrder` completes.
+    /// @param seller Address of SellOrder seller.
+    /// @param tokenContractAddress Address of the ERC721 token contract.
+    /// @param tokenId ID of canceled ERC721 asset.
     event SellOrderCanceled(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId);
-    event SellOrderFufilled(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
+
+    /// @notice Emitted when `executeSellOrder` is called.
+    /// @param seller Address of the previous ERC721 asset owner and seller.
+    /// @param buyer Address of the new ERC721 asset owner and buyer.
+    /// @param tokenContractAddress Address of the ERC721 token contract.
+    /// @param tokenId ID of the bought ERC721 asset.
+    /// @param price The price in wei at which the ERC721 asset was bought.
+    event SellOrderFufilled(address indexed seller, address buyer, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
 
     /*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE
@@ -34,8 +52,11 @@ contract ERC721Market is Pausable, ReentrancyGuard {
 
     mapping(bytes => SellOrder) sellOrders;
 
+    /// @param seller Address of the ERC721 asset owner and seller.
+    /// @param tokenContractAddress Address of the ERC721 token contract.
+    /// @param tokenId ID of ERC721 asset for sale.
     /// @param expiration Time of order expiration defined as a UNIX timestamp.
-    /// @param price The price of the given ERC721 asset. Unit is wei.
+    /// @param price The price in wei of the given ERC721 asset.
     struct SellOrder {
         address payable seller;
         address tokenContractAddress;
@@ -122,7 +143,7 @@ contract ERC721Market is Pausable, ReentrancyGuard {
 
         // TODO: Evaluate the viability of this since even when the order gets fufilled it will emit that it got canceled. This might be a problem when building the subgraph.
         _cancelSellOrder(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId);
-        emit SellOrderFufilled(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId, sellOrder.price);
+        emit SellOrderFufilled(sellOrder.seller, buyer, sellOrder.tokenContractAddress, sellOrder.tokenId, sellOrder.price);
     }
 
     /// @param seller Address of the sell order owner.
@@ -147,6 +168,8 @@ contract ERC721Market is Pausable, ReentrancyGuard {
         return block.timestamp < sellOrder.expiration;
     }
 
+    /// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
+    /// @notice Can only be executed by the listed SellOrder seller.
     /// @param seller Address of the sell order owner.
     /// @param tokenContractAddress Address of the ERC721 token contract.
     /// @param tokenId ID of the token being sold.
@@ -156,17 +179,29 @@ contract ERC721Market is Pausable, ReentrancyGuard {
         _cancelSellOrder(seller, tokenContractAddress, tokenId);
     }
 
+    /// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
+    /// @param seller Address of the sell order owner.
+    /// @param tokenContractAddress Address of the ERC721 token contract.
+    /// @param tokenId ID of the token being sold.
     function _cancelSellOrder(address seller, address tokenContractAddress, uint256 tokenId) internal {
         delete(sellOrders[formOrderId(seller, tokenContractAddress, tokenId)]);
+
         emit SellOrderCanceled(seller, tokenContractAddress, tokenId);
     }
 
     /// @notice Forms the ID used in the orders mapping.
+    /// @param user The creator of the SellOrder.
+    /// @param tokenContractAddress Address of the ERC721 token contract.
+    /// @param tokenId ID of ERC721 asset.
     /// @return The order ID composed of user address, contract address, and token ID.
     function formOrderId(address user, address tokenContractAddress, uint256 tokenId) public pure returns (bytes memory) {
         return abi.encodePacked(user, "-", tokenContractAddress, "-", tokenId);
     }
 
+    /// @notice Hashes and compares 2 SellOrder instances to determine if they have the same parameters.
+    /// @param _left SellOrder instance to be hashed and compared on the left side of the operator.
+    /// @param _right SellOrder instance to be hashed and compared on the right side of the operator.
+    /// @return A boolean value indication if the 2 SellOrder instances match.
     function _compareSellOrders(SellOrder memory _left, SellOrder memory _right) internal pure returns (bool) {
         return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
     }
