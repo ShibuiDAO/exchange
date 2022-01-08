@@ -22,7 +22,6 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface ERC721ExchangeInterface extends ethers.utils.Interface {
   functions: {
-    "c_0x09a8c096(bytes32)": FunctionFragment;
     "cancelSellOrder(address,uint256)": FunctionFragment;
     "createSellOrder(address,uint256,uint256,uint256)": FunctionFragment;
     "executeSellOrder(address,address,uint256,uint256,uint256,address)": FunctionFragment;
@@ -43,10 +42,6 @@ interface ERC721ExchangeInterface extends ethers.utils.Interface {
     "withdraw()": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "c_0x09a8c096",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "cancelSellOrder",
     values: [string, BigNumberish]
@@ -105,10 +100,6 @@ interface ERC721ExchangeInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
-  decodeFunctionResult(
-    functionFragment: "c_0x09a8c096",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "cancelSellOrder",
     data: BytesLike
@@ -299,11 +290,6 @@ export class ERC721Exchange extends BaseContract {
   interface: ERC721ExchangeInterface;
 
   functions: {
-    c_0x09a8c096(
-      c__0x09a8c096: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
@@ -413,11 +399,6 @@ export class ERC721Exchange extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  c_0x09a8c096(
-    c__0x09a8c096: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   cancelSellOrder(
     tokenContractAddress: string,
     tokenId: BigNumberish,
@@ -525,11 +506,6 @@ export class ERC721Exchange extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    c_0x09a8c096(
-      c__0x09a8c096: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
@@ -840,11 +816,6 @@ export class ERC721Exchange extends BaseContract {
   };
 
   estimateGas: {
-    c_0x09a8c096(
-      c__0x09a8c096: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
@@ -945,11 +916,6 @@ export class ERC721Exchange extends BaseContract {
   };
 
   populateTransaction: {
-    c_0x09a8c096(
-      c__0x09a8c096: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
