@@ -6,6 +6,7 @@ export type { PausableUpgradeable } from "./PausableUpgradeable";
 export type { IERC165Upgradeable } from "./IERC165Upgradeable";
 export type { Ownable } from "./Ownable";
 export type { Pausable } from "./Pausable";
+export type { IERC20 } from "./IERC20";
 export type { ERC721 } from "./ERC721";
 export type { ERC721Enumerable } from "./ERC721Enumerable";
 export type { IERC721Enumerable } from "./IERC721Enumerable";
@@ -23,6 +24,7 @@ export { PausableUpgradeable__factory } from "./factories/PausableUpgradeable__f
 export { IERC165Upgradeable__factory } from "./factories/IERC165Upgradeable__factory";
 export { Ownable__factory } from "./factories/Ownable__factory";
 export { Pausable__factory } from "./factories/Pausable__factory";
+export { IERC20__factory } from "./factories/IERC20__factory";
 export { ERC721__factory } from "./factories/ERC721__factory";
 export { ERC721Enumerable__factory } from "./factories/ERC721Enumerable__factory";
 export { IERC721Enumerable__factory } from "./factories/IERC721Enumerable__factory";

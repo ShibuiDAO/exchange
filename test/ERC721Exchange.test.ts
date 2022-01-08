@@ -12,7 +12,7 @@ describe('ERC721Exchange', () => {
 
 	beforeEach(async () => {
 		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
-		contract = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29], {
+		contract = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000'], {
 			initializer: '__ERC721Exchange_init',
 			kind: 'transparent'
 		})) as ERC721ExchangeUpgradeable;
@@ -25,6 +25,12 @@ describe('ERC721Exchange', () => {
 
 	describe('base v1', () => {
 		describe('initialization', () => {
+			it('version should equal v1.0.0', async () => {
+				const version = await contract.version();
+
+				expect(version).to.equal('v1.0.0');
+			});
+
 			it('should set sender as owner', async () => {
 				const [{ address }] = await ethers.getSigners();
 				const owner = await contract.owner();

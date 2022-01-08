@@ -2,7 +2,7 @@
 pragma solidity ^0.8.2;
 pragma abicoder v2;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Initializable} from '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import {ContextUpgradeable} from '@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol';
 import {OwnableUpgradeable} from '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import {PausableUpgradeable} from '@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol';
@@ -12,6 +12,7 @@ import {ERC165CheckerUpgradeable} from '@openzeppelin/contracts-upgradeable/util
 
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 /// @author Nejc Drobnič
 /// @dev Handles the creation and execution of sell orders as well as their storage.
@@ -24,6 +25,9 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
 	bytes4 constant InterfaceId_IERC721 = 0x80ac58cd;
+
+	/// @dev Interface of the main cannonical WETH deployment.
+	IERC20 WETH;
 
 	/*///////////////////////////////////////////////////////////////
                                   EVENTS
@@ -59,19 +63,29 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	/// @param price The price in wei at which the ERC721 asset was bought.
 	event SellOrderFufilled(address indexed seller, address recipient, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
 
-    /// @notice Emitted when `setRoyalty` is called.
-    /// @param executor Address that triggered the royalty change.
+	/// @notice Emitted when `setRoyalty` is called.
+	/// @param executor Address that triggered the royalty change.
 	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
-    /// @param newPayoutAddress The newly set royalties payout address.
-    /// @param oldPayoutAddress The previously set royalties payout address.
-    event CollectionRoyaltyPayoutAddressUpdated(address indexed tokenContractAddress, address indexed executor, address indexed newPayoutAddress, address oldPayoutAddress);
+	/// @param newPayoutAddress The newly set royalties payout address.
+	/// @param oldPayoutAddress The previously set royalties payout address.
+	event CollectionRoyaltyPayoutAddressUpdated(
+		address indexed tokenContractAddress,
+		address indexed executor,
+		address indexed newPayoutAddress,
+		address oldPayoutAddress
+	);
 
-    /// @notice Emitted when `setRoyalty` is called.
+	/// @notice Emitted when `setRoyalty` is called.
 	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
-    /// @param executor Address that triggered the royalty change.
-    /// @param newRoyaltiesAmount The newly set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-    /// @param oldRoyaltiesAmount The previously set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-    event CollectionRoyaltyFeeAmountUpdated(address indexed tokenContractAddress, address indexed executor, uint256 newRoyaltiesAmount, uint256 oldRoyaltiesAmount);
+	/// @param executor Address that triggered the royalty change.
+	/// @param newRoyaltiesAmount The newly set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	/// @param oldRoyaltiesAmount The previously set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	event CollectionRoyaltyFeeAmountUpdated(
+		address indexed tokenContractAddress,
+		address indexed executor,
+		uint256 newRoyaltiesAmount,
+		uint256 oldRoyaltiesAmount
+	);
 
 	/*///////////////////////////////////////////////////////////////
                                  SYSTEM FEE
@@ -116,18 +130,21 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		uint256 price;
 	}
 
-    function __ERC721Exchange_init(
-        uint256 __maxRoyaltyPerMille,
-        uint256 __systemFeePerMille
-    ) public initializer {
-        __Context_init();
-        __Ownable_init();
-        __Pausable_init();
-        __ReentrancyGuard_init();
+	function __ERC721Exchange_init(
+		uint256 __maxRoyaltyPerMille,
+		uint256 __systemFeePerMille,
+		address __wethAddress
+	) public initializer {
+		__Context_init();
+		__Ownable_init();
+		__Pausable_init();
+		__ReentrancyGuard_init();
 
-        _maxRoyaltyPerMille = __maxRoyaltyPerMille;
-        _systemFeePerMille = __systemFeePerMille;
-    }
+		_maxRoyaltyPerMille = __maxRoyaltyPerMille;
+		_systemFeePerMille = __systemFeePerMille;
+
+		WETH = IERC20(__wethAddress);
+	}
 
 	/*///////////////////////////////////////////////////////////////
                    PUBLIC SELL ORDER MANIPULATION FUNCTIONS
@@ -148,16 +165,16 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		_createSellOrder(sellOrder);
 	}
 
-    function updateSellOrder(
+	function updateSellOrder(
 		address tokenContractAddress,
 		uint256 tokenId,
 		uint256 expiration,
 		uint256 price
-    ) external whenNotPaused {
+	) external whenNotPaused {
 		SellOrder memory sellOrder = SellOrder(payable(_msgSender()), tokenContractAddress, tokenId, expiration, price);
 
-        _updateSellOrder(sellOrder);
-    }
+		_updateSellOrder(sellOrder);
+	}
 
 	/// @param seller The seller address of the desired SellOrder.
 	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
@@ -184,10 +201,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	/// @notice Can only be executed by the listed SellOrder seller.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of the token being sold.
-	function cancelSellOrder(
-		address tokenContractAddress,
-		uint256 tokenId
-	) external whenNotPaused {
+	function cancelSellOrder(address tokenContractAddress, uint256 tokenId) external whenNotPaused {
 		require(sellOrderExists(_msgSender(), tokenContractAddress, tokenId), 'This sell order does not exist.');
 
 		_cancelSellOrder(_msgSender(), tokenContractAddress, tokenId);
@@ -250,7 +264,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	}
 
 	/// @param sellOrder Filled in SellOrder to replace/update existing.
-    function _updateSellOrder(SellOrder memory sellOrder) internal {
+	function _updateSellOrder(SellOrder memory sellOrder) internal {
 		require(sellOrderExists(sellOrder.seller, sellOrder.tokenContractAddress, sellOrder.tokenId), "This order doesn't exists.");
 
 		require(sellOrder.tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
@@ -355,16 +369,24 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		address payable _payoutAddress,
 		uint256 _payoutPerMille
 	) external {
-		require((_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille), string(abi.encodePacked('Royalty must be between 0 and ', _maxRoyaltyPerMille / 10, '%')));
+		require(
+			(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille),
+			string(abi.encodePacked('Royalty must be between 0 and ', _maxRoyaltyPerMille / 10, '%'))
+		);
 		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
 		Ownable ownableNFTContract = Ownable(_tokenContractAddress);
 		require(_msgSender() == ownableNFTContract.owner() || _msgSender() == owner(), 'ADDRESS_NOT_AUTHORIZED');
 
-        emit CollectionRoyaltyPayoutAddressUpdated(_tokenContractAddress, _msgSender(), _payoutAddress, collectionPayoutAddresses[_tokenContractAddress]);
+		emit CollectionRoyaltyPayoutAddressUpdated(
+			_tokenContractAddress,
+			_msgSender(),
+			_payoutAddress,
+			collectionPayoutAddresses[_tokenContractAddress]
+		);
 		collectionPayoutAddresses[_tokenContractAddress] = _payoutAddress;
 
-        emit CollectionRoyaltyFeeAmountUpdated(_tokenContractAddress, _msgSender(), _payoutPerMille, payoutPerMille[_tokenContractAddress]);
+		emit CollectionRoyaltyFeeAmountUpdated(_tokenContractAddress, _msgSender(), _payoutPerMille, payoutPerMille[_tokenContractAddress]);
 		payoutPerMille[_tokenContractAddress] = _payoutPerMille;
 	}
 
@@ -416,12 +438,12 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		payable(msg.sender).transfer(balance);
 	}
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                         INFORMATIVE FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @return The current exchange version.
-    function version() external pure returns (string memory) {
-        return "v1.0.0";
-    }
+	/// @return The current exchange version.
+	function version() external pure virtual returns (string memory) {
+		return 'v1.0.0';
+	}
 }

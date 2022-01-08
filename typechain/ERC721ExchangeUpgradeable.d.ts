@@ -22,7 +22,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface ERC721ExchangeUpgradeableInterface extends ethers.utils.Interface {
   functions: {
-    "__ERC721Exchange_init(uint256,uint256)": FunctionFragment;
+    "__ERC721Exchange_init(uint256,uint256,address)": FunctionFragment;
     "cancelSellOrder(address,uint256)": FunctionFragment;
     "createSellOrder(address,uint256,uint256,uint256)": FunctionFragment;
     "executeSellOrder(address,address,uint256,uint256,uint256,address)": FunctionFragment;
@@ -46,7 +46,7 @@ interface ERC721ExchangeUpgradeableInterface extends ethers.utils.Interface {
 
   encodeFunctionData(
     functionFragment: "__ERC721Exchange_init",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "cancelSellOrder",
@@ -305,6 +305,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
     __ERC721Exchange_init(
       __maxRoyaltyPerMille: BigNumberish,
       __systemFeePerMille: BigNumberish,
+      __wethAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -422,6 +423,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
   __ERC721Exchange_init(
     __maxRoyaltyPerMille: BigNumberish,
     __systemFeePerMille: BigNumberish,
+    __wethAddress: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -537,6 +539,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
     __ERC721Exchange_init(
       __maxRoyaltyPerMille: BigNumberish,
       __systemFeePerMille: BigNumberish,
+      __wethAddress: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -855,6 +858,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
     __ERC721Exchange_init(
       __maxRoyaltyPerMille: BigNumberish,
       __systemFeePerMille: BigNumberish,
+      __wethAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -963,6 +967,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
     __ERC721Exchange_init(
       __maxRoyaltyPerMille: BigNumberish,
       __systemFeePerMille: BigNumberish,
+      __wethAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
