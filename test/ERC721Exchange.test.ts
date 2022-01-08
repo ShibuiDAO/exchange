@@ -2,17 +2,21 @@ import chai, { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
-import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721 } from '../typechain';
+import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721, WETH9 } from '../typechain';
 
 chai.use(solidity);
 
 describe('ERC721Exchange', () => {
+	let contractWETH: WETH9;
 	let contract: ERC721ExchangeUpgradeable;
 	let contractERC721: TestERC721;
 
 	beforeEach(async () => {
+		const WETHContract = await ethers.getContractFactory('WETH9');
+		contractWETH = (await WETHContract.deploy()) as WETH9;
+
 		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
-		contract = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000'], {
+		contract = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, contractWETH.address], {
 			initializer: '__ERC721Exchange_init',
 			kind: 'transparent'
 		})) as ERC721ExchangeUpgradeable;
@@ -58,102 +62,158 @@ describe('ERC721Exchange', () => {
 			});
 		});
 
-		describe('sell orders', () => {
-			it('should create new sell order', async () => {
-				const [account] = await ethers.getSigners();
-				const timestamp = new Date().getTime() * 2;
+		describe('orders', () => {
+			describe('sell', () => {
+				it('should create new sell order', async () => {
+					const [account] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
 
-				const expiration = BigNumber.from(timestamp);
-				const price = BigNumber.from('10000000000000000'); // 0.01 ETH
+					const expiration = BigNumber.from(timestamp);
+					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
 
-				await contractERC721.mintNext(account.address);
-				await expect(contractERC721.approve(contract.address, 1))
-					.to.emit(contractERC721, 'Approval')
-					.withArgs(account.address, contract.address, 1);
+					await contractERC721.mintNext(account.address);
+					await expect(contractERC721.approve(contract.address, 1))
+						.to.emit(contractERC721, 'Approval')
+						.withArgs(account.address, contract.address, 1);
 
-				await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
-					.to.emit(contract, 'SellOrderBooked')
-					.withArgs(account.address, contractERC721.address, 1, expiration, price);
+					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
+						.to.emit(contract, 'SellOrderBooked')
+						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
-				const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
-				expect(order[0]).to.be.equal(account.address);
-				expect(order[1]).to.be.equal(contractERC721.address);
-				expect(order[2]).to.be.equal(1);
-				expect(order[3]).to.be.equal(expiration);
-				expect(order[4]).to.be.equal(price);
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(contractERC721.address);
+					expect(order[2]).to.be.equal(1);
+					expect(order[3]).to.be.equal(expiration);
+					expect(order[4]).to.be.equal(price);
+				});
+
+				it('should create new sell order and cancel order', async () => {
+					const [account] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
+
+					const expiration = BigNumber.from(timestamp);
+					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
+
+					await contractERC721.mintNext(account.address);
+					await expect(contractERC721.approve(contract.address, 1))
+						.to.emit(contractERC721, 'Approval')
+						.withArgs(account.address, contract.address, 1);
+
+					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
+						.to.emit(contract, 'SellOrderBooked')
+						.withArgs(account.address, contractERC721.address, 1, expiration, price);
+
+					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(contractERC721.address);
+					expect(order[2]).to.be.equal(1);
+					expect(order[3]).to.be.equal(expiration);
+					expect(order[4]).to.be.equal(price);
+
+					await expect(contract.cancelSellOrder(contractERC721.address, 1))
+						.to.emit(contract, 'SellOrderCanceled')
+						.withArgs(account.address, contractERC721.address, 1);
+
+					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
+						'This sell order does not exist.'
+					);
+				});
+
+				it('should create new sell order and execute order', async () => {
+					const [account, buyer, maker, royalty] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
+
+					const expiration = BigNumber.from(timestamp);
+					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
+					const royaltyFee = BigNumber.from(150);
+
+					await contractERC721.mintNext(account.address);
+					await expect(contractERC721.approve(contract.address, 1))
+						.to.emit(contractERC721, 'Approval')
+						.withArgs(account.address, contract.address, 1);
+
+					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
+						.to.emit(contract, 'SellOrderBooked')
+						.withArgs(account.address, contractERC721.address, 1, expiration, price);
+
+					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(contractERC721.address);
+					expect(order[2]).to.be.equal(1);
+					expect(order[3]).to.be.equal(expiration);
+					expect(order[4]).to.be.equal(price);
+
+					await contract.setSystemFeeWallet(maker.address);
+					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
+
+					await expect(
+						contract
+							.connect(buyer)
+							.executeSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
+					)
+						.to.emit(contract, 'SellOrderFufilled')
+						.withArgs(account.address, buyer.address, contractERC721.address, 1, price)
+						.and.to.emit(contract, 'SellOrderCanceled')
+						.withArgs(account.address, contractERC721.address, 1);
+
+					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
+						'This sell order does not exist.'
+					);
+				});
 			});
 
-			it('should create new sell order and cancel order', async () => {
-				const [account] = await ethers.getSigners();
-				const timestamp = new Date().getTime() * 2;
+			describe('buy', () => {
+				it('should create new buy order and accept order', async () => {
+					const [account, seller, maker, royalty] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
 
-				const expiration = BigNumber.from(timestamp);
-				const price = BigNumber.from('10000000000000000'); // 0.01 ETH
+					const expiration = BigNumber.from(timestamp);
+					const offer = BigNumber.from('10000000000000000'); // 0.01 ETH
+					const royaltyFee = BigNumber.from(150);
 
-				await contractERC721.mintNext(account.address);
-				await expect(contractERC721.approve(contract.address, 1))
-					.to.emit(contractERC721, 'Approval')
-					.withArgs(account.address, contract.address, 1);
+					await expect(contractWETH.connect(account).deposit({ value: offer }))
+						.to.emit(contractWETH, 'Deposit')
+						.withArgs(account.address, offer);
+					await expect(contractWETH.connect(account).approve(contract.address, offer))
+						.to.emit(contractWETH, 'Approval')
+						.withArgs(account.address, contract.address, offer)
+						.and.to.equal(true);
 
-				await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
-					.to.emit(contract, 'SellOrderBooked')
-					.withArgs(account.address, contractERC721.address, 1, expiration, price);
+					await contractERC721.mintNext(seller.address);
+					await expect(contractERC721.connect(seller).approve(contract.address, 1))
+						.to.emit(contractERC721, 'Approval')
+						.withArgs(seller.address, contract.address, 1);
 
-				const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+						.to.emit(contract, 'BuyOrderBooked')
+						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
 
-				expect(order[0]).to.be.equal(account.address);
-				expect(order[1]).to.be.equal(contractERC721.address);
-				expect(order[2]).to.be.equal(1);
-				expect(order[3]).to.be.equal(expiration);
-				expect(order[4]).to.be.equal(price);
+					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
-				await expect(contract.cancelSellOrder(contractERC721.address, 1))
-					.to.emit(contract, 'SellOrderCanceled')
-					.withArgs(account.address, contractERC721.address, 1);
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(seller.address);
+					expect(order[2]).to.be.equal(contractERC721.address);
+					expect(order[3]).to.be.equal(1);
+					expect(order[4]).to.be.equal(expiration);
+					expect(order[5]).to.be.equal(offer);
 
-				await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('This sell order does not exist.');
-			});
+					await contract.setSystemFeeWallet(maker.address);
+					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
 
-			it('should create new sell order and execute order', async () => {
-				const [account, buyer, maker, royalty] = await ethers.getSigners();
-				const timestamp = new Date().getTime() * 2;
+					await expect(contract.connect(seller).acceptBuyOrder(account.address, contractERC721.address, 1, expiration, offer))
+						.to.emit(contract, 'BuyOrderAccepted')
+						.withArgs(account.address, seller.address, contractERC721.address, 1, offer)
+						.and.to.emit(contract, 'BuyOrderCanceled')
+						.withArgs(account.address, contractERC721.address, 1);
 
-				const expiration = BigNumber.from(timestamp);
-				const price = BigNumber.from('10000000000000000'); // 0.01 ETH
-				const royaltyFee = BigNumber.from(150);
-
-				await contractERC721.mintNext(account.address);
-				await expect(contractERC721.approve(contract.address, 1))
-					.to.emit(contractERC721, 'Approval')
-					.withArgs(account.address, contract.address, 1);
-
-				await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
-					.to.emit(contract, 'SellOrderBooked')
-					.withArgs(account.address, contractERC721.address, 1, expiration, price);
-
-				const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
-
-				expect(order[0]).to.be.equal(account.address);
-				expect(order[1]).to.be.equal(contractERC721.address);
-				expect(order[2]).to.be.equal(1);
-				expect(order[3]).to.be.equal(expiration);
-				expect(order[4]).to.be.equal(price);
-
-				await contract.setSystemFeeWallet(maker.address);
-				await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
-
-				await expect(
-					contract
-						.connect(buyer)
-						.executeSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
-				)
-					.to.emit(contract, 'SellOrderFufilled')
-					.withArgs(account.address, buyer.address, contractERC721.address, 1, price)
-					.and.to.emit(contract, 'SellOrderCanceled')
-					.withArgs(account.address, contractERC721.address, 1);
-
-				await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('This sell order does not exist.');
+					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
+						'This buy order does not exist.'
+					);
+				});
 			});
 		});
 	});

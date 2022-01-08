@@ -24,9 +24,14 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
   extends ethers.utils.Interface {
   functions: {
     "__ERC721Exchange_init(uint256,uint256,address)": FunctionFragment;
+    "acceptBuyOrder(address,address,uint256,uint256,uint256)": FunctionFragment;
+    "buyOrderExists(address,address,uint256)": FunctionFragment;
+    "cancelBuyOrder(address,uint256)": FunctionFragment;
     "cancelSellOrder(address,uint256)": FunctionFragment;
+    "createBuyOrder(address,address,uint256,uint256,uint256)": FunctionFragment;
     "createSellOrder(address,uint256,uint256,uint256)": FunctionFragment;
     "executeSellOrder(address,address,uint256,uint256,uint256,address)": FunctionFragment;
+    "getBuyOrder(address,address,uint256)": FunctionFragment;
     "getRoyaltyPayoutAddress(address)": FunctionFragment;
     "getRoyaltyPayoutRate(address)": FunctionFragment;
     "getSellOrder(address,address,uint256)": FunctionFragment;
@@ -50,8 +55,24 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
     values: [BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
+    functionFragment: "acceptBuyOrder",
+    values: [string, string, BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "buyOrderExists",
+    values: [string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelBuyOrder",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "cancelSellOrder",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "createBuyOrder",
+    values: [string, string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createSellOrder",
@@ -60,6 +81,10 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
   encodeFunctionData(
     functionFragment: "executeSellOrder",
     values: [string, string, BigNumberish, BigNumberish, BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getBuyOrder",
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoyaltyPayoutAddress",
@@ -113,7 +138,23 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "acceptBuyOrder",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "buyOrderExists",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "cancelBuyOrder",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "cancelSellOrder",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "createBuyOrder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -122,6 +163,10 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
   ): Result;
   decodeFunctionResult(
     functionFragment: "executeSellOrder",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getBuyOrder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -169,6 +214,9 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
+    "BuyOrderAccepted(address,address,address,uint256,uint256)": EventFragment;
+    "BuyOrderBooked(address,address,address,uint256,uint256,uint256)": EventFragment;
+    "BuyOrderCanceled(address,address,uint256)": EventFragment;
     "CollectionRoyaltyFeeAmountUpdated(address,address,uint256,uint256)": EventFragment;
     "CollectionRoyaltyPayoutAddressUpdated(address,address,address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -180,6 +228,9 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
     "Unpaused(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "BuyOrderAccepted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BuyOrderBooked"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BuyOrderCanceled"): EventFragment;
   getEvent(
     nameOrSignatureOrTopic: "CollectionRoyaltyFeeAmountUpdated"
   ): EventFragment;
@@ -194,6 +245,35 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
   getEvent(nameOrSignatureOrTopic: "SellOrderUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
+
+export type BuyOrderAcceptedEvent = TypedEvent<
+  [string, string, string, BigNumber, BigNumber] & {
+    buyer: string;
+    seller: string;
+    tokenContractAddress: string;
+    tokenId: BigNumber;
+    offer: BigNumber;
+  }
+>;
+
+export type BuyOrderBookedEvent = TypedEvent<
+  [string, string, string, BigNumber, BigNumber, BigNumber] & {
+    buyer: string;
+    owner: string;
+    tokenContractAddress: string;
+    tokenId: BigNumber;
+    expiration: BigNumber;
+    offer: BigNumber;
+  }
+>;
+
+export type BuyOrderCanceledEvent = TypedEvent<
+  [string, string, BigNumber] & {
+    buyer: string;
+    tokenContractAddress: string;
+    tokenId: BigNumber;
+  }
+>;
 
 export type CollectionRoyaltyFeeAmountUpdatedEvent = TypedEvent<
   [string, string, BigNumber, BigNumber] & {
@@ -310,9 +390,40 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    acceptBuyOrder(
+      bidder: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    buyOrderExists(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    cancelBuyOrder(
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    createBuyOrder(
+      owner: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -333,6 +444,24 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       recipient: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    getBuyOrder(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [string, string, string, BigNumber, BigNumber, BigNumber] & {
+          buyer: string;
+          owner: string;
+          tokenContractAddress: string;
+          tokenId: BigNumber;
+          expiration: BigNumber;
+          offer: BigNumber;
+        }
+      ]
+    >;
 
     getRoyaltyPayoutAddress(
       _tokenContractAddress: string,
@@ -428,9 +557,40 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  acceptBuyOrder(
+    bidder: string,
+    tokenContractAddress: string,
+    tokenId: BigNumberish,
+    expiration: BigNumberish,
+    offer: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  buyOrderExists(
+    buyer: string,
+    tokenContractAddress: string,
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  cancelBuyOrder(
+    tokenContractAddress: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   cancelSellOrder(
     tokenContractAddress: string,
     tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  createBuyOrder(
+    owner: string,
+    tokenContractAddress: string,
+    tokenId: BigNumberish,
+    expiration: BigNumberish,
+    offer: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -451,6 +611,22 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
     recipient: string,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  getBuyOrder(
+    buyer: string,
+    tokenContractAddress: string,
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, BigNumber, BigNumber, BigNumber] & {
+      buyer: string;
+      owner: string;
+      tokenContractAddress: string;
+      tokenId: BigNumber;
+      expiration: BigNumber;
+      offer: BigNumber;
+    }
+  >;
 
   getRoyaltyPayoutAddress(
     _tokenContractAddress: string,
@@ -544,9 +720,40 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    acceptBuyOrder(
+      bidder: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    buyOrderExists(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    cancelBuyOrder(
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    createBuyOrder(
+      owner: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -567,6 +774,22 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       recipient: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    getBuyOrder(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, BigNumber, BigNumber] & {
+        buyer: string;
+        owner: string;
+        tokenContractAddress: string;
+        tokenId: BigNumber;
+        expiration: BigNumber;
+        offer: BigNumber;
+      }
+    >;
 
     getRoyaltyPayoutAddress(
       _tokenContractAddress: string,
@@ -646,6 +869,96 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
   };
 
   filters: {
+    "BuyOrderAccepted(address,address,address,uint256,uint256)"(
+      buyer?: null,
+      seller?: string | null,
+      tokenContractAddress?: string | null,
+      tokenId?: BigNumberish | null,
+      offer?: null
+    ): TypedEventFilter<
+      [string, string, string, BigNumber, BigNumber],
+      {
+        buyer: string;
+        seller: string;
+        tokenContractAddress: string;
+        tokenId: BigNumber;
+        offer: BigNumber;
+      }
+    >;
+
+    BuyOrderAccepted(
+      buyer?: null,
+      seller?: string | null,
+      tokenContractAddress?: string | null,
+      tokenId?: BigNumberish | null,
+      offer?: null
+    ): TypedEventFilter<
+      [string, string, string, BigNumber, BigNumber],
+      {
+        buyer: string;
+        seller: string;
+        tokenContractAddress: string;
+        tokenId: BigNumber;
+        offer: BigNumber;
+      }
+    >;
+
+    "BuyOrderBooked(address,address,address,uint256,uint256,uint256)"(
+      buyer?: string | null,
+      owner?: null,
+      tokenContractAddress?: string | null,
+      tokenId?: BigNumberish | null,
+      expiration?: null,
+      offer?: null
+    ): TypedEventFilter<
+      [string, string, string, BigNumber, BigNumber, BigNumber],
+      {
+        buyer: string;
+        owner: string;
+        tokenContractAddress: string;
+        tokenId: BigNumber;
+        expiration: BigNumber;
+        offer: BigNumber;
+      }
+    >;
+
+    BuyOrderBooked(
+      buyer?: string | null,
+      owner?: null,
+      tokenContractAddress?: string | null,
+      tokenId?: BigNumberish | null,
+      expiration?: null,
+      offer?: null
+    ): TypedEventFilter<
+      [string, string, string, BigNumber, BigNumber, BigNumber],
+      {
+        buyer: string;
+        owner: string;
+        tokenContractAddress: string;
+        tokenId: BigNumber;
+        expiration: BigNumber;
+        offer: BigNumber;
+      }
+    >;
+
+    "BuyOrderCanceled(address,address,uint256)"(
+      buyer?: string | null,
+      tokenContractAddress?: string | null,
+      tokenId?: BigNumberish | null
+    ): TypedEventFilter<
+      [string, string, BigNumber],
+      { buyer: string; tokenContractAddress: string; tokenId: BigNumber }
+    >;
+
+    BuyOrderCanceled(
+      buyer?: string | null,
+      tokenContractAddress?: string | null,
+      tokenId?: BigNumberish | null
+    ): TypedEventFilter<
+      [string, string, BigNumber],
+      { buyer: string; tokenContractAddress: string; tokenId: BigNumber }
+    >;
+
     "CollectionRoyaltyFeeAmountUpdated(address,address,uint256,uint256)"(
       tokenContractAddress?: string | null,
       executor?: string | null,
@@ -863,9 +1176,40 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    acceptBuyOrder(
+      bidder: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    buyOrderExists(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    cancelBuyOrder(
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    createBuyOrder(
+      owner: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -885,6 +1229,13 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       price: BigNumberish,
       recipient: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getBuyOrder(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getRoyaltyPayoutAddress(
@@ -972,9 +1323,40 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    acceptBuyOrder(
+      bidder: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    buyOrderExists(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    cancelBuyOrder(
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     cancelSellOrder(
       tokenContractAddress: string,
       tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    createBuyOrder(
+      owner: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      expiration: BigNumberish,
+      offer: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -994,6 +1376,13 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       price: BigNumberish,
       recipient: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getBuyOrder(
+      buyer: string,
+      tokenContractAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getRoyaltyPayoutAddress(

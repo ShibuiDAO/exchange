@@ -227,3 +227,5 @@ validations.json
 coverage.json
 
 !yarn.lock
+
+docs/

@@ -9,6 +9,7 @@ import 'hardhat-tracer';
 import type { HardhatUserConfig } from 'hardhat/config';
 import 'solidity-coverage';
 import { coinMarketCapApi } from './config';
+import '@primitivefi/hardhat-dodoc';
 
 const config: HardhatUserConfig = {
 	solidity: {
@@ -37,6 +38,10 @@ const config: HardhatUserConfig = {
 		currency: 'EUR',
 		gasPrice: 10,
 		coinmarketcap: coinMarketCapApi
+	},
+	dodoc: {
+		runOnCompile: true,
+		testMode: true
 	}
 };
 
