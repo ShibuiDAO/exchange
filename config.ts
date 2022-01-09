@@ -10,3 +10,9 @@ import { z } from 'zod';
 
 const coinMarketCapApiSchema = z.string();
 export const coinMarketCapApi = coinMarketCapApiSchema.parse(process.env.COINMARKETCAP_API);
+
+const alchemyRinkebyEthKeySchema = z.string();
+export const alchemyRinkebyEthKey = alchemyRinkebyEthKeySchema.parse(process.env.ALCHEMY_RINKEBY_ETH_KEY);
+
+const testnetPrivateKeySchema = z.string();
+export const testnetPrivateKey = `${testnetPrivateKeySchema.parse(process.env.TESTNET_PRIVATE_KEY)}`;

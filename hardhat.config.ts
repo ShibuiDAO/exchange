@@ -3,13 +3,14 @@ import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-solhint';
 import '@nomiclabs/hardhat-waffle';
 import '@openzeppelin/hardhat-upgrades';
+import '@primitivefi/hardhat-dodoc';
 import '@typechain/hardhat';
+import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
 import 'hardhat-tracer';
 import type { HardhatUserConfig } from 'hardhat/config';
 import 'solidity-coverage';
-import { coinMarketCapApi } from './config';
-import '@primitivefi/hardhat-dodoc';
+import { alchemyRinkebyEthKey, coinMarketCapApi, testnetPrivateKey } from './config';
 
 const config: HardhatUserConfig = {
 	solidity: {
@@ -22,16 +23,26 @@ const config: HardhatUserConfig = {
 	},
 	defaultNetwork: 'hardhat',
 	networks: {
-		hardhat: {
-			// forking: {
-			// 	url: 'https://bsc-dataseed.binance.org',
-			// 	blockNumber: 11224630
-			// }
+		hardhat: {},
+		rinkey: {
+			url: `https://eth-rinkeby.alchemyapi.io/v2/${alchemyRinkebyEthKey}`,
+			accounts: [testnetPrivateKey]
+		},
+		bobaRinkeby: {
+			url: 'https://rinkeby.boba.network/',
+			accounts: [testnetPrivateKey]
 		}
 	},
 	// etherscan: {
 	// 	apiKey: etherscanApi
 	// },
+	abiExporter: {
+		path: './abis',
+		runOnCompile: true,
+		clear: true,
+		flat: true,
+		only: ['ERC721ExchangeUpgradeable.sol']
+	},
 	gasReporter: {
 		excludeContracts: ['mocks/', 'contracts/mocks/'],
 		showTimeSpent: true,
