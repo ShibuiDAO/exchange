@@ -8,11 +8,11 @@ import {ERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/
 contract TestERC721 is Ownable, ERC721, ERC721Enumerable {
 	constructor() ERC721('TestERC721', 'TST') {}
 
-	function mint(address to, uint256 tokenId) public virtual {
+	function mint(address to, uint256 tokenId) public virtual onlyOwner {
 		_safeMint(to, tokenId);
 	}
 
-	function mintNext(address to) public virtual {
+	function mintNext(address to) public virtual onlyOwner {
 		uint256 supply = totalSupply();
 		mint(to, supply + 1);
 	}

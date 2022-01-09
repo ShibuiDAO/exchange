@@ -167,6 +167,80 @@ describe('ERC721Exchange', () => {
 			});
 
 			describe('buy', () => {
+				it('should create new buy order', async () => {
+					const [account, seller] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
+
+					const expiration = BigNumber.from(timestamp);
+					const offer = BigNumber.from('10000000000000000'); // 0.01 ETH
+
+					await expect(contractWETH.connect(account).deposit({ value: offer }))
+						.to.emit(contractWETH, 'Deposit')
+						.withArgs(account.address, offer);
+					await expect(contractWETH.connect(account).approve(contract.address, offer))
+						.to.emit(contractWETH, 'Approval')
+						.withArgs(account.address, contract.address, offer);
+
+					await contractERC721.mintNext(seller.address);
+					await expect(contractERC721.connect(seller).approve(contract.address, 1))
+						.to.emit(contractERC721, 'Approval')
+						.withArgs(seller.address, contract.address, 1);
+
+					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+						.to.emit(contract, 'BuyOrderBooked')
+						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
+
+					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
+
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(seller.address);
+					expect(order[2]).to.be.equal(contractERC721.address);
+					expect(order[3]).to.be.equal(1);
+					expect(order[4]).to.be.equal(expiration);
+					expect(order[5]).to.be.equal(offer);
+				});
+
+				it('should create new buy order and cancel order', async () => {
+					const [account, seller] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
+
+					const expiration = BigNumber.from(timestamp);
+					const offer = BigNumber.from('10000000000000000'); // 0.01 ETH
+
+					await expect(contractWETH.connect(account).deposit({ value: offer }))
+						.to.emit(contractWETH, 'Deposit')
+						.withArgs(account.address, offer);
+					await expect(contractWETH.connect(account).approve(contract.address, offer))
+						.to.emit(contractWETH, 'Approval')
+						.withArgs(account.address, contract.address, offer);
+
+					await contractERC721.mintNext(seller.address);
+					await expect(contractERC721.connect(seller).approve(contract.address, 1))
+						.to.emit(contractERC721, 'Approval')
+						.withArgs(seller.address, contract.address, 1);
+
+					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+						.to.emit(contract, 'BuyOrderBooked')
+						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
+
+					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
+
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(seller.address);
+					expect(order[2]).to.be.equal(contractERC721.address);
+					expect(order[3]).to.be.equal(1);
+					expect(order[4]).to.be.equal(expiration);
+					expect(order[5]).to.be.equal(offer);
+
+					await expect(contract.cancelBuyOrder(contractERC721.address, 1))
+						.to.emit(contract, 'BuyOrderCanceled')
+						.withArgs(account.address, contractERC721.address, 1);
+
+					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
+						'This buy order does not exist.'
+					);
+				});
+
 				it('should create new buy order and accept order', async () => {
 					const [account, seller, maker, royalty] = await ethers.getSigners();
 					const timestamp = new Date().getTime() * 2;
@@ -180,8 +254,7 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, offer);
 					await expect(contractWETH.connect(account).approve(contract.address, offer))
 						.to.emit(contractWETH, 'Approval')
-						.withArgs(account.address, contract.address, offer)
-						.and.to.equal(true);
+						.withArgs(account.address, contract.address, offer);
 
 					await contractERC721.mintNext(seller.address);
 					await expect(contractERC721.connect(seller).approve(contract.address, 1))
