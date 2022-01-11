@@ -11,6 +11,6 @@ contract ERC721ExchangeUpgradeableUpgraded is ERC721ExchangeUpgradeable {
 
 	/// @return The current exchange version.
 	function version() external pure override returns (string memory) {
-		return 'v1.0.1';
+		return 'v1.0.2';
 	}
 }

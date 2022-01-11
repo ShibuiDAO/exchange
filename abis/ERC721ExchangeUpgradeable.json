@@ -634,23 +634,8 @@
         "components": [
           {
             "internalType": "address payable",
-            "name": "buyer",
-            "type": "address"
-          },
-          {
-            "internalType": "address payable",
             "name": "owner",
             "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "tokenContractAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -731,21 +716,6 @@
     "outputs": [
       {
         "components": [
-          {
-            "internalType": "address payable",
-            "name": "seller",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "tokenContractAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
           {
             "internalType": "uint256",
             "name": "expiration",

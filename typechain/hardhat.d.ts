@@ -65,6 +65,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20__factory>;
+    getContractFactory(
+      name: "WETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WETH__factory>;
+    getContractFactory(
       name: "ERC721ExchangeUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721ExchangeUpgradeable__factory>;
@@ -77,9 +85,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TestERC721__factory>;
     getContractFactory(
-      name: "WETH9",
+      name: "WETHMock",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.WETH9__factory>;
+    ): Promise<Contracts.WETHMock__factory>;
 
     getContractAt(
       name: "OwnableUpgradeable",
@@ -147,6 +155,16 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20>;
+    getContractAt(
+      name: "WETH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WETH>;
+    getContractAt(
       name: "ERC721ExchangeUpgradeable",
       address: string,
       signer?: ethers.Signer
@@ -162,10 +180,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.TestERC721>;
     getContractAt(
-      name: "WETH9",
+      name: "WETHMock",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.WETH9>;
+    ): Promise<Contracts.WETHMock>;
 
     // default types
     getContractFactory(

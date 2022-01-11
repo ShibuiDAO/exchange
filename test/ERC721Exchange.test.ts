@@ -2,18 +2,18 @@ import chai, { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
-import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721, WETH9 } from '../typechain';
+import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721, WETHMock } from '../typechain';
 
 chai.use(solidity);
 
 describe('ERC721Exchange', () => {
-	let contractWETH: WETH9;
+	let contractWETH: WETHMock;
 	let contract: ERC721ExchangeUpgradeable;
 	let contractERC721: TestERC721;
 
 	beforeEach(async () => {
-		const WETHContract = await ethers.getContractFactory('WETH9');
-		contractWETH = (await WETHContract.deploy()) as WETH9;
+		const WETHContract = await ethers.getContractFactory('WETHMock');
+		contractWETH = (await WETHContract.deploy()) as WETHMock;
 
 		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
 		contract = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, contractWETH.address], {
@@ -29,10 +29,10 @@ describe('ERC721Exchange', () => {
 
 	describe('base v1', () => {
 		describe('initialization', () => {
-			it('version should equal v1.0.0', async () => {
+			it('version should equal v1.0.1', async () => {
 				const version = await contract.version();
 
-				expect(version).to.equal('v1.0.0');
+				expect(version).to.equal('v1.0.1');
 			});
 
 			it('should set sender as owner', async () => {
@@ -82,11 +82,8 @@ describe('ERC721Exchange', () => {
 
 					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(account.address);
-					expect(order[1]).to.be.equal(contractERC721.address);
-					expect(order[2]).to.be.equal(1);
-					expect(order[3]).to.be.equal(expiration);
-					expect(order[4]).to.be.equal(price);
+					expect(order[0]).to.be.equal(expiration);
+					expect(order[1]).to.be.equal(price);
 				});
 
 				it('should create new sell order and cancel order', async () => {
@@ -107,11 +104,8 @@ describe('ERC721Exchange', () => {
 
 					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(account.address);
-					expect(order[1]).to.be.equal(contractERC721.address);
-					expect(order[2]).to.be.equal(1);
-					expect(order[3]).to.be.equal(expiration);
-					expect(order[4]).to.be.equal(price);
+					expect(order[0]).to.be.equal(expiration);
+					expect(order[1]).to.be.equal(price);
 
 					await expect(contract.cancelSellOrder(contractERC721.address, 1))
 						.to.emit(contract, 'SellOrderCanceled')
@@ -141,11 +135,8 @@ describe('ERC721Exchange', () => {
 
 					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(account.address);
-					expect(order[1]).to.be.equal(contractERC721.address);
-					expect(order[2]).to.be.equal(1);
-					expect(order[3]).to.be.equal(expiration);
-					expect(order[4]).to.be.equal(price);
+					expect(order[0]).to.be.equal(expiration);
+					expect(order[1]).to.be.equal(price);
 
 					await contract.setSystemFeeWallet(maker.address);
 					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
@@ -192,12 +183,9 @@ describe('ERC721Exchange', () => {
 
 					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(account.address);
-					expect(order[1]).to.be.equal(seller.address);
-					expect(order[2]).to.be.equal(contractERC721.address);
-					expect(order[3]).to.be.equal(1);
-					expect(order[4]).to.be.equal(expiration);
-					expect(order[5]).to.be.equal(offer);
+					expect(order[0]).to.be.equal(seller.address);
+					expect(order[1]).to.be.equal(expiration);
+					expect(order[2]).to.be.equal(offer);
 				});
 
 				it('should create new buy order and cancel order', async () => {
@@ -225,12 +213,9 @@ describe('ERC721Exchange', () => {
 
 					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(account.address);
-					expect(order[1]).to.be.equal(seller.address);
-					expect(order[2]).to.be.equal(contractERC721.address);
-					expect(order[3]).to.be.equal(1);
-					expect(order[4]).to.be.equal(expiration);
-					expect(order[5]).to.be.equal(offer);
+					expect(order[0]).to.be.equal(seller.address);
+					expect(order[1]).to.be.equal(expiration);
+					expect(order[2]).to.be.equal(offer);
 
 					await expect(contract.cancelBuyOrder(contractERC721.address, 1))
 						.to.emit(contract, 'BuyOrderCanceled')
@@ -267,12 +252,9 @@ describe('ERC721Exchange', () => {
 
 					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(account.address);
-					expect(order[1]).to.be.equal(seller.address);
-					expect(order[2]).to.be.equal(contractERC721.address);
-					expect(order[3]).to.be.equal(1);
-					expect(order[4]).to.be.equal(expiration);
-					expect(order[5]).to.be.equal(offer);
+					expect(order[0]).to.be.equal(seller.address);
+					expect(order[1]).to.be.equal(expiration);
+					expect(order[2]).to.be.equal(offer);
 
 					await contract.setSystemFeeWallet(maker.address);
 					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
@@ -303,7 +285,7 @@ describe('ERC721Exchange', () => {
 
 				const version = await contractUpgraded.version();
 
-				expect(version).to.equal('v1.0.1');
+				expect(version).to.equal('v1.0.2');
 			});
 		});
 	});

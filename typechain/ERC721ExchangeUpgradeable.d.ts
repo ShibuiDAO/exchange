@@ -473,11 +473,8 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string, string, string, BigNumber, BigNumber, BigNumber] & {
-          buyer: string;
+        [string, BigNumber, BigNumber] & {
           owner: string;
-          tokenContractAddress: string;
-          tokenId: BigNumber;
           expiration: BigNumber;
           offer: BigNumber;
         }
@@ -500,15 +497,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [
-        [string, string, BigNumber, BigNumber, BigNumber] & {
-          seller: string;
-          tokenContractAddress: string;
-          tokenId: BigNumber;
-          expiration: BigNumber;
-          price: BigNumber;
-        }
-      ]
+      [[BigNumber, BigNumber] & { expiration: BigNumber; price: BigNumber }]
     >;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
@@ -648,11 +637,8 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [string, string, string, BigNumber, BigNumber, BigNumber] & {
-      buyer: string;
+    [string, BigNumber, BigNumber] & {
       owner: string;
-      tokenContractAddress: string;
-      tokenId: BigNumber;
       expiration: BigNumber;
       offer: BigNumber;
     }
@@ -674,13 +660,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [string, string, BigNumber, BigNumber, BigNumber] & {
-      seller: string;
-      tokenContractAddress: string;
-      tokenId: BigNumber;
-      expiration: BigNumber;
-      price: BigNumber;
-    }
+    [BigNumber, BigNumber] & { expiration: BigNumber; price: BigNumber }
   >;
 
   owner(overrides?: CallOverrides): Promise<string>;
@@ -820,11 +800,8 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string, BigNumber, BigNumber, BigNumber] & {
-        buyer: string;
+      [string, BigNumber, BigNumber] & {
         owner: string;
-        tokenContractAddress: string;
-        tokenId: BigNumber;
         expiration: BigNumber;
         offer: BigNumber;
       }
@@ -846,13 +823,7 @@ export class ERC721ExchangeUpgradeable extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, BigNumber, BigNumber, BigNumber] & {
-        seller: string;
-        tokenContractAddress: string;
-        tokenId: BigNumber;
-        expiration: BigNumber;
-        price: BigNumber;
-      }
+      [BigNumber, BigNumber] & { expiration: BigNumber; price: BigNumber }
     >;
 
     owner(overrides?: CallOverrides): Promise<string>;
