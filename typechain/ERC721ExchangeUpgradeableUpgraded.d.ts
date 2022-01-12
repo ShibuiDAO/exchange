@@ -233,7 +233,7 @@ interface ERC721ExchangeUpgradeableUpgradedInterface
     "Paused(address)": EventFragment;
     "SellOrderBooked(address,address,uint256,uint256,uint256)": EventFragment;
     "SellOrderCanceled(address,address,uint256)": EventFragment;
-    "SellOrderFufilled(address,address,address,uint256,uint256)": EventFragment;
+    "SellOrderFufilled(address,address,address,address,uint256,uint256)": EventFragment;
     "SellOrderUpdated(address,address,uint256,uint256,uint256)": EventFragment;
     "Unpaused(address)": EventFragment;
   };
@@ -340,9 +340,10 @@ export type SellOrderCanceledEvent = TypedEvent<
 >;
 
 export type SellOrderFufilledEvent = TypedEvent<
-  [string, string, string, BigNumber, BigNumber] & {
+  [string, string, string, string, BigNumber, BigNumber] & {
     seller: string;
     recipient: string;
+    buyer: string;
     tokenContractAddress: string;
     tokenId: BigNumber;
     price: BigNumber;
@@ -1151,17 +1152,19 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
       { seller: string; tokenContractAddress: string; tokenId: BigNumber }
     >;
 
-    "SellOrderFufilled(address,address,address,uint256,uint256)"(
+    "SellOrderFufilled(address,address,address,address,uint256,uint256)"(
       seller?: string | null,
       recipient?: null,
+      buyer?: null,
       tokenContractAddress?: string | null,
       tokenId?: BigNumberish | null,
       price?: null
     ): TypedEventFilter<
-      [string, string, string, BigNumber, BigNumber],
+      [string, string, string, string, BigNumber, BigNumber],
       {
         seller: string;
         recipient: string;
+        buyer: string;
         tokenContractAddress: string;
         tokenId: BigNumber;
         price: BigNumber;
@@ -1171,14 +1174,16 @@ export class ERC721ExchangeUpgradeableUpgraded extends BaseContract {
     SellOrderFufilled(
       seller?: string | null,
       recipient?: null,
+      buyer?: null,
       tokenContractAddress?: string | null,
       tokenId?: BigNumberish | null,
       price?: null
     ): TypedEventFilter<
-      [string, string, string, BigNumber, BigNumber],
+      [string, string, string, string, BigNumber, BigNumber],
       {
         seller: string;
         recipient: string;
+        buyer: string;
         tokenContractAddress: string;
         tokenId: BigNumber;
         price: BigNumber;

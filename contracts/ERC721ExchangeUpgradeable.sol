@@ -61,7 +61,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of the bought ERC721 asset.
 	/// @param price The price in wei at which the ERC721 asset was bought.
-	event SellOrderFufilled(address indexed seller, address recipient, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
+	event SellOrderFufilled(address indexed seller, address recipient, address buyer, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
 
 	/// @notice Emitted when `updateBuyOrder` is called.
 	/// @param buyer Address of the ERC721 asset bidder.
@@ -183,6 +183,15 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	}
 
 	/*///////////////////////////////////////////////////////////////
+                             SELL ORDER EXECUTION
+    //////////////////////////////////////////////////////////////*/
+
+    struct SellOrderExecutionSenders {
+        address payable recipient;
+        address buyer;
+    }
+
+	/*///////////////////////////////////////////////////////////////
           UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
     //////////////////////////////////////////////////////////////*/
 
@@ -259,7 +268,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 		SellOrder memory sellOrder = SellOrder(expiration, price);
 
-		_executeSellOrder(seller, tokenContractAddress, tokenId, sellOrder, recipient);
+		_executeSellOrder(seller, tokenContractAddress, tokenId, sellOrder, SellOrderExecutionSenders(recipient, _msgSender()));
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
@@ -476,13 +485,13 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param tokenId ID of the desired ERC721 asset.
 	/// @param _sellOrder Filled in SellOrder to be compared to the stored one.
-	/// @param recipient The address of the ERC721 asset recipient.
+	/// @param _senders Struct containing recipient and buyer address'.
 	function _executeSellOrder(
 		address payable seller,
 		address tokenContractAddress,
 		uint256 tokenId,
 		SellOrder memory _sellOrder,
-		address payable recipient
+        SellOrderExecutionSenders memory _senders
 	) internal {
 		SellOrder memory sellOrder = getSellOrder(seller, tokenContractAddress, tokenId);
 
@@ -514,11 +523,11 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		(bool sellerSent, bytes memory sellerData) = seller.call{value: remainingPayout}('');
 		require(sellerSent, 'Failed to send ETH to seller.');
 
-		erc721.safeTransferFrom(seller, recipient, tokenId);
+		erc721.safeTransferFrom(seller, _senders.recipient, tokenId);
 
 		// TODO: Evaluate the viability of this since even when the order gets fufilled it will emit that it got canceled. This might be a problem when building the subgraph.
 		_cancelSellOrder(seller, tokenContractAddress, tokenId);
-		emit SellOrderFufilled(seller, recipient, tokenContractAddress, tokenId, sellOrder.price);
+		emit SellOrderFufilled(seller, _senders.recipient, _senders.buyer, tokenContractAddress, tokenId, sellOrder.price);
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.

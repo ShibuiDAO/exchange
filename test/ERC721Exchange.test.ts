@@ -147,7 +147,7 @@ describe('ERC721Exchange', () => {
 							.executeSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
 					)
 						.to.emit(contract, 'SellOrderFufilled')
-						.withArgs(account.address, buyer.address, contractERC721.address, 1, price)
+						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price)
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 

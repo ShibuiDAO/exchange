@@ -319,6 +319,12 @@
         "type": "address"
       },
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "tokenContractAddress",
