@@ -29,10 +29,10 @@ describe('ERC721Exchange', () => {
 
 	describe('base v1', () => {
 		describe('initialization', () => {
-			it('version should equal v1.0.1', async () => {
+			it('version should equal v1.0.2', async () => {
 				const version = await contract.version();
 
-				expect(version).to.equal('v1.0.1');
+				expect(version).to.equal('v1.0.2');
 			});
 
 			it('should set sender as owner', async () => {
@@ -285,7 +285,7 @@ describe('ERC721Exchange', () => {
 
 				const version = await contractUpgraded.version();
 
-				expect(version).to.equal('v1.0.2');
+				expect(version).to.equal('v1.0.3');
 			});
 		});
 	});

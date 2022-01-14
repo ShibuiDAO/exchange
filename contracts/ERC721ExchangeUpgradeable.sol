@@ -539,11 +539,11 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 		if (royaltyPayout > 0) {
 			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
-            SafeTransferLib.safeTransferETH(royaltyPayoutAddress, royaltyPayout);
+			SafeTransferLib.safeTransferETH(royaltyPayoutAddress, royaltyPayout);
 		}
 
-        SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
-        SafeTransferLib.safeTransferETH(_seller, remainingPayout);
+		SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
+		SafeTransferLib.safeTransferETH(_seller, remainingPayout);
 
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
@@ -635,20 +635,20 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 			revert('IS_NOT_721_TOKEN');
 		}
 
-        if (!(block.timestamp < buyOrder.expiration)) {
-            _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-            revert('This buy order has expired.');
-        }
+		if (!(block.timestamp < buyOrder.expiration)) {
+			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			revert('This buy order has expired.');
+		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
 		if (!(erc721.ownerOf(_tokenId) == buyOrder.owner)) {
-            _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert('The desired BuyOrder "owner" does not own this ERC721 token.');
 		}
 
 		if (!(erc721.getApproved(_tokenId) == address(this))) {
-            _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
 		}
 
@@ -732,8 +732,10 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		);
 		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
-		Ownable ownableNFTContract = Ownable(_tokenContractAddress);
-		require(_msgSender() == ownableNFTContract.owner() || _msgSender() == owner(), 'ADDRESS_NOT_AUTHORIZED');
+		if (!(_msgSender() == owner())) {
+			Ownable ownableNFTContract = Ownable(_tokenContractAddress);
+			require(_msgSender() == ownableNFTContract.owner(), 'ADDRESS_NOT_AUTHORIZED');
+		}
 
 		emit CollectionRoyaltyPayoutAddressUpdated(
 			_tokenContractAddress,
@@ -801,6 +803,6 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 	/// @return The current exchange version.
 	function version() external pure virtual returns (string memory) {
-		return 'v1.0.1';
+		return 'v1.0.2';
 	}
 }

@@ -224,7 +224,7 @@ recommendations-already-shown.json
 solidity-files-cache.json
 validations.json
 
-artifacts/**
+artifacts
 
 coverage.json
 
@@ -232,4 +232,4 @@ coverage.json
 
 docs/
 
-typechain/**
+typechain
