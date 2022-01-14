@@ -423,27 +423,27 @@
     "inputs": [
       {
         "internalType": "address payable",
-        "name": "bidder",
+        "name": "_bidder",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expiration",
+        "name": "_expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "offer",
+        "name": "_offer",
         "type": "uint256"
       }
     ],
@@ -456,17 +456,17 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "buyer",
+        "name": "_buyer",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       }
     ],
@@ -485,12 +485,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       }
     ],
@@ -503,12 +503,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       }
     ],
@@ -521,27 +521,27 @@
     "inputs": [
       {
         "internalType": "address payable",
-        "name": "owner",
+        "name": "_owner",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expiration",
+        "name": "_expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "offer",
+        "name": "_offer",
         "type": "uint256"
       }
     ],
@@ -554,22 +554,22 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expiration",
+        "name": "_expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "price",
+        "name": "_price",
         "type": "uint256"
       }
     ],
@@ -582,32 +582,32 @@
     "inputs": [
       {
         "internalType": "address payable",
-        "name": "seller",
+        "name": "_seller",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expiration",
+        "name": "_expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "price",
+        "name": "_price",
         "type": "uint256"
       },
       {
         "internalType": "address payable",
-        "name": "recipient",
+        "name": "_recipient",
         "type": "address"
       }
     ],
@@ -620,17 +620,17 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "buyer",
+        "name": "_buyer",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       }
     ],
@@ -704,17 +704,17 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "seller",
+        "name": "_seller",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       }
     ],
@@ -785,17 +785,17 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "seller",
+        "name": "_seller",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       }
     ],
@@ -883,27 +883,27 @@
     "inputs": [
       {
         "internalType": "address payable",
-        "name": "owner",
+        "name": "_owner",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expiration",
+        "name": "_expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "offer",
+        "name": "_offer",
         "type": "uint256"
       }
     ],
@@ -916,22 +916,22 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenContractAddress",
+        "name": "_tokenContractAddress",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expiration",
+        "name": "_expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "price",
+        "name": "_price",
         "type": "uint256"
       }
     ],

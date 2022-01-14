@@ -224,8 +224,12 @@ recommendations-already-shown.json
 solidity-files-cache.json
 validations.json
 
+artifacts/**
+
 coverage.json
 
 !yarn.lock
 
 docs/
+
+typechain/**

@@ -61,7 +61,14 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of the bought ERC721 asset.
 	/// @param price The price in wei at which the ERC721 asset was bought.
-	event SellOrderFufilled(address indexed seller, address recipient, address buyer, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 price);
+	event SellOrderFufilled(
+		address indexed seller,
+		address recipient,
+		address buyer,
+		address indexed tokenContractAddress,
+		uint256 indexed tokenId,
+		uint256 price
+	);
 
 	/// @notice Emitted when `updateBuyOrder` is called.
 	/// @param buyer Address of the ERC721 asset bidder.
@@ -186,10 +193,10 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
                              SELL ORDER EXECUTION
     //////////////////////////////////////////////////////////////*/
 
-    struct SellOrderExecutionSenders {
-        address payable recipient;
-        address buyer;
-    }
+	struct SellOrderExecutionSenders {
+		address payable recipient;
+		address buyer;
+	}
 
 	/*///////////////////////////////////////////////////////////////
           UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
@@ -219,66 +226,66 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
                    PUBLIC SELL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param price The price in wei of the given ERC721 asset.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _price The price in wei of the given ERC721 asset.
 	function createSellOrder(
-		address tokenContractAddress,
-		uint256 tokenId,
-		uint256 expiration,
-		uint256 price
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _price
 	) external whenNotPaused {
-		SellOrder memory sellOrder = SellOrder(expiration, price);
+		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
-		_createSellOrder(payable(_msgSender()), tokenContractAddress, tokenId, sellOrder);
+		_createSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
 	/// @notice Updates/overwrites existing SellOrder.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param price The price in wei of the given ERC721 asset.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _price The price in wei of the given ERC721 asset.
 	function updateSellOrder(
-		address tokenContractAddress,
-		uint256 tokenId,
-		uint256 expiration,
-		uint256 price
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _price
 	) external whenNotPaused {
-		SellOrder memory sellOrder = SellOrder(expiration, price);
+		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
-		_updateSellOrder(payable(_msgSender()), tokenContractAddress, tokenId, sellOrder);
+		_updateSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
-	/// @param seller The seller address of the desired SellOrder.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param price The price in wei of the given ERC721 asset.
-	/// @param recipient The address of the ERC721 asset recipient.
+	/// @param _seller The seller address of the desired SellOrder.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _price The price in wei of the given ERC721 asset.
+	/// @param _recipient The address of the ERC721 asset recipient.
 	function executeSellOrder(
-		address payable seller,
-		address tokenContractAddress,
-		uint256 tokenId,
-		uint256 expiration,
-		uint256 price,
-		address payable recipient
+		address payable _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _price,
+		address payable _recipient
 	) external payable whenNotPaused nonReentrant {
-		require(msg.value >= price, "Your transaction doesn't have the required payment.");
+		require(msg.value >= _price, "Your transaction doesn't have the required payment.");
 
-		SellOrder memory sellOrder = SellOrder(expiration, price);
+		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
-		_executeSellOrder(seller, tokenContractAddress, tokenId, sellOrder, SellOrderExecutionSenders(recipient, _msgSender()));
+		_executeSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
 	/// @notice Can only be executed by the listed SellOrder seller.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being sold.
-	function cancelSellOrder(address tokenContractAddress, uint256 tokenId) external whenNotPaused {
-		require(sellOrderExists(_msgSender(), tokenContractAddress, tokenId), 'This sell order does not exist.');
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being sold.
+	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external whenNotPaused {
+		require(sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId), 'This sell order does not exist.');
 
-		_cancelSellOrder(_msgSender(), tokenContractAddress, tokenId);
+		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -286,73 +293,75 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Stores a new offer/bid for a given ERC721 asset.
-	/// @param owner The current owner of the desired ERC721 asset.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param offer The offered amount in wei for the given ERC721 asset.
+	/// @param _owner The current owner of the desired ERC721 asset.
+	/// @param _tokenContractAddress The ERC721 asset contract address.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _offer The offered amount in wei for the given ERC721 asset.
 	function createBuyOrder(
-		address payable owner,
-		address tokenContractAddress,
-		uint256 tokenId,
-		uint256 expiration,
-		uint256 offer
+		address payable _owner,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _offer
 	) external whenNotPaused {
 		require(
-			WETH.allowance(_msgSender(), address(this)) >= offer,
+			WETH.allowance(_msgSender(), address(this)) >= _offer,
 			'The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH.'
 		);
 
-		BuyOrder memory buyOrder = BuyOrder(owner, expiration, offer);
+		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
 
-		_createBuyOrder(payable(_msgSender()), tokenContractAddress, tokenId, buyOrder);
+		_createBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
 	/// @notice Updates/overwrites existing BuyOrder.
-	/// @param owner The current owner of the desired ERC721 asset.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param offer The offered amount in wei for the given ERC721 asset.
+	/// @param _owner The current owner of the desired ERC721 asset.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _offer The offered amount in wei for the given ERC721 asset.
 	function updateBuyOrder(
-		address payable owner,
-		address tokenContractAddress,
-		uint256 tokenId,
-		uint256 expiration,
-		uint256 offer
+		address payable _owner,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _offer
 	) external whenNotPaused {
 		require(
-			WETH.allowance(_msgSender(), address(this)) >= offer,
+			WETH.allowance(_msgSender(), address(this)) >= _offer,
 			'The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH.'
 		);
 
-		BuyOrder memory buyOrder = BuyOrder(owner, expiration, offer);
+		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
 
-		_updateBuyOrder(payable(_msgSender()), tokenContractAddress, tokenId, buyOrder);
+		_updateBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
 	function acceptBuyOrder(
-		address payable bidder,
-		address tokenContractAddress,
-		uint256 tokenId,
-		uint256 expiration,
-		uint256 offer
+		address payable _bidder,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _offer
 	) external whenNotPaused {
 		require(
-			WETH.allowance(bidder, address(this)) >= offer,
+			WETH.allowance(_bidder, address(this)) >= _offer,
 			'The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH.'
 		);
 
-		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), expiration, offer);
+		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _expiration, _offer);
 
-		_acceptBuyOrder(bidder, tokenContractAddress, tokenId, buyOrder);
+		_acceptBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
 	}
 
 	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being bought.
-	function cancelBuyOrder(address tokenContractAddress, uint256 tokenId) external whenNotPaused {
-		require(buyOrderExists(_msgSender(), tokenContractAddress, tokenId), 'This buy order does not exist.');
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
+	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external whenNotPaused {
+		require(buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId), 'This buy order does not exist.');
 
-		_cancelBuyOrder(_msgSender(), tokenContractAddress, tokenId);
+		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -360,32 +369,32 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
-	/// @param seller Address of the sell order owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being sold.
+	/// @param _seller Address of the sell order owner.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being sold.
 	/// @return Struct containing all the order data.
 	function getSellOrder(
-		address seller,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) public view returns (SellOrder memory) {
-		require(sellOrderExists(seller, tokenContractAddress, tokenId), 'This sell order does not exist.');
+		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), 'This sell order does not exist.');
 
-		return sellOrders[_formOrderId(seller, tokenContractAddress, tokenId)];
+		return sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
 	}
 
 	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
 	/// So if a order doesn't exist it will have an expiration of 0.
-	/// @param seller Address of the sell order owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being sold.
+	/// @param _seller Address of the sell order owner.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being sold.
 	/// @return The validy of the queried order.
 	function sellOrderExists(
-		address seller,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) public view returns (bool) {
-		SellOrder memory sellOrder = sellOrders[_formOrderId(seller, tokenContractAddress, tokenId)];
+		SellOrder memory sellOrder = sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
 
 		return 0 < sellOrder.expiration;
 	}
@@ -395,32 +404,32 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
-	/// @param buyer Address of the buy order creator.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being bought.
+	/// @param _buyer Address of the buy order creator.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
 	/// @return Struct containing all the order data.
 	function getBuyOrder(
-		address buyer,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) public view returns (BuyOrder memory) {
-		require(buyOrderExists(buyer, tokenContractAddress, tokenId), 'This buy order does not exist.');
+		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), 'This buy order does not exist.');
 
-		return buyOrders[_formOrderId(buyer, tokenContractAddress, tokenId)];
+		return buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
 	}
 
 	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
 	/// So if a order doesn't exist it will have an expiration of 0.
-	/// @param buyer Address of the buy order creator.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being bought.
+	/// @param _buyer Address of the buy order creator.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
 	/// @return The validy of the queried order.
 	function buyOrderExists(
-		address buyer,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) public view returns (bool) {
-		BuyOrder memory buyOrder = buyOrders[_formOrderId(buyer, tokenContractAddress, tokenId)];
+		BuyOrder memory buyOrder = buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
 
 		return 0 < buyOrder.expiration;
 	}
@@ -429,90 +438,105 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
                    INTERNAL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-	/// @param seller The address of the asset seller/owner.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param sellOrder Filled in SellOrder to be listed.
+	/// @param _seller The address of the asset seller/owner.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _sellOrder Filled in SellOrder to be listed.
 	function _createSellOrder(
-		address payable seller,
-		address tokenContractAddress,
-		uint256 tokenId,
-		SellOrder memory sellOrder
+		address payable _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		SellOrder memory _sellOrder
 	) internal {
-		require(!sellOrderExists(seller, tokenContractAddress, tokenId), 'This order already exists.');
+		require(!sellOrderExists(_seller, _tokenContractAddress, _tokenId), 'This order already exists.');
 
-		require(tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
-		require((block.timestamp < sellOrder.expiration), 'This sell order is expired.');
+		require((block.timestamp < _sellOrder.expiration), 'This sell order is expired.');
 
-		IERC721 erc721 = IERC721(tokenContractAddress);
+		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(tokenId) == seller), 'The seller does not own this ERC721 token.');
+		require((erc721.ownerOf(_tokenId) == _seller), 'The seller does not own this ERC721 token.');
 
-		require(erc721.getApproved(tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		require(erc721.getApproved(_tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
 
-		sellOrders[_formOrderId(seller, tokenContractAddress, tokenId)] = sellOrder;
-		emit SellOrderBooked(seller, tokenContractAddress, tokenId, sellOrder.expiration, sellOrder.price);
+		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
+		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
 	}
 
-	/// @param seller The address of the asset seller/owner.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param sellOrder Filled in SellOrder to replace/update existing.
+	/// @param _seller The address of the asset seller/owner.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _sellOrder Filled in SellOrder to replace/update existing.
 	function _updateSellOrder(
-		address payable seller,
-		address tokenContractAddress,
-		uint256 tokenId,
-		SellOrder memory sellOrder
+		address payable _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		SellOrder memory _sellOrder
 	) internal {
-		require(sellOrderExists(seller, tokenContractAddress, tokenId), "This order doesn't exists.");
+		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This order doesn't exists.");
 
-		require(tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
-		require((block.timestamp < sellOrder.expiration), 'This sell order is expired.');
+		require((block.timestamp < _sellOrder.expiration), 'This sell order is expired.');
 
-		IERC721 erc721 = IERC721(tokenContractAddress);
+		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(tokenId) == seller), 'The seller does not own this ERC721 token.');
+		require((erc721.ownerOf(_tokenId) == _seller), 'The seller does not own this ERC721 token.');
 
-		require(erc721.getApproved(tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		require(erc721.getApproved(_tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
 
-		sellOrders[_formOrderId(seller, tokenContractAddress, tokenId)] = sellOrder;
-		emit SellOrderUpdated(seller, tokenContractAddress, tokenId, sellOrder.expiration, sellOrder.price);
+		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
+		emit SellOrderUpdated(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
 	}
 
-	/// @param seller The address of the asset seller/owner.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param tokenId ID of the desired ERC721 asset.
+	/// @param _seller The address of the asset seller/owner.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
+	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _sellOrder Filled in SellOrder to be compared to the stored one.
 	/// @param _senders Struct containing recipient and buyer address'.
 	function _executeSellOrder(
-		address payable seller,
-		address tokenContractAddress,
-		uint256 tokenId,
+		address payable _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId,
 		SellOrder memory _sellOrder,
-        SellOrderExecutionSenders memory _senders
+		SellOrderExecutionSenders memory _senders
 	) internal {
-		SellOrder memory sellOrder = getSellOrder(seller, tokenContractAddress, tokenId);
+		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
-		require(_compareSellOrders(sellOrder, _sellOrder), "Passed sell order data doesn't equal stored sell order data.");
+		if (!_compareSellOrders(sellOrder, _sellOrder)) {
+			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+			revert("Passed sell order data doesn't equal stored sell order data.");
+		}
 
-		require(tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
+		if (!_tokenContractAddress.supportsInterface(InterfaceId_IERC721)) {
+			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+			revert('IS_NOT_721_TOKEN');
+		}
 
-		require((block.timestamp < sellOrder.expiration), 'This sell order is expired.');
+		if (!(block.timestamp < sellOrder.expiration)) {
+			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+			revert('This sell order is expired.');
+		}
 
-		IERC721 erc721 = IERC721(tokenContractAddress);
+		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(tokenId) == seller), 'The seller does not own this ERC721 token.');
+		if (!(erc721.ownerOf(_tokenId) == _seller)) {
+			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+			revert('The seller does not own this ERC721 token.');
+		}
 
-		require(erc721.getApproved(tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		if (!(erc721.getApproved(_tokenId) == address(this))) {
+			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		}
 
-		uint256 royaltyPayout = (payoutPerMille[tokenContractAddress] * msg.value) / 1000;
+		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * msg.value) / 1000;
 		uint256 systemFeePayout = (_systemFeePerMille * msg.value) / 1000;
 		uint256 remainingPayout = msg.value - royaltyPayout - systemFeePayout;
 
 		if (royaltyPayout > 0) {
-			address payable royaltyPayoutAddress = collectionPayoutAddresses[tokenContractAddress];
+			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
 			(bool royaltyPayoutSent, bytes memory royaltyPayoutData) = royaltyPayoutAddress.call{value: royaltyPayout}('');
 			require(royaltyPayoutSent, 'Failed to send ETH to collectiond royalties wallet.');
 		}
@@ -520,146 +544,159 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 		(bool systemFeeSent, bytes memory systemFeeData) = _systemFeeWallet.call{value: systemFeePayout}('');
 		require(systemFeeSent, 'Failed to send ETH to system fee wallet.');
 
-		(bool sellerSent, bytes memory sellerData) = seller.call{value: remainingPayout}('');
+		(bool sellerSent, bytes memory sellerData) = _seller.call{value: remainingPayout}('');
 		require(sellerSent, 'Failed to send ETH to seller.');
 
-		erc721.safeTransferFrom(seller, _senders.recipient, tokenId);
+		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
-		// TODO: Evaluate the viability of this since even when the order gets fufilled it will emit that it got canceled. This might be a problem when building the subgraph.
-		_cancelSellOrder(seller, tokenContractAddress, tokenId);
-		emit SellOrderFufilled(seller, _senders.recipient, _senders.buyer, tokenContractAddress, tokenId, sellOrder.price);
+		_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+		emit SellOrderFufilled(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price);
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
-	/// @param seller Address of the sell order owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being sold.
+	/// @param _seller Address of the sell order owner.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being sold.
 	function _cancelSellOrder(
-		address seller,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) internal {
-		delete (sellOrders[_formOrderId(seller, tokenContractAddress, tokenId)]);
+		delete (sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)]);
 
-		emit SellOrderCanceled(seller, tokenContractAddress, tokenId);
+		emit SellOrderCanceled(_seller, _tokenContractAddress, _tokenId);
 	}
 
-	/// @param buyer Address of the user placing the BuyOrder.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param buyOrder Filled in BuyOrder to be listed.
+	/// @param _buyer Address of the user placing the BuyOrder.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _buyOrder Filled in BuyOrder to be listed.
 	function _createBuyOrder(
-		address payable buyer,
-		address tokenContractAddress,
-		uint256 tokenId,
-		BuyOrder memory buyOrder
-	) internal {
-		require(!buyOrderExists(buyer, tokenContractAddress, tokenId), 'This order already exists.');
-
-		require(tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
-
-		require((block.timestamp < buyOrder.expiration), 'This sell order is expired.');
-
-		IERC721 erc721 = IERC721(tokenContractAddress);
-
-		require((erc721.ownerOf(tokenId) == buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
-
-		buyOrders[_formOrderId(buyer, tokenContractAddress, tokenId)] = buyOrder;
-		emit BuyOrderBooked(buyer, buyOrder.owner, tokenContractAddress, tokenId, buyOrder.expiration, buyOrder.offer);
-	}
-
-	/// @param buyer Address of the user placing the BuyOrder.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param buyOrder Filled in BuyOrder to replace/update existing.
-	function _updateBuyOrder(
-		address payable buyer,
-		address tokenContractAddress,
-		uint256 tokenId,
-		BuyOrder memory buyOrder
-	) internal {
-		require(buyOrderExists(buyer, tokenContractAddress, tokenId), "This order doesn't exists.");
-
-		require(tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
-
-		require((block.timestamp < buyOrder.expiration), 'This buy order is expired.');
-
-		IERC721 erc721 = IERC721(tokenContractAddress);
-
-		require((erc721.ownerOf(tokenId) == buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
-
-		buyOrders[_formOrderId(buyer, tokenContractAddress, tokenId)] = buyOrder;
-		emit BuyOrderUpdated(buyer, buyOrder.owner, tokenContractAddress, tokenId, buyOrder.expiration, buyOrder.offer);
-	}
-
-	/// @param buyer Address of the user placing the BuyOrder.
-	/// @param tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param tokenId ID of the desired ERC721 asset.
-	/// @param _buyOrder Filled in BuyOrder to be compared to the stored one.
-	function _acceptBuyOrder(
-		address payable buyer,
-		address tokenContractAddress,
-		uint256 tokenId,
+		address payable _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) internal {
-		BuyOrder memory buyOrder = getBuyOrder(buyer, tokenContractAddress, tokenId);
+		require(!buyOrderExists(_buyer, _tokenContractAddress, _tokenId), 'This order already exists.');
 
-		require(_compareBuyOrders(_buyOrder, buyOrder), "Passed buy order data doesn't equal stored buy order data.");
+		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
 
-		require(tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
+		require((block.timestamp < _buyOrder.expiration), 'This sell order is expired.');
 
-		require((block.timestamp < buyOrder.expiration), 'This buy order has expired.');
+		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		IERC721 erc721 = IERC721(tokenContractAddress);
+		require((erc721.ownerOf(_tokenId) == _buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
 
-		require((erc721.ownerOf(tokenId) == buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
+		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
+		emit BuyOrderBooked(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
+	}
 
-		require(erc721.getApproved(tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+	/// @param _buyer Address of the user placing the BuyOrder.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _buyOrder Filled in BuyOrder to replace/update existing.
+	function _updateBuyOrder(
+		address payable _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		BuyOrder memory _buyOrder
+	) internal {
+		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This order doesn't exists.");
 
-		uint256 royaltyPayout = (payoutPerMille[tokenContractAddress] * buyOrder.offer) / 1000;
+		require(_tokenContractAddress.supportsInterface(InterfaceId_IERC721), 'IS_NOT_721_TOKEN');
+
+		require((block.timestamp < _buyOrder.expiration), 'This buy order is expired.');
+
+		IERC721 erc721 = IERC721(_tokenContractAddress);
+
+		require((erc721.ownerOf(_tokenId) == _buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
+
+		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
+		emit BuyOrderUpdated(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
+	}
+
+	/// @param _buyer Address of the user placing the BuyOrder.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _buyOrder Filled in BuyOrder to be compared to the stored one.
+	function _acceptBuyOrder(
+		address payable _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		BuyOrder memory _buyOrder
+	) internal {
+		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+
+		if (!_compareBuyOrders(_buyOrder, buyOrder)) {
+			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			revert("Passed buy order data doesn't equal stored buy order data.");
+		}
+
+		if (!_tokenContractAddress.supportsInterface(InterfaceId_IERC721)) {
+			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			revert('IS_NOT_721_TOKEN');
+		}
+
+        if (!(block.timestamp < buyOrder.expiration)) {
+            _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+            revert('This buy order has expired.');
+        }
+
+		IERC721 erc721 = IERC721(_tokenContractAddress);
+
+		if (!(erc721.ownerOf(_tokenId) == buyOrder.owner)) {
+            _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			revert('The desired BuyOrder "owner" does not own this ERC721 token.');
+		}
+
+		if (!(erc721.getApproved(_tokenId) == address(this))) {
+            _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		}
+
+		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * buyOrder.offer) / 1000;
 		uint256 systemFeePayout = (_systemFeePerMille * buyOrder.offer) / 1000;
 		uint256 remainingPayout = buyOrder.offer - royaltyPayout - systemFeePayout;
 
 		if (royaltyPayout > 0) {
-			address payable royaltyPayoutAddress = collectionPayoutAddresses[tokenContractAddress];
-			WETH.transferFrom(buyer, royaltyPayoutAddress, royaltyPayout);
+			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
+			WETH.transferFrom(_buyer, royaltyPayoutAddress, royaltyPayout);
 		}
 
-		WETH.transferFrom(buyer, _systemFeeWallet, systemFeePayout);
-		WETH.transferFrom(buyer, buyOrder.owner, remainingPayout);
+		WETH.transferFrom(_buyer, _systemFeeWallet, systemFeePayout);
+		WETH.transferFrom(_buyer, buyOrder.owner, remainingPayout);
 
-		erc721.safeTransferFrom(buyOrder.owner, buyer, tokenId);
+		erc721.safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
 
-		// TODO: Evaluate the viability of this since even when the order gets fufilled it will emit that it got canceled. This might be a problem when building the subgraph.
-		_cancelBuyOrder(buyer, tokenContractAddress, tokenId);
-		emit BuyOrderAccepted(buyer, buyOrder.owner, tokenContractAddress, tokenId, buyOrder.offer);
+		_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+		emit BuyOrderAccepted(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer);
 	}
 
 	/// @notice Cancels a given BuyOrder and emits `BuyOrderCanceled`.
-	/// @param buyer Address of the buy order owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of the token being bought.
+	/// @param _buyer Address of the buy order owner.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
 	function _cancelBuyOrder(
-		address buyer,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) internal {
-		delete (buyOrders[_formOrderId(buyer, tokenContractAddress, tokenId)]);
+		delete (buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)]);
 
-		emit BuyOrderCanceled(buyer, tokenContractAddress, tokenId);
+		emit BuyOrderCanceled(_buyer, _tokenContractAddress, _tokenId);
 	}
 
 	/// @notice Forms the ID used in the orders mapping.
-	/// @param userAddress The creator of the SellOrder.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of ERC721 asset.
+	/// @param _userAddress The creator of the SellOrder.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of ERC721 asset.
 	/// @return The order ID composed of user address, contract address, and token ID (`{userAddress}-{tokenContractAddress}-{tokenId}`).
 	function _formOrderId(
-		address userAddress,
-		address tokenContractAddress,
-		uint256 tokenId
+		address _userAddress,
+		address _tokenContractAddress,
+		uint256 _tokenId
 	) internal pure returns (bytes memory) {
-		return abi.encodePacked(userAddress, '-', tokenContractAddress, '-', tokenId);
+		return abi.encodePacked(_userAddress, '-', _tokenContractAddress, '-', _tokenId);
 	}
 
 	/// @notice Hashes and compares 2 SellOrder instances to determine if they have the same parameters.
