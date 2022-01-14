@@ -14,6 +14,8 @@ import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
+import {SafeTransferLib} from '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
+
 /// @author Nejc Drobnič
 /// @dev Handles the creation and execution of sell orders as well as their storage.
 contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
@@ -537,15 +539,11 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 		if (royaltyPayout > 0) {
 			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
-			(bool royaltyPayoutSent, bytes memory royaltyPayoutData) = royaltyPayoutAddress.call{value: royaltyPayout}('');
-			require(royaltyPayoutSent, 'Failed to send ETH to collectiond royalties wallet.');
+            SafeTransferLib.safeTransferETH(royaltyPayoutAddress, royaltyPayout);
 		}
 
-		(bool systemFeeSent, bytes memory systemFeeData) = _systemFeeWallet.call{value: systemFeePayout}('');
-		require(systemFeeSent, 'Failed to send ETH to system fee wallet.');
-
-		(bool sellerSent, bytes memory sellerData) = _seller.call{value: remainingPayout}('');
-		require(sellerSent, 'Failed to send ETH to seller.');
+        SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
+        SafeTransferLib.safeTransferETH(_seller, remainingPayout);
 
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
