@@ -803,6 +803,6 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 	/// @return The current exchange version.
 	function version() external pure virtual returns (string memory) {
-		return 'v1.0.2';
+		return 'v1.0.3';
 	}
 }
