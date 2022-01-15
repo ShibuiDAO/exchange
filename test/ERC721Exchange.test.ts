@@ -72,9 +72,9 @@ describe('ERC721Exchange', () => {
 					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
 
 					await contractERC721.mintNext(account.address);
-					await expect(contractERC721.approve(contract.address, 1))
-						.to.emit(contractERC721, 'Approval')
-						.withArgs(account.address, contract.address, 1);
+					await expect(contractERC721.setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(account.address, contract.address, true);
 
 					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
 						.to.emit(contract, 'SellOrderBooked')
@@ -94,9 +94,9 @@ describe('ERC721Exchange', () => {
 					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
 
 					await contractERC721.mintNext(account.address);
-					await expect(contractERC721.approve(contract.address, 1))
-						.to.emit(contractERC721, 'Approval')
-						.withArgs(account.address, contract.address, 1);
+					await expect(contractERC721.setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(account.address, contract.address, true);
 
 					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
 						.to.emit(contract, 'SellOrderBooked')
@@ -125,9 +125,9 @@ describe('ERC721Exchange', () => {
 					const royaltyFee = BigNumber.from(150);
 
 					await contractERC721.mintNext(account.address);
-					await expect(contractERC721.approve(contract.address, 1))
-						.to.emit(contractERC721, 'Approval')
-						.withArgs(account.address, contract.address, 1);
+					await expect(contractERC721.setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(account.address, contract.address, true);
 
 					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
 						.to.emit(contract, 'SellOrderBooked')
@@ -173,9 +173,9 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, contract.address, offer);
 
 					await contractERC721.mintNext(seller.address);
-					await expect(contractERC721.connect(seller).approve(contract.address, 1))
-						.to.emit(contractERC721, 'Approval')
-						.withArgs(seller.address, contract.address, 1);
+					await expect(contractERC721.connect(seller).setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(seller.address, contract.address, true);
 
 					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderBooked')
@@ -203,9 +203,9 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, contract.address, offer);
 
 					await contractERC721.mintNext(seller.address);
-					await expect(contractERC721.connect(seller).approve(contract.address, 1))
-						.to.emit(contractERC721, 'Approval')
-						.withArgs(seller.address, contract.address, 1);
+					await expect(contractERC721.connect(seller).setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(seller.address, contract.address, true);
 
 					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderBooked')
@@ -242,9 +242,9 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, contract.address, offer);
 
 					await contractERC721.mintNext(seller.address);
-					await expect(contractERC721.connect(seller).approve(contract.address, 1))
-						.to.emit(contractERC721, 'Approval')
-						.withArgs(seller.address, contract.address, 1);
+					await expect(contractERC721.connect(seller).setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(seller.address, contract.address, true);
 
 					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderBooked')

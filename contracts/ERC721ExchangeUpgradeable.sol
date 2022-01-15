@@ -460,7 +460,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 		require((erc721.ownerOf(_tokenId) == _seller), 'The seller does not own this ERC721 token.');
 
-		require(erc721.getApproved(_tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		require(erc721.isApprovedForAll(_seller, address(this)), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
@@ -486,7 +486,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 
 		require((erc721.ownerOf(_tokenId) == _seller), 'The seller does not own this ERC721 token.');
 
-		require(erc721.getApproved(_tokenId) == address(this), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		require(erc721.isApprovedForAll(_seller, address(this)), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderUpdated(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
@@ -528,7 +528,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 			revert('The seller does not own this ERC721 token.');
 		}
 
-		if (!(erc721.getApproved(_tokenId) == address(this))) {
+		if (!erc721.isApprovedForAll(_seller, address(this))) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
 		}
@@ -647,7 +647,7 @@ contract ERC721ExchangeUpgradeable is Initializable, ContextUpgradeable, Ownable
 			revert('The desired BuyOrder "owner" does not own this ERC721 token.');
 		}
 
-		if (!(erc721.getApproved(_tokenId) == address(this))) {
+		if (!erc721.isApprovedForAll(buyOrder.owner, address(this))) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
 		}
