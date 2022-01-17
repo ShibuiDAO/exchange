@@ -3,7 +3,7 @@ export DAPP_REMAPPINGS=$(cat remappings.txt)
 export DAPP_SRC=src
 # export DAPP_TEST_COV_MATCH=""
 
-export DAPP_SOLC_VERSION=0.8.6
+export DAPP_SOLC_VERSION=0.8.2
 # If you're getting an "invalid character at offset" error, comment this out.
 # export DAPP_LINK_TEST_LIBRARIES=0
 export DAPP_TEST_VERBOSITY=2
