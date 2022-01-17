@@ -8,34 +8,30 @@ import '@typechain/hardhat';
 import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
 import 'hardhat-tracer';
-import type { HardhatUserConfig } from 'hardhat/config';
+import { HardhatUserConfig, task } from 'hardhat/config';
 import 'solidity-coverage';
-import { alchemyRinkebyEthKey, coinMarketCapApi, testnetPrivateKey } from './config';
+import { coinMarketCapApi } from './config';
+import { networks } from './hardhat.networks';
+
+task('accounts', 'Prints the list of accounts', async (_, hre) => {
+	const accounts = await hre.ethers.getSigners();
+
+	for (const account of accounts) {
+		console.log(account.address);
+	}
+});
 
 const config: HardhatUserConfig = {
 	solidity: {
-		version: '0.8.2',
+		version: '0.8.6',
 		settings: {
 			optimizer: {
 				enabled: true
 			}
 		}
 	},
-	defaultNetwork: 'hardhat',
-	networks: {
-		hardhat: {},
-		rinkey: {
-			url: `https://eth-rinkeby.alchemyapi.io/v2/${alchemyRinkebyEthKey}`,
-			accounts: [testnetPrivateKey]
-		},
-		bobaRinkeby: {
-			url: 'https://rinkeby.boba.network/',
-			accounts: [testnetPrivateKey]
-		}
-	},
-	// etherscan: {
-	// 	apiKey: etherscanApi
-	// },
+	defaultNetwork: 'localh',
+	networks,
 	abiExporter: {
 		path: './abis',
 		runOnCompile: true,
@@ -49,10 +45,6 @@ const config: HardhatUserConfig = {
 		currency: 'EUR',
 		gasPrice: 10,
 		coinmarketcap: coinMarketCapApi
-	},
-	dodoc: {
-		runOnCompile: true,
-		testMode: true
 	}
 };
 

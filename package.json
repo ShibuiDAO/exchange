@@ -5,6 +5,11 @@
   "author": "Nejc Drobnic <yo@quantumly.eth>",
   "license": "BSD-3-Clause",
   "private": true,
+  "scripts": {
+    "node:hardhat": "hardhat node",
+    "node:dapp": "dapp testnet",
+    "test:localh:hardhat": "hardhat test --network localh"
+  },
   "dependencies": {},
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",

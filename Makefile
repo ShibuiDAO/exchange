@@ -1,0 +1,2 @@
+
+testnet :; yarn node:hardhat
