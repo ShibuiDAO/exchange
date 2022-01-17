@@ -6,14 +6,15 @@
   "license": "BSD-3-Clause",
   "private": true,
   "scripts": {
-    "suite": "concurrently 'yarn node:hardhat' 'yarn suite:_init'",
+    "suite": "concurrently -n node,tests --hide 0 'npm:node:hardhat' 'npm:suite:_init'",
     "suite:_init": "yarn compile:localh:hardhat && yarn node:_delay && yarn test:localh:_init",
     "node:hardhat": "hardhat node",
     "node:dapp": "dapp testnet",
     "node:_delay": "sleep 5",
     "compile:localh:hardhat": "hardhat compile --network localh",
-    "test:localh:_init": "yarn test:localh:hardhat",
-    "test:localh:hardhat": "hardhat test --network localh"
+    "test:localh:_init": "yarn test:localh:hardhat && yarn test:localh:hardhat:deploy",
+    "test:localh:hardhat": "hardhat test --network localh",
+    "test:localh:hardhat:deploy": "hardhat run ./scripts/tests/proxyDeploy.ts --network localh"
   },
   "dependencies": {},
   "devDependencies": {

@@ -7,7 +7,7 @@
       "hash": "0x930fc6d4588be3f5bbf7473d92b6c79930b3a90e9c6e3f2284954d8ded2ce983",
       "type": 2,
       "accessList": [],
-      "blockHash": "0x9f2cc3c43165f258b2ad8113412239a35fd8f59766eacb54c446ea7e4db7f694",
+      "blockHash": "0xffa74c5dec2cc5d6299b34ecf6e17390b9fab2a46a4bf8f0591bd57ceaac2cdd",
       "blockNumber": 3,
       "transactionIndex": 0,
       "confirmations": 1,
@@ -43,6 +43,11 @@
     }
   },
   "proxies": [
+    {
+      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "txHash": "0x91d1327fc8de4a4e19ad7bcf6dc1ae6720e9d6ac5211e03ef27bd351cb835663",
+      "kind": "transparent"
+    },
     {
       "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       "txHash": "0x6a128690618f3358540e87fcd54af7184644cf56201373aef1c5cd36b31ee98b",
@@ -97,12 +102,17 @@
       "address": "0x1429859428C0aBc9C2C47C8Ee9FBaf82cFA0F20f",
       "txHash": "0x5e5ac3200badf1148263d27e0bd18b90f0cc25d471312ddd0d6471c7199417bc",
       "kind": "transparent"
+    },
+    {
+      "address": "0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d",
+      "txHash": "0x9dcc00fb346a9edbbf9379fda87c5ce184a143ba38b93ecb6b7ae3bf9cbb0438",
+      "kind": "transparent"
     }
   ],
   "impls": {
     "682ae9ef6c8fcdd696f066a5f437e53152e79223e2911992dfeec192553e12d9": {
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "txHash": "0x2808ca1172fcba7dbba05a61ba2660b4dd6d12f9a464255d394e755fafe04cb9",
+      "txHash": "0x4c079022f1facdd7746ffced5fee7b972473527b7ea2a31447ec830db1738d4f",
       "layout": {
         "storage": [
           {
@@ -163,49 +173,49 @@
             "contract": "ERC721ExchangeUpgradeable",
             "label": "WETH",
             "type": "t_contract(IERC20)1056",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:32"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:41"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:150"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:48"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:153"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:51"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:160"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:58"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:163"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:61"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:166"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:64"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "sellOrders",
-            "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)3754_storage)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:173"
+            "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5371_storage)",
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:71"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "buyOrders",
-            "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)3761_storage)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:176"
+            "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5378_storage)",
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:74"
           }
         ],
         "types": {
@@ -227,14 +237,14 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)3754_storage)": {
-            "label": "mapping(bytes => struct ERC721ExchangeUpgradeable.SellOrder)"
+          "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5371_storage)": {
+            "label": "mapping(bytes => struct IExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
-          "t_struct(SellOrder)3754_storage": {
-            "label": "struct ERC721ExchangeUpgradeable.SellOrder",
+          "t_struct(SellOrder)5371_storage": {
+            "label": "struct IExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -246,11 +256,11 @@
               }
             ]
           },
-          "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)3761_storage)": {
-            "label": "mapping(bytes => struct ERC721ExchangeUpgradeable.BuyOrder)"
+          "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5378_storage)": {
+            "label": "mapping(bytes => struct IExchange.BuyOrder)"
           },
-          "t_struct(BuyOrder)3761_storage": {
-            "label": "struct ERC721ExchangeUpgradeable.BuyOrder",
+          "t_struct(BuyOrder)5378_storage": {
+            "label": "struct IExchange.BuyOrder",
             "members": [
               {
                 "label": "owner",
@@ -280,7 +290,7 @@
     },
     "2b09128c65c501f8700150d46dfad69ea1b15facb26fd6b98f50a374cbaf7e74": {
       "address": "0x162A433068F51e18b7d13932F27e66a3f99E6890",
-      "txHash": "0x39d3574d415a574004f83314c5573698ca43146055f5d298f9e48bf48f926a76",
+      "txHash": "0xc1728dd236bc6d8b01cb81ba097e566054c7c9098eae4aebd70d85325bd8d43c",
       "layout": {
         "storage": [
           {
@@ -341,49 +351,49 @@
             "contract": "ERC721ExchangeUpgradeable",
             "label": "WETH",
             "type": "t_contract(IERC20)1056",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:32"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:41"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:150"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:48"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:153"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:51"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:160"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:58"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:163"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:61"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:166"
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:64"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "sellOrders",
-            "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)3754_storage)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:173"
+            "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5371_storage)",
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:71"
           },
           {
             "contract": "ERC721ExchangeUpgradeable",
             "label": "buyOrders",
-            "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)3761_storage)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:176"
+            "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5378_storage)",
+            "src": "contracts/ERC721ExchangeUpgradeable.sol:74"
           }
         ],
         "types": {
@@ -405,14 +415,14 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)3754_storage)": {
-            "label": "mapping(bytes => struct ERC721ExchangeUpgradeable.SellOrder)"
+          "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5371_storage)": {
+            "label": "mapping(bytes => struct IExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
-          "t_struct(SellOrder)3754_storage": {
-            "label": "struct ERC721ExchangeUpgradeable.SellOrder",
+          "t_struct(SellOrder)5371_storage": {
+            "label": "struct IExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -424,11 +434,11 @@
               }
             ]
           },
-          "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)3761_storage)": {
-            "label": "mapping(bytes => struct ERC721ExchangeUpgradeable.BuyOrder)"
+          "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5378_storage)": {
+            "label": "mapping(bytes => struct IExchange.BuyOrder)"
           },
-          "t_struct(BuyOrder)3761_storage": {
-            "label": "struct ERC721ExchangeUpgradeable.BuyOrder",
+          "t_struct(BuyOrder)5378_storage": {
+            "label": "struct IExchange.BuyOrder",
             "members": [
               {
                 "label": "owner",
