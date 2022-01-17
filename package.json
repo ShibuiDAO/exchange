@@ -6,15 +6,17 @@
   "license": "BSD-3-Clause",
   "private": true,
   "scripts": {
-    "suite": "concurrently -n node,tests --hide 0 'npm:node:hardhat' 'npm:suite:_init'",
-    "suite:_init": "yarn compile:localh:hardhat && yarn node:_delay && yarn test:localh:_init",
+    "suite": "concurrently -n node,tests --hide 0 --kill-others-on-fail 'npm:node:hardhat' 'npm:suite:_init'",
+    "suite:_init": "yarn compile:localh:hardhat && yarn node:_delay && yarn test:localh:_init && yarn suite:_end",
+    "suite:_end": "node -e \"process.exit(-1)\"",
     "node:hardhat": "hardhat node",
     "node:dapp": "dapp testnet",
     "node:_delay": "sleep 5",
     "compile:localh:hardhat": "hardhat compile --network localh",
-    "test:localh:_init": "yarn test:localh:hardhat && yarn test:localh:hardhat:deploy",
+    "test:localh:_init": "yarn test:localh:hardhat && yarn test:localh:hardhat:deploy && yarn test:localh:dapp",
     "test:localh:hardhat": "hardhat test --network localh",
-    "test:localh:hardhat:deploy": "hardhat run ./scripts/tests/proxyDeploy.ts --network localh"
+    "test:localh:hardhat:deploy": "hardhat run ./scripts/tests/proxyDeploy.ts --network localh",
+    "test:localh:dapp": "dapp test --ffi --rpc"
   },
   "dependencies": {},
   "devDependencies": {

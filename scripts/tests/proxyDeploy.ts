@@ -31,7 +31,7 @@ async function main() {
 	);
 
 	mkdirSync(shibuiMetaDirectory, { recursive: true });
-	writeFileSync(join(shibuiMetaDirectory, 'deployments'), defaultAbiCoder.encode(['address', 'address'], [WETH.address, ERC721Exchange.address]), {
+	writeFileSync(join(shibuiMetaDirectory, 'deployments'), defaultAbiCoder.encode(['address'], [ERC721Exchange.address]), {
 		flag: 'w'
 	});
 }

@@ -21,7 +21,7 @@ interface IHvm {
 		);
 
 	/// @dev Derives an ethereum address from the private key sk. Note that hevm.addr(0) will fail with BadCheatCode as 0 is an invalid ECDSA private key.
-	function addr(uint256 sk) external returns (address addr);
+	function addr(uint256 sk) external returns (address _addr);
 
 	/// @dev Executes the arguments as a command in the system shell and returns stdout. Expects abi encoded values to be returned from the shell or an error will be thrown. Note that this cheatcode means test authors can execute arbitrary code on user machines as part of a call to dapp test, for this reason all calls to ffi will fail unless the --ffi flag is passed.
 	function ffi(string[] calldata) external returns (bytes memory);

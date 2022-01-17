@@ -157,7 +157,7 @@ interface IExchange {
 		address __wethAddress
 	) external;
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                    PUBLIC SELL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
@@ -172,7 +172,7 @@ interface IExchange {
 		uint256 _price
 	) external;
 
-    /// @notice Updates/overwrites existing SellOrder.
+	/// @notice Updates/overwrites existing SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
@@ -184,7 +184,7 @@ interface IExchange {
 		uint256 _price
 	) external;
 
-    /// @param _seller The seller address of the desired SellOrder.
+	/// @param _seller The seller address of the desired SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
@@ -199,13 +199,13 @@ interface IExchange {
 		address payable _recipient
 	) external payable;
 
-    /// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
+	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
 	/// @notice Can only be executed by the listed SellOrder seller.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external;
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                         INFORMATIVE FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 

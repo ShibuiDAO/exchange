@@ -3,4 +3,4 @@ pragma solidity ^0.8.2;
 
 import {WETH} from '@rari-capital/solmate/src/tokens/WETH.sol';
 
-contract WETHMock is WETH { }
+contract WETHMock is WETH {}
