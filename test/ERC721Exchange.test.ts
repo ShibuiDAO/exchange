@@ -29,10 +29,10 @@ describe('ERC721Exchange', () => {
 
 	describe('base v1', () => {
 		describe('initialization', () => {
-			it('version should equal v1.0.2', async () => {
+			it('version should equal v1.0.3', async () => {
 				const version = await contract.version();
 
-				expect(version).to.equal('v1.0.2');
+				expect(version).to.equal('v1.0.3');
 			});
 
 			it('should set sender as owner', async () => {
@@ -276,6 +276,7 @@ describe('ERC721Exchange', () => {
 	describe('upgraded v2 mock', () => {
 		describe('upgradeability', () => {
 			it('should upgrade and check version', async () => {
+				const currentVersion = await contract.version();
 				const ERC721ExchangeUpgradeableUpgradedContract = await ethers.getContractFactory('ERC721ExchangeUpgradeableUpgraded');
 				const contractUpgraded = (await upgrades.upgradeProxy(
 					contract.address,
@@ -285,7 +286,10 @@ describe('ERC721Exchange', () => {
 
 				const version = await contractUpgraded.version();
 
-				expect(version).to.equal('v1.0.3');
+				const [major, minor, patch] = currentVersion.split('.');
+				const newVerion = [major, minor, Number(patch) + 1].join('.');
+
+				expect(version).to.equal(newVerion);
 			});
 		});
 	});
