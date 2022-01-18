@@ -21,17 +21,33 @@ async function main() {
 
 	await ERC721Exchange.deployed();
 
+	const ERC721ExchangeUpgrades = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, WETH.address], {
+		initializer: '__ERC721Exchange_init',
+		kind: 'transparent'
+	})) as ERC721ExchangeUpgradeable;
+
+	await ERC721ExchangeUpgrades.deployed();
+
+	const ERC721ExchangeUpgradedContract = await ethers.getContractFactory('ERC721ExchangeUpgradeableUpgraded');
+	const ERC721ExchangeUpgradesUpgraded = (await upgrades.upgradeProxy(
+		ERC721ExchangeUpgrades.address,
+		ERC721ExchangeUpgradedContract
+	)) as ERC721ExchangeUpgradeable;
+
 	console.log(
 		[
 			`Joint testnet contracts: ` /**/,
 			` - "WETH" deployed to ${WETH.address}`,
-			` - "ERC721Exchange" deployed to ${ERC721Exchange.address}`,
+			` - "ERC721Exchange" (base) deployed to ${ERC721Exchange.address}`,
+			` - "ERC721Exchange" (upgraded) deployed to ${ERC721ExchangeUpgradesUpgraded.address}`,
 			` - Deployer address is ${deployer.address}`
 		].join('\n')
 	);
 
+	const encodedData = defaultAbiCoder.encode(['address', 'address'], [ERC721Exchange.address, ERC721ExchangeUpgradesUpgraded.address]);
+
 	mkdirSync(shibuiMetaDirectory, { recursive: true });
-	writeFileSync(join(shibuiMetaDirectory, 'deployments'), defaultAbiCoder.encode(['address'], [ERC721Exchange.address]), {
+	writeFileSync(join(shibuiMetaDirectory, 'deployments'), encodedData, {
 		flag: 'w'
 	});
 }
