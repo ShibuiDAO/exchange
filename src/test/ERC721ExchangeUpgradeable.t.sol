@@ -23,7 +23,7 @@ contract ERC721ExchangeUpgradeableTest is DSTest {
 		erc721ExchangeUpgraded = IExchange(_erc721exchangeUpgeaded);
 	}
 
-	function test_deployment_version() public {
+	function testDeploymentVersion() public {
         (uint256 major, uint256 minor, uint256 patch) = abi.decode(erc721Exchange.version(), (uint256, uint256, uint256));
 
         assertEq(major, 1);
@@ -31,7 +31,7 @@ contract ERC721ExchangeUpgradeableTest is DSTest {
         assertEq(patch, 3);
 	}
 
-	function test_deployment_upgrade_version() public {
+	function testDeploymentUpgradeVersion() public {
         (uint256 _major, uint256 _minor, uint256 _patch) = abi.decode(erc721Exchange.version(), (uint256, uint256, uint256));
         (uint256 major, uint256 minor, uint256 patch) = abi.decode(erc721ExchangeUpgraded.version(), (uint256, uint256, uint256));
 
