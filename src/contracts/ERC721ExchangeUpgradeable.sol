@@ -17,6 +17,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import {SafeTransferLib} from '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
+import {ExchangeOrderComparisonLib} from './libraries/ExchangeOrderComparisonLib.sol';
 
 /// @author Nejc Drobnič
 /// @dev Handles the creation and execution of sell orders as well as their storage.
@@ -379,7 +380,7 @@ contract ERC721ExchangeUpgradeable is
 	) internal {
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
-		if (!_compareSellOrders(sellOrder, _sellOrder)) {
+		if (!ExchangeOrderComparisonLib.compareSellOrders(sellOrder, _sellOrder)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert("Passed sell order data doesn't equal stored sell order data.");
 		}
@@ -498,7 +499,7 @@ contract ERC721ExchangeUpgradeable is
 	) internal {
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
-		if (!_compareBuyOrders(_buyOrder, buyOrder)) {
+		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert("Passed buy order data doesn't equal stored buy order data.");
 		}
@@ -568,22 +569,6 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId
 	) internal pure returns (bytes memory) {
 		return abi.encodePacked(_userAddress, '-', _tokenContractAddress, '-', _tokenId);
-	}
-
-	/// @notice Hashes and compares 2 SellOrder instances to determine if they have the same parameters.
-	/// @param _left SellOrder instance to be hashed and compared on the left side of the operator.
-	/// @param _right SellOrder instance to be hashed and compared on the right side of the operator.
-	/// @return A boolean value indication if the 2 SellOrder instances match.
-	function _compareSellOrders(SellOrder memory _left, SellOrder memory _right) internal pure returns (bool) {
-		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
-	}
-
-	/// @notice Hashes and compares 2 BuyOrder instances to determine if they have the same parameters.
-	/// @param _left BuyOrder instance to be hashed and compared on the left side of the operator.
-	/// @param _right BuyOrder instance to be hashed and compared on the right side of the operator.
-	/// @return A boolean value indication if the 2 BuyOrder instances match.
-	function _compareBuyOrders(BuyOrder memory _left, BuyOrder memory _right) internal pure returns (bool) {
-		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
 	}
 
 	/*///////////////////////////////////////////////////////////////
