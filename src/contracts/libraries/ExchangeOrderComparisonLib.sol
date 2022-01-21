@@ -1,7 +1,7 @@
 pragma solidity ^0.8.2;
 pragma abicoder v2;
 
-import {IExchange} from '../interfaces/IExchange.sol';
+import {IExchange} from "../interfaces/IExchange.sol";
 
 library ExchangeOrderComparisonLib {
 	/// @notice Hashes and compares 2 SellOrder instances to determine if they have the same parameters.

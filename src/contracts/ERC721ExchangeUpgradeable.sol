@@ -2,22 +2,22 @@
 pragma solidity ^0.8.2;
 pragma abicoder v2;
 
-import {IExchange} from './interfaces/IExchange.sol';
+import {IExchange} from "./interfaces/IExchange.sol";
 
-import {Initializable} from '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import {ContextUpgradeable} from '@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol';
-import {OwnableUpgradeable} from '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
-import {PausableUpgradeable} from '@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol';
-import {ReentrancyGuardUpgradeable} from '@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol';
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import {ERC165CheckerUpgradeable} from '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol';
+import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {SafeTransferLib} from '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
-import {ExchangeOrderComparisonLib} from './libraries/ExchangeOrderComparisonLib.sol';
+import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
 /// @author Nejc Drobnič
 /// @dev Handles the creation and execution of sell orders as well as their storage.
@@ -159,7 +159,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external override whenNotPaused {
-		require(sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId), 'This sell order does not exist.');
+		require(sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId), "This sell order does not exist.");
 
 		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
@@ -183,7 +183,7 @@ contract ERC721ExchangeUpgradeable is
 	) external whenNotPaused {
 		require(
 			WETH.allowance(_msgSender(), address(this)) >= _offer,
-			'The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH.'
+			"The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH."
 		);
 
 		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
@@ -206,7 +206,7 @@ contract ERC721ExchangeUpgradeable is
 	) external whenNotPaused {
 		require(
 			WETH.allowance(_msgSender(), address(this)) >= _offer,
-			'The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH.'
+			"The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH."
 		);
 
 		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
@@ -223,7 +223,7 @@ contract ERC721ExchangeUpgradeable is
 	) external whenNotPaused {
 		require(
 			WETH.allowance(_bidder, address(this)) >= _offer,
-			'The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH.'
+			"The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH."
 		);
 
 		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _expiration, _offer);
@@ -235,7 +235,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
 	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external whenNotPaused {
-		require(buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId), 'This buy order does not exist.');
+		require(buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId), "This buy order does not exist.");
 
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
@@ -254,7 +254,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (SellOrder memory) {
-		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), 'This sell order does not exist.');
+		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This sell order does not exist.");
 
 		return sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
 	}
@@ -289,7 +289,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (BuyOrder memory) {
-		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), 'This buy order does not exist.');
+		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This buy order does not exist.");
 
 		return buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
 	}
@@ -324,17 +324,17 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) internal {
-		require(!sellOrderExists(_seller, _tokenContractAddress, _tokenId), 'This order already exists.');
+		require(!sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This order already exists.");
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
 
-		require((block.timestamp < _sellOrder.expiration), 'This sell order is expired.');
+		require((block.timestamp < _sellOrder.expiration), "This sell order is expired.");
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(_tokenId) == _seller), 'The seller does not own this ERC721 token.');
+		require((erc721.ownerOf(_tokenId) == _seller), "The seller does not own this ERC721 token.");
 
-		require(erc721.isApprovedForAll(_seller, address(this)), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		require(erc721.isApprovedForAll(_seller, address(this)), "The ERC721Exchange contract is not approved to operate this ERC721 token.");
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
@@ -352,15 +352,15 @@ contract ERC721ExchangeUpgradeable is
 	) internal {
 		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This order doesn't exists.");
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
 
-		require((block.timestamp < _sellOrder.expiration), 'This sell order is expired.');
+		require((block.timestamp < _sellOrder.expiration), "This sell order is expired.");
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(_tokenId) == _seller), 'The seller does not own this ERC721 token.');
+		require((erc721.ownerOf(_tokenId) == _seller), "The seller does not own this ERC721 token.");
 
-		require(erc721.isApprovedForAll(_seller, address(this)), 'The ERC721Exchange contract is not approved to operate this ERC721 token.');
+		require(erc721.isApprovedForAll(_seller, address(this)), "The ERC721Exchange contract is not approved to operate this ERC721 token.");
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderUpdated(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
@@ -387,24 +387,24 @@ contract ERC721ExchangeUpgradeable is
 
 		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert('IS_NOT_721_TOKEN');
+			revert("IS_NOT_721_TOKEN");
 		}
 
 		if (!(block.timestamp < sellOrder.expiration)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert('This sell order is expired.');
+			revert("This sell order is expired.");
 		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
 		if (!(erc721.ownerOf(_tokenId) == _seller)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert('The seller does not own this ERC721 token.');
+			revert("The seller does not own this ERC721 token.");
 		}
 
 		if (!erc721.isApprovedForAll(_seller, address(this))) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
+			revert("The ERC721Exchange contract is not approved to operate this ERC721 token.");
 		}
 
 		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * msg.value) / 1000;
@@ -449,11 +449,11 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) internal {
-		require(!buyOrderExists(_buyer, _tokenContractAddress, _tokenId), 'This order already exists.');
+		require(!buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This order already exists.");
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
 
-		require((block.timestamp < _buyOrder.expiration), 'This sell order is expired.');
+		require((block.timestamp < _buyOrder.expiration), "This sell order is expired.");
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
@@ -475,9 +475,9 @@ contract ERC721ExchangeUpgradeable is
 	) internal {
 		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This order doesn't exists.");
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
 
-		require((block.timestamp < _buyOrder.expiration), 'This buy order is expired.');
+		require((block.timestamp < _buyOrder.expiration), "This buy order is expired.");
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
@@ -506,12 +506,12 @@ contract ERC721ExchangeUpgradeable is
 
 		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert('IS_NOT_721_TOKEN');
+			revert("IS_NOT_721_TOKEN");
 		}
 
 		if (!(block.timestamp < buyOrder.expiration)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert('This buy order has expired.');
+			revert("This buy order has expired.");
 		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
@@ -523,7 +523,7 @@ contract ERC721ExchangeUpgradeable is
 
 		if (!erc721.isApprovedForAll(buyOrder.owner, address(this))) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert('The ERC721Exchange contract is not approved to operate this ERC721 token.');
+			revert("The ERC721Exchange contract is not approved to operate this ERC721 token.");
 		}
 
 		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * buyOrder.offer) / 1000;
@@ -568,7 +568,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal pure returns (bytes memory) {
-		return abi.encodePacked(_userAddress, '-', _tokenContractAddress, '-', _tokenId);
+		return abi.encodePacked(_userAddress, "-", _tokenContractAddress, "-", _tokenId);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -586,13 +586,13 @@ contract ERC721ExchangeUpgradeable is
 	) external {
 		require(
 			(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille),
-			string(abi.encodePacked('Royalty must be between 0 and ', _maxRoyaltyPerMille / 10, '%'))
+			string(abi.encodePacked("Royalty must be between 0 and ", _maxRoyaltyPerMille / 10, "%"))
 		);
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), 'IS_NOT_721_TOKEN');
+		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
 
 		if (!(_msgSender() == owner())) {
 			Ownable ownableNFTContract = Ownable(_tokenContractAddress);
-			require(_msgSender() == ownableNFTContract.owner(), 'ADDRESS_NOT_AUTHORIZED');
+			require(_msgSender() == ownableNFTContract.owner(), "ADDRESS_NOT_AUTHORIZED");
 		}
 
 		emit CollectionRoyaltyPayoutAddressUpdated(
@@ -661,9 +661,9 @@ contract ERC721ExchangeUpgradeable is
 
 	/// @return The current exchange version.
 	function version() external pure virtual override returns (bytes memory) {
-        uint256 major = 1;
-        uint256 minor = 0;
-        uint256 patch = 3;
+		uint256 major = 1;
+		uint256 minor = 0;
+		uint256 patch = 3;
 		return abi.encode(major, minor, patch);
 	}
 }
