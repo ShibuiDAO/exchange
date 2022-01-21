@@ -210,5 +210,5 @@ interface IExchange {
     //////////////////////////////////////////////////////////////*/
 
 	/// @return The current exchange version.
-	function version() external returns (string memory);
+	function version() external returns (bytes memory);
 }

@@ -945,9 +945,9 @@
     "name": "version",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "bytes",
         "name": "",
-        "type": "string"
+        "type": "bytes"
       }
     ],
     "stateMutability": "pure",
