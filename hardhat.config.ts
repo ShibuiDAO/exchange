@@ -10,7 +10,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-tracer';
 import { HardhatUserConfig, task } from 'hardhat/config';
 import 'solidity-coverage';
-import { coinMarketCapApi } from './config';
+import { coinMarketCapApi } from './config.hardhat';
 import { networks } from './hardhat.networks';
 
 task('accounts', 'Prints the list of accounts', async (_, hre) => {

@@ -1,5 +1,5 @@
 import { ethers, upgrades } from 'hardhat';
-import { WETHAddress } from '../constants';
+import { WETHAddress } from '../constants.hardhat';
 import type { ERC721ExchangeUpgradeable } from '../typechain';
 
 async function main() {
