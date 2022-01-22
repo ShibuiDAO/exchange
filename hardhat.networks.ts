@@ -1,5 +1,5 @@
 import type { NetworksUserConfig } from 'hardhat/types';
-import { alchemyRinkebyEthKey, testnetPrivateKey } from './config';
+import { alchemyRinkebyEthKey, testnetPrivateKey } from './config.hardhat';
 
 export const networks: NetworksUserConfig = {
 	hardhat: {},

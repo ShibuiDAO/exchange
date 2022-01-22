@@ -1,0 +1,138 @@
+name: Continuous Deployment
+
+on:
+  workflow_dispatch:
+    inputs: {}
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/continuous-deployment.yml'
+      - 'src/**'
+      - '.dapprc'
+      - 'remappings.txt'
+      - '**.hardhat.ts'
+      - 'README.md'
+      - 'package.json'
+
+jobs:
+  GenerateArtifacts:
+    name: Generate Typechain typings and contract ABIs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Restore CI Cache
+        uses: actions/cache@v2.1.5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
+      - name: Restore CI Cache
+        uses: actions/cache@v2.1.5
+        id: cache-restore
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
+      - name: Install Dependencies if Cache Miss
+        if: ${{ !steps.cache-restore.outputs.cache-hit }}
+        run: yarn --frozen-lockfile
+      - name: Generate GraphQL Schema code
+        run: |
+          if ! yarn typechain; then
+            retVal=$?
+            if [ $retVal -ne 69 ]; then
+              exit $retVal
+            fi
+          fi
+      - name: Upload typescript bundle to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: typescript_bundle
+          path: generated/ts/
+          if-no-files-found: error
+
+  GithubPublish:
+    name: Publishing release to Github
+    runs-on: ubuntu-latest
+    needs: [GenerateArtifacts]
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js v16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Restore CI Cache
+        uses: actions/cache@v2.1.5
+        id: cache-restore
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
+      - name: Install Dependencies if Cache Miss
+        if: ${{ !steps.cache-restore.outputs.cache-hit }}
+        run: yarn --frozen-lockfile
+      - name: Configure Git
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Bump semver
+        run: yarn sversion
+      - name: Store bumped package.json
+        uses: actions/upload-artifact@v2
+        with:
+          name: package_bundle
+          path: package.json
+          if-no-files-found: error
+      - name: Store bumped changelog.md
+        uses: actions/upload-artifact@v2
+        with:
+          name: changelog_bundle
+          path: CHANGELOG.md
+          if-no-files-found: error
+      - name: Push changes
+        run: git push --follow-tags origin main
+
+  NPMPublish:
+    name: Publishing release to NPM
+    runs-on: ubuntu-latest
+    needs: [GithubPublish]
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - name: Setup Node for publishing to Github
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          registry-url: 'https://registry.npmjs.org'
+      - name: Download generated typings artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: typescript_bundle
+          path: generated/ts/
+      - name: Download stored package.json
+        uses: actions/download-artifact@v2
+        with:
+          name: package_bundle
+      - name: Download stored changelog.md
+        uses: actions/download-artifact@v2
+        with:
+          name: changelog_bundle
+      - name: Restore CI Cache
+        uses: actions/cache@v2.1.5
+        id: cache-restore
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
+      - name: Install Dependencies if Cache Miss
+        if: ${{ !steps.cache-restore.outputs.cache-hit }}
+        run: yarn --frozen-lockfile
+      - name: Publish to Github
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
