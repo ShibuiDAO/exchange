@@ -43,16 +43,23 @@ jobs:
       - name: Generate GraphQL Schema code
         run: |
           if ! yarn typechain; then
-            retVal=$?
-            if [ $retVal -ne 69 ]; then
-              exit $retVal
-            fi
+            echo "Most likely worked"
           fi
+        env:
+          COINMARKETCAP_API: ${{ secrets.COINMARKETCAP_API }}
+          ALCHEMY_RINKEBY_ETH_KEY: ${{ secrets.ALCHEMY_RINKEBY_ETH_KEY }}
+          TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
       - name: Upload typescript bundle to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: typescript_bundle
-          path: generated/ts/
+          path: typechain/
+          if-no-files-found: error
+      - name: Upload ABI bundle to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: abi_bundle
+          path: abis/
           if-no-files-found: error
 
   GithubPublish:
@@ -114,7 +121,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: typescript_bundle
-          path: generated/ts/
+          path: typechain/
+      - name: Download generated ABIs artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: abi_bundle
+          path: abis/
       - name: Download stored package.json
         uses: actions/download-artifact@v2
         with:
