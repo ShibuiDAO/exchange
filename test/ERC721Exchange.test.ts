@@ -82,7 +82,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(account.address, contract.address, true);
 
-					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price))
 						.to.emit(contract, 'SellOrderBooked')
 						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
@@ -104,7 +104,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(account.address, contract.address, true);
 
-					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price))
 						.to.emit(contract, 'SellOrderBooked')
 						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
@@ -134,7 +134,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(account.address, contract.address, true);
 
-					await expect(contract.createSellOrder(contractERC721.address, 1, expiration, price))
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price))
 						.to.emit(contract, 'SellOrderBooked')
 						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
@@ -149,7 +149,7 @@ describe('ERC721Exchange', () => {
 					await expect(
 						contract
 							.connect(buyer)
-							.executeSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
+							.exerciseSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
 					)
 						.to.emit(contract, 'SellOrderExercised')
 						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price)
@@ -181,7 +181,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderBooked')
 						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
 
@@ -211,7 +211,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderBooked')
 						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
 
@@ -249,7 +249,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.createBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderBooked')
 						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
 
@@ -262,7 +262,7 @@ describe('ERC721Exchange', () => {
 					await contract.setSystemFeeWallet(maker.address);
 					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
 
-					await expect(contract.connect(seller).acceptBuyOrder(account.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.connect(seller).exerciseBuyOrder(account.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderExercised')
 						.withArgs(account.address, seller.address, contractERC721.address, 1, offer)
 						.and.to.emit(contract, 'BuyOrderCanceled')
