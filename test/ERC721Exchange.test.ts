@@ -151,7 +151,7 @@ describe('ERC721Exchange', () => {
 							.connect(buyer)
 							.executeSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
 					)
-						.to.emit(contract, 'SellOrderFufilled')
+						.to.emit(contract, 'SellOrderExercised')
 						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price)
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
@@ -263,7 +263,7 @@ describe('ERC721Exchange', () => {
 					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
 
 					await expect(contract.connect(seller).acceptBuyOrder(account.address, contractERC721.address, 1, expiration, offer))
-						.to.emit(contract, 'BuyOrderAccepted')
+						.to.emit(contract, 'BuyOrderExercised')
 						.withArgs(account.address, seller.address, contractERC721.address, 1, offer)
 						.and.to.emit(contract, 'BuyOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);

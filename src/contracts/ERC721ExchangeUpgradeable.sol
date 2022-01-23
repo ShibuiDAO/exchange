@@ -446,7 +446,7 @@ contract ERC721ExchangeUpgradeable is
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
 		_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-		emit SellOrderFufilled(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price);
+		emit SellOrderExercised(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price);
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
@@ -585,7 +585,7 @@ contract ERC721ExchangeUpgradeable is
 		erc721.safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
 
 		_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-		emit BuyOrderAccepted(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer);
+		emit BuyOrderExercised(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer);
 	}
 
 	/// @notice Cancels a given BuyOrder and emits `BuyOrderCanceled`.
