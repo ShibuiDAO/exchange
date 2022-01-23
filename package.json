@@ -18,6 +18,7 @@
 		"typechain": "concurrently -n node,types --hide 0 --kill-others-on-fail 'npm:node:hardhat' 'npm:typechain:_action'",
 		"typechain:_action": "yarn compile:localh:hardhat && yarn node:_delay && yarn typechain:_end",
 		"typechain:_end": "node -e \"process.exit(69)\"",
+		"compile": "yarn compile:localh:hardhat",
 		"compile:localh:hardhat": "hardhat compile --network localh",
 		"test:localh:_init": "yarn test:localh:hardhat && yarn test:localh:hardhat:deploy && yarn test:localh:dapp",
 		"test:localh:hardhat": "hardhat test --network localh",
