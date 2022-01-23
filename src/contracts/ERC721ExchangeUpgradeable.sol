@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.6;
 pragma abicoder v2;
 
 import {IExchange} from "./interfaces/IExchange.sol";
@@ -39,7 +39,7 @@ contract ERC721ExchangeUpgradeable is
 	bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
 
 	/// @dev Interface of the main canonical WETH deployment.
-	IERC20 private WETH;
+	IERC20 private wETH;
 
 	/*///////////////////////////////////////////////////////////////
                                  SYSTEM FEE
@@ -95,7 +95,7 @@ contract ERC721ExchangeUpgradeable is
 		_maxRoyaltyPerMille = __maxRoyaltyPerMille;
 		_systemFeePerMille = __systemFeePerMille;
 
-		WETH = IERC20(__wethAddress);
+		wETH = IERC20(__wethAddress);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -147,7 +147,9 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _price,
 		address payable _recipient
 	) external payable override whenNotPaused nonReentrant {
-		require(msg.value >= _price, "Your transaction doesn't have the required payment.");
+		if (msg.value < _price) {
+			revert PaymentMissing();
+		}
 
 		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
@@ -159,7 +161,9 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external override whenNotPaused {
-		require(sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId), "This sell order does not exist.");
+		if (!sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
 
 		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
@@ -181,10 +185,9 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer
 	) external whenNotPaused {
-		require(
-			WETH.allowance(_msgSender(), address(this)) >= _offer,
-			"The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH."
-		);
+		if (wETH.allowance(_msgSender(), address(this)) < _offer) {
+			revert ExchangeNotApprovedWETH();
+		}
 
 		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
 
@@ -204,10 +207,9 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer
 	) external whenNotPaused {
-		require(
-			WETH.allowance(_msgSender(), address(this)) >= _offer,
-			"The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH."
-		);
+		if (wETH.allowance(_msgSender(), address(this)) < _offer) {
+			revert ExchangeNotApprovedWETH();
+		}
 
 		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
 
@@ -221,10 +223,9 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer
 	) external whenNotPaused {
-		require(
-			WETH.allowance(_bidder, address(this)) >= _offer,
-			"The ERC721Exchange contract is not approved to operate a sufficient amount of the buyers WETH."
-		);
+		if (wETH.allowance(_bidder, address(this)) < _offer) {
+			revert ExchangeNotApprovedWETH();
+		}
 
 		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _expiration, _offer);
 
@@ -235,7 +236,9 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
 	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external whenNotPaused {
-		require(buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId), "This buy order does not exist.");
+		if (!buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
 
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
@@ -254,7 +257,9 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (SellOrder memory) {
-		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This sell order does not exist.");
+		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
 
 		return sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
 	}
@@ -289,7 +294,9 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (BuyOrder memory) {
-		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This buy order does not exist.");
+		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
 
 		return buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
 	}
@@ -324,17 +331,27 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) internal {
-		require(!sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This order already exists.");
+		if (sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+			revert OrderExists();
+		}
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
+		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+			revert ContractNotEIP721();
+		}
 
-		require((block.timestamp < _sellOrder.expiration), "This sell order is expired.");
+		if (block.timestamp > _sellOrder.expiration) {
+			revert OrderExpired();
+		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(_tokenId) == _seller), "The seller does not own this ERC721 token.");
+		if (erc721.ownerOf(_tokenId) != _seller) {
+			revert AssetStoredOwnerNotCurrentOwner();
+		}
 
-		require(erc721.isApprovedForAll(_seller, address(this)), "The ERC721Exchange contract is not approved to operate this ERC721 token.");
+		if (!erc721.isApprovedForAll(_seller, address(this))) {
+			revert ExchangeNotApprovedEIP721();
+		}
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
@@ -350,17 +367,27 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) internal {
-		require(sellOrderExists(_seller, _tokenContractAddress, _tokenId), "This order doesn't exists.");
+        if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+            revert OrderNotExists();
+        }
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
+		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+			revert ContractNotEIP721();
+		}
 
-		require((block.timestamp < _sellOrder.expiration), "This sell order is expired.");
+		if (block.timestamp > _sellOrder.expiration) {
+			revert OrderExpired();
+		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(_tokenId) == _seller), "The seller does not own this ERC721 token.");
+		if (erc721.ownerOf(_tokenId) != _seller) {
+			revert AssetStoredOwnerNotCurrentOwner();
+		}
 
-		require(erc721.isApprovedForAll(_seller, address(this)), "The ERC721Exchange contract is not approved to operate this ERC721 token.");
+		if (!erc721.isApprovedForAll(_seller, address(this))) {
+			revert ExchangeNotApprovedEIP721();
+		}
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderUpdated(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
@@ -382,29 +409,29 @@ contract ERC721ExchangeUpgradeable is
 
 		if (!ExchangeOrderComparisonLib.compareSellOrders(sellOrder, _sellOrder)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert("Passed sell order data doesn't equal stored sell order data.");
+			revert OrderPassedNotMatchStored();
 		}
 
 		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert("IS_NOT_721_TOKEN");
+			revert ContractNotEIP721();
 		}
 
-		if (!(block.timestamp < sellOrder.expiration)) {
+		if (block.timestamp > sellOrder.expiration) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert("This sell order is expired.");
+			revert OrderExpired();
 		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
 		if (!(erc721.ownerOf(_tokenId) == _seller)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert("The seller does not own this ERC721 token.");
+			revert AssetStoredOwnerNotCurrentOwner();
 		}
 
 		if (!erc721.isApprovedForAll(_seller, address(this))) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert("The ERC721Exchange contract is not approved to operate this ERC721 token.");
+			revert ExchangeNotApprovedEIP721();
 		}
 
 		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * msg.value) / 1000;
@@ -450,15 +477,23 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) internal {
-		require(!buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This order already exists.");
+		if (buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) {
+			revert OrderExists();
+		}
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
+		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+			revert ContractNotEIP721();
+		}
 
-		require((block.timestamp < _buyOrder.expiration), "This sell order is expired.");
+		if (block.timestamp > _buyOrder.expiration) {
+			revert OrderExpired();
+		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(_tokenId) == _buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
+		if (erc721.ownerOf(_tokenId) != _buyOrder.owner) {
+			revert AssetStoredOwnerNotCurrentOwner();
+		}
 
 		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
 		emit BuyOrderBooked(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
@@ -474,15 +509,23 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) internal {
-		require(buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "This order doesn't exists.");
+		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
 
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
+		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+			revert ContractNotEIP721();
+		}
 
-		require((block.timestamp < _buyOrder.expiration), "This buy order is expired.");
+		if (block.timestamp > _buyOrder.expiration) {
+			revert OrderExpired();
+		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require((erc721.ownerOf(_tokenId) == _buyOrder.owner), 'The desired BuyOrder "owner" does not own this ERC721 token.');
+		if (erc721.ownerOf(_tokenId) != _buyOrder.owner) {
+			revert AssetStoredOwnerNotCurrentOwner();
+		}
 
 		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
 		emit BuyOrderUpdated(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
@@ -502,29 +545,29 @@ contract ERC721ExchangeUpgradeable is
 
 		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert("Passed buy order data doesn't equal stored buy order data.");
+			revert OrderPassedNotMatchStored();
 		}
 
 		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert("IS_NOT_721_TOKEN");
+			revert ContractNotEIP721();
 		}
 
-		if (!(block.timestamp < buyOrder.expiration)) {
+		if (block.timestamp > buyOrder.expiration) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert("This buy order has expired.");
+			revert OrderExpired();
 		}
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
 		if (!(erc721.ownerOf(_tokenId) == buyOrder.owner)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert('The desired BuyOrder "owner" does not own this ERC721 token.');
+			revert AssetStoredOwnerNotCurrentOwner();
 		}
 
 		if (!erc721.isApprovedForAll(buyOrder.owner, address(this))) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert("The ERC721Exchange contract is not approved to operate this ERC721 token.");
+			revert ExchangeNotApprovedEIP721();
 		}
 
 		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * buyOrder.offer) / 1000;
@@ -533,11 +576,11 @@ contract ERC721ExchangeUpgradeable is
 
 		if (royaltyPayout > 0) {
 			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
-			WETH.transferFrom(_buyer, royaltyPayoutAddress, royaltyPayout);
+			wETH.transferFrom(_buyer, royaltyPayoutAddress, royaltyPayout);
 		}
 
-		WETH.transferFrom(_buyer, _systemFeeWallet, systemFeePayout);
-		WETH.transferFrom(_buyer, buyOrder.owner, remainingPayout);
+		wETH.transferFrom(_buyer, _systemFeeWallet, systemFeePayout);
+		wETH.transferFrom(_buyer, buyOrder.owner, remainingPayout);
 
 		erc721.safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
 
@@ -585,15 +628,22 @@ contract ERC721ExchangeUpgradeable is
 		address payable _payoutAddress,
 		uint256 _payoutPerMille
 	) external {
-		require(
-			(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille),
-			string(abi.encodePacked("Royalty must be between 0 and ", _maxRoyaltyPerMille / 10, "%"))
-		);
-		require(_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721), "IS_NOT_721_TOKEN");
+		if (!(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille)) {
+			revert RoyaltyNotWithinRange({
+                min: 0,
+                max: _maxRoyaltyPerMille
+            });
+		}
+		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+			revert ContractNotEIP721();
+		}
 
 		if (!(_msgSender() == owner())) {
 			Ownable ownableNFTContract = Ownable(_tokenContractAddress);
-			require(_msgSender() == ownableNFTContract.owner(), "ADDRESS_NOT_AUTHORIZED");
+
+			if (_msgSender() != ownableNFTContract.owner()) {
+				revert SenderNotAuthorised();
+			}
 		}
 
 		emit CollectionRoyaltyPayoutAddressUpdated(

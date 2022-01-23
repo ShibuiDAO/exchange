@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.6;
 pragma abicoder v2;
 
 interface IExchange {
@@ -113,6 +113,22 @@ interface IExchange {
 		uint256 newRoyaltiesAmount,
 		uint256 oldRoyaltiesAmount
 	);
+
+    /*///////////////////////////////////////////////////////////////
+                                    ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    error OrderExists();
+    error OrderNotExists();
+    error OrderExpired();
+    error OrderPassedNotMatchStored();
+    error AssetStoredOwnerNotCurrentOwner();
+    error PaymentMissing();
+    error ExchangeNotApprovedWETH();
+    error ExchangeNotApprovedEIP721();
+    error ContractNotEIP721();
+    error RoyaltyNotWithinRange(uint256 min, uint256 max);
+    error SenderNotAuthorised();
 
 	/*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE

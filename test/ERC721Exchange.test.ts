@@ -116,9 +116,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
-						'This sell order does not exist.'
-					);
+					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
 				});
 
 				it('should create new sell order and execute order', async () => {
@@ -156,9 +154,7 @@ describe('ERC721Exchange', () => {
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
-						'This sell order does not exist.'
-					);
+					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
 				});
 			});
 
@@ -226,9 +222,7 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'BuyOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
-						'This buy order does not exist.'
-					);
+					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
 				});
 
 				it('should create new buy order and accept order', async () => {
@@ -270,9 +264,7 @@ describe('ERC721Exchange', () => {
 						.and.to.emit(contract, 'BuyOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith(
-						'This buy order does not exist.'
-					);
+					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
 				});
 			});
 		});
