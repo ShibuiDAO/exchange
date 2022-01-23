@@ -2,14 +2,14 @@ pragma solidity ^0.8.6;
 
 import "ds-test/test.sol";
 
-import {IHvm} from "./IHvm.sol";
+import {IHevm} from "./utils/IHevm.sol";
 import {IExchange} from "../contracts/interfaces/IExchange.sol";
 
 contract ERC721ExchangeUpgradeableTest is DSTest {
 	IExchange erc721Exchange;
 	IExchange erc721ExchangeUpgraded;
 
-	IHvm hevm = IHvm(address(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D));
+	IHevm internal constant hevm = IHevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
 	function setUp() public {
 		string[] memory deploymentAddressCommand = new string[](2);

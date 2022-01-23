@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.6;
 
 // used at address 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
-interface IHvm {
+interface IHevm {
 	/// @dev  Sets the block timestamp to x
 	function warp(uint256 x) external;
 
