@@ -408,7 +408,7 @@ contract ERC721ExchangeUpgradeable is
 		}
 
 		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * msg.value) / 1000;
-		uint256 systemFeePayout = (_systemFeePerMille * msg.value) / 1000;
+		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * msg.value) / 1000 : 0;
 		uint256 remainingPayout = msg.value - royaltyPayout - systemFeePayout;
 
 		if (royaltyPayout > 0) {
@@ -416,7 +416,8 @@ contract ERC721ExchangeUpgradeable is
 			SafeTransferLib.safeTransferETH(royaltyPayoutAddress, royaltyPayout);
 		}
 
-		SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
+		if (systemFeePayout > 0) SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
+
 		SafeTransferLib.safeTransferETH(_seller, remainingPayout);
 
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
