@@ -19,7 +19,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
-/// @author Nejc Drobnič
+/// @author Nejc Drobnic
 /// @dev Handles the creation and execution of sell orders as well as their storage.
 contract ERC721ExchangeUpgradeable is
 	Initializable,
@@ -257,10 +257,6 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (SellOrder memory) {
-		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
-			revert OrderNotExists();
-		}
-
 		return sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
 	}
 
@@ -294,10 +290,6 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (BuyOrder memory) {
-		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) {
-			revert OrderNotExists();
-		}
-
 		return buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
 	}
 
@@ -367,9 +359,9 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) internal {
-        if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
-            revert OrderNotExists();
-        }
+		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
 
 		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
 			revert ContractNotEIP721();
@@ -405,6 +397,10 @@ contract ERC721ExchangeUpgradeable is
 		SellOrder memory _sellOrder,
 		SellOrderExecutionSenders memory _senders
 	) internal {
+		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
+
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
 		if (!ExchangeOrderComparisonLib.compareSellOrders(sellOrder, _sellOrder)) {
@@ -541,6 +537,10 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) internal {
+		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) {
+			revert OrderNotExists();
+		}
+
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
 		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) {
@@ -629,10 +629,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _payoutPerMille
 	) external {
 		if (!(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille)) {
-			revert RoyaltyNotWithinRange({
-                min: 0,
-                max: _maxRoyaltyPerMille
-            });
+			revert RoyaltyNotWithinRange({min: 0, max: _maxRoyaltyPerMille});
 		}
 		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
 			revert ContractNotEIP721();

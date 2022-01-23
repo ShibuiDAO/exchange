@@ -3,6 +3,7 @@ import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { defaultAbiCoder } from 'ethers/lib/utils';
 import { ethers, upgrades } from 'hardhat';
+import { zeroAddress } from '../constants.hardhat';
 import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721, WETHMock } from '../typechain';
 
 chai.use(solidity);
@@ -116,7 +117,8 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
+					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					expect(canceledOrder[0]).to.be.equal(zeroAddress);
 				});
 
 				it('should create new sell order and execute order', async () => {
@@ -154,7 +156,8 @@ describe('ERC721Exchange', () => {
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getSellOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
+					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					expect(canceledOrder[0]).to.be.equal(zeroAddress);
 				});
 			});
 
@@ -222,7 +225,8 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'BuyOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
+					const canceledOrder = await contract.getBuyOrder(account.address, contractERC721.address, 1);
+					expect(canceledOrder[0]).to.be.equal(zeroAddress);
 				});
 
 				it('should create new buy order and accept order', async () => {
@@ -264,7 +268,8 @@ describe('ERC721Exchange', () => {
 						.and.to.emit(contract, 'BuyOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					await expect(contract.getBuyOrder(account.address, contractERC721.address, 1)).to.be.revertedWith('OrderNotExists()');
+					const canceledOrder = await contract.getBuyOrder(account.address, contractERC721.address, 1);
+					expect(canceledOrder[0]).to.be.equal(zeroAddress);
 				});
 			});
 		});

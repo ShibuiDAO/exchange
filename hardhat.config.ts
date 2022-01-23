@@ -23,7 +23,8 @@ task('accounts', 'Prints the list of accounts', async (_, hre) => {
 
 const config: HardhatUserConfig = {
 	paths: {
-		sources: './src/contracts'
+		sources: './src/contracts',
+		tests: './test'
 	},
 	solidity: {
 		version: '0.8.6',
@@ -43,10 +44,10 @@ const config: HardhatUserConfig = {
 		only: ['ERC721ExchangeUpgradeable.sol']
 	},
 	gasReporter: {
-		excludeContracts: ['contracts/mocks/', 'src/contracts/mocks/'],
+		excludeContracts: ['contracts/mocks/', 'src/contracts/mocks/', 'test/', 'src/test/'],
 		showTimeSpent: true,
 		currency: 'EUR',
-		gasPrice: 1,
+		gasPrice: 10,
 		coinmarketcap: coinMarketCapApi
 	}
 };
