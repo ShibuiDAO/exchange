@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/shibuidao/exchange/compare/v1.1.2...v1.2.0) (2022-01-23)
+
+
+### Features
+
+* create interface for Foundry cheat codes ([cdd6b1d](https://github.com/shibuidao/exchange/commit/cdd6b1d45f3f7aedb5b9913fbf7ddf85af031218))
+* switch tests to forge ([5bca3e1](https://github.com/shibuidao/exchange/commit/5bca3e19308dc8d6b72df8dc6ab0dd21e7e6ef41))
+
+
+### Bug Fixes
+
+* remove non-standard character ([3ec9fd1](https://github.com/shibuidao/exchange/commit/3ec9fd14db76f95ae70a80a5b48aef0ccac7d852))
+
 ### [1.1.2](https://github.com/shibuidao/exchange/compare/v1.1.1...v1.1.2) (2022-01-23)
 
 ### [1.1.1](https://github.com/shibuidao/exchange/compare/v1.1.0...v1.1.1) (2022-01-23)
