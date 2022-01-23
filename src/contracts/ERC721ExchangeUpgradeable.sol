@@ -106,7 +106,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
-	function createSellOrder(
+	function bookSellOrder(
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
@@ -114,7 +114,7 @@ contract ERC721ExchangeUpgradeable is
 	) external override whenNotPaused {
 		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
-		_createSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
+		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
 	/// @notice Updates/overwrites existing SellOrder.
@@ -139,7 +139,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
 	/// @param _recipient The address of the ERC721 asset recipient.
-	function executeSellOrder(
+	function exerciseSellOrder(
 		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -153,7 +153,7 @@ contract ERC721ExchangeUpgradeable is
 
 		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
-		_executeSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
+		_exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
@@ -178,7 +178,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _offer The offered amount in wei for the given ERC721 asset.
-	function createBuyOrder(
+	function bookBuyOrder(
 		address payable _owner,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -191,7 +191,7 @@ contract ERC721ExchangeUpgradeable is
 
 		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
 
-		_createBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
+		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
 	/// @notice Updates/overwrites existing BuyOrder.
@@ -216,7 +216,7 @@ contract ERC721ExchangeUpgradeable is
 		_updateBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
-	function acceptBuyOrder(
+	function exerciseBuyOrder(
 		address payable _bidder,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -229,7 +229,7 @@ contract ERC721ExchangeUpgradeable is
 
 		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _expiration, _offer);
 
-		_acceptBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
+		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
 	}
 
 	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
@@ -317,7 +317,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _sellOrder Filled in SellOrder to be listed.
-	function _createSellOrder(
+	function _bookSellOrder(
 		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -390,7 +390,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _sellOrder Filled in SellOrder to be compared to the stored one.
 	/// @param _senders Struct containing recipient and buyer address'.
-	function _executeSellOrder(
+	function _exerciseSellOrder(
 		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -446,7 +446,7 @@ contract ERC721ExchangeUpgradeable is
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
 		_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-		emit SellOrderFufilled(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price);
+		emit SellOrderExercised(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price);
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
@@ -467,7 +467,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _buyOrder Filled in BuyOrder to be listed.
-	function _createBuyOrder(
+	function _bookBuyOrder(
 		address payable _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -531,7 +531,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _buyOrder Filled in BuyOrder to be compared to the stored one.
-	function _acceptBuyOrder(
+	function _exerciseBuyOrder(
 		address payable _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -585,7 +585,7 @@ contract ERC721ExchangeUpgradeable is
 		erc721.safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
 
 		_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-		emit BuyOrderAccepted(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer);
+		emit BuyOrderExercised(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer);
 	}
 
 	/// @notice Cancels a given BuyOrder and emits `BuyOrderCanceled`.

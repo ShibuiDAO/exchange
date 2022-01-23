@@ -7,7 +7,7 @@ interface IExchange {
                                   EVENTS
     //////////////////////////////////////////////////////////////*/
 
-	/// @notice Emitted when `createSellOrder` is called.
+	/// @notice Emitted when `bookSellOrder` is called.
 	/// @param seller Address of the ERC721 asset owner and seller.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of ERC721 asset for sale.
@@ -23,25 +23,41 @@ interface IExchange {
 	/// @param price The price in wei of the given ERC721 asset.
 	event SellOrderUpdated(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
 
-	/// @notice Emitted when `cancelSellOrder` is called or when `executeSellOrder` completes.
+	/// @notice Emitted when `cancelSellOrder` is called or when `exerciseSellOrder` completes.
 	/// @param seller Address of SellOrder seller.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of canceled ERC721 asset.
 	event SellOrderCanceled(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId);
 
-	/// @notice Emitted when `executeSellOrder` is called.
+	/// @notice Emitted when `exerciseSellOrder` is called.
 	/// @param seller Address of the previous ERC721 asset owner and seller.
 	/// @param recipient Address of the new ERC721 asset owner and buyer.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of the bought ERC721 asset.
 	/// @param price The price in wei at which the ERC721 asset was bought.
-	event SellOrderFufilled(
+	event SellOrderExercised(
 		address indexed seller,
 		address recipient,
 		address buyer,
 		address indexed tokenContractAddress,
 		uint256 indexed tokenId,
 		uint256 price
+	);
+
+	/// @notice Emitted when `bookBuyOrder` is called.
+	/// @param buyer Address of the ERC721 asset bidder.
+	/// @param owner Address of the current ERC721 asset owner.
+	/// @param tokenContractAddress Address of the ERC721 token contract.
+	/// @param tokenId ID of ERC721 asset for sale.
+	/// @param expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param offer The offer in wei for the given ERC721 asset.
+	event BuyOrderBooked(
+		address indexed buyer,
+		address owner,
+		address indexed tokenContractAddress,
+		uint256 indexed tokenId,
+		uint256 expiration,
+		uint256 offer
 	);
 
 	/// @notice Emitted when `updateBuyOrder` is called.
@@ -60,23 +76,7 @@ interface IExchange {
 		uint256 offer
 	);
 
-	/// @notice Emitted when `createBuyOrder` is called.
-	/// @param buyer Address of the ERC721 asset bidder.
-	/// @param owner Address of the current ERC721 asset owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of ERC721 asset for sale.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param offer The offer in wei for the given ERC721 asset.
-	event BuyOrderBooked(
-		address indexed buyer,
-		address owner,
-		address indexed tokenContractAddress,
-		uint256 indexed tokenId,
-		uint256 expiration,
-		uint256 offer
-	);
-
-	/// @notice Emitted when `cancelBuyOrder` is call edor when `acceptBuyOrder` completes.
+	/// @notice Emitted when `cancelBuyOrder` is call edor when `exerciseBuyOrder` completes.
 	/// @param buyer Address of BuyOrder buyer.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of canceled ERC721 asset.
@@ -88,7 +88,7 @@ interface IExchange {
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of ERC721 asset for sale.
 	/// @param offer The offer in wei for the given ERC721 asset.
-	event BuyOrderAccepted(address buyer, address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 offer);
+	event BuyOrderExercised(address buyer, address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 offer);
 
 	/// @notice Emitted when `setRoyalty` is called.
 	/// @param executor Address that triggered the royalty change.
@@ -114,21 +114,21 @@ interface IExchange {
 		uint256 oldRoyaltiesAmount
 	);
 
-    /*///////////////////////////////////////////////////////////////
+	/*///////////////////////////////////////////////////////////////
                                     ERRORS
     //////////////////////////////////////////////////////////////*/
 
-    error OrderExists();
-    error OrderNotExists();
-    error OrderExpired();
-    error OrderPassedNotMatchStored();
-    error AssetStoredOwnerNotCurrentOwner();
-    error PaymentMissing();
-    error ExchangeNotApprovedWETH();
-    error ExchangeNotApprovedEIP721();
-    error ContractNotEIP721();
-    error RoyaltyNotWithinRange(uint256 min, uint256 max);
-    error SenderNotAuthorised();
+	error OrderExists();
+	error OrderNotExists();
+	error OrderExpired();
+	error OrderPassedNotMatchStored();
+	error AssetStoredOwnerNotCurrentOwner();
+	error PaymentMissing();
+	error ExchangeNotApprovedWETH();
+	error ExchangeNotApprovedEIP721();
+	error ContractNotEIP721();
+	error RoyaltyNotWithinRange(uint256 min, uint256 max);
+	error SenderNotAuthorised();
 
 	/*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE
@@ -181,7 +181,7 @@ interface IExchange {
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
-	function createSellOrder(
+	function bookSellOrder(
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
@@ -206,7 +206,7 @@ interface IExchange {
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
 	/// @param _recipient The address of the ERC721 asset recipient.
-	function executeSellOrder(
+	function exerciseSellOrder(
 		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
