@@ -1,22 +1,20 @@
 pragma solidity ^0.8.6;
 
-import "ds-test/test.sol";
+import {BaseTest} from "./base/BaseTest.sol";
 
 import {IHevm} from "./utils/IHevm.sol";
 import {IExchange} from "../contracts/interfaces/IExchange.sol";
 
-contract ERC721ExchangeUpgradeableTest is DSTest {
-	IExchange erc721Exchange;
-	IExchange erc721ExchangeUpgraded;
-
-	IHevm internal constant hevm = IHevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+contract ERC721ExchangeUpgradeableTest is BaseTest {
+	IExchange internal erc721Exchange;
+	IExchange internal erc721ExchangeUpgraded;
 
 	function setUp() public {
 		string[] memory deploymentAddressCommand = new string[](2);
 		deploymentAddressCommand[0] = "cat";
 		deploymentAddressCommand[1] = ".shibui/deployments";
 
-		bytes memory deploymentAddresses = hevm.ffi(deploymentAddressCommand);
+		bytes memory deploymentAddresses = VM.ffi(deploymentAddressCommand);
 		(address _erc721exchange, address _erc721exchangeUpgeaded) = abi.decode(deploymentAddresses, (address, address));
 
 		erc721Exchange = IExchange(_erc721exchange);
