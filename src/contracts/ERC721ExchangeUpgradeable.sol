@@ -19,7 +19,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
-/// @author Nejc Drobnič
+/// @author Nejc Drobnic
 /// @dev Handles the creation and execution of sell orders as well as their storage.
 contract ERC721ExchangeUpgradeable is
 	Initializable,
