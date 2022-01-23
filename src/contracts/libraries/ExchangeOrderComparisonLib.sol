@@ -1,4 +1,4 @@
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.6;
 pragma abicoder v2;
 
 import {IExchange} from "../interfaces/IExchange.sol";

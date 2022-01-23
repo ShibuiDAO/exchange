@@ -1,5 +1,71 @@
 [
   {
+    "inputs": [],
+    "name": "AssetStoredOwnerNotCurrentOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ContractNotEIP721",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExchangeNotApprovedEIP721",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExchangeNotApprovedWETH",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OrderExists",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OrderExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OrderNotExists",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OrderPassedNotMatchStored",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PaymentMissing",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "min",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max",
+        "type": "uint256"
+      }
+    ],
+    "name": "RoyaltyNotWithinRange",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SenderNotAuthorised",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
