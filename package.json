@@ -22,10 +22,10 @@
 		"precompile": "yarn clean",
 		"compile": "yarn compile:localh:hardhat",
 		"compile:localh:hardhat": "hardhat compile --network localh",
-		"test:localh:_init": "yarn test:localh:hardhat && yarn test:localh:hardhat:deploy && yarn test:localh:dapp",
+		"test:localh:_init": "yarn test:localh:hardhat && yarn test:localh:hardhat:deploy && yarn test:localh:forge",
 		"test:localh:hardhat": "hardhat test --network localh",
 		"test:localh:hardhat:deploy": "hardhat run ./scripts/tests/proxyDeploy.ts --network localh",
-		"test:localh:dapp": "dapp test --ffi --rpc",
+		"test:localh:forge": "forge test --ffi --rpc-url=http://127.0.0.1:8545/",
 		"sversion": "standard-version"
 	},
 	"files": [
