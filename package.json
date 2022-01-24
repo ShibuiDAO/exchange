@@ -12,6 +12,7 @@
 		"suite:_init": "yarn compile && yarn node:_delay && yarn suite:_action && yarn suite:_end",
 		"suite:_action": "yarn test:localh:_init",
 		"suite:_end": "node -e \"process.exit(69)\"",
+		"coverage": "yarn test:hardhat:coverage",
 		"node:hardhat": "hardhat node",
 		"node:dapp": "dapp testnet",
 		"node:_delay": "sleep 5",
@@ -26,6 +27,7 @@
 		"test:localh:hardhat": "hardhat test --network localh",
 		"test:localh:hardhat:deploy": "hardhat run ./scripts/tests/proxyDeploy.ts --network localh",
 		"test:localh:forge": "forge test --ffi --rpc-url=http://127.0.0.1:8545/",
+		"test:hardhat:coverage": "hardhat coverage --network hardhat",
 		"sversion": "standard-version"
 	},
 	"files": [

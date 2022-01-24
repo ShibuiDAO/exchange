@@ -1,4 +1,4 @@
-name: Gas Usage
+name: Coverage
 
 on:
   pull_request:
@@ -15,8 +15,8 @@ on:
       - 'package.json'
 
 jobs:
-  GeneratGasRepost:
-    name: Generate HardHat gas report
+  GenerateCoverage:
+    name: Generate test coverage report
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Project
@@ -39,30 +39,34 @@ jobs:
       - name: Install Dependencies if Cache Miss
         if: ${{ !steps.cache-restore.outputs.cache-hit }}
         run: yarn --frozen-lockfile
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v1
-        with:
-         cache-on-failure: true
-      - name: Install Foundry
-        run: cargo install --git https://github.com/gakonst/foundry --locked
-      - name: Generate gas report
-        run: |
-          if ! yarn suite; then
-            echo "Most likely worked"
-          fi
+      - name: Generate coverage report
+        run: yarn compile && yarn coverage
         env:
           COINMARKETCAP_API: ${{ secrets.COINMARKETCAP_API }}
           ALCHEMY_RINKEBY_ETH_KEY: ${{ secrets.ALCHEMY_RINKEBY_ETH_KEY }}
           TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
           CI: true
-      - name: Upload gas report to artifacts
+      - name: Upload coverage report bundle to artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: gas_report
-          path: gasReporterOutput.json
+          name: coverage_bundle
+          path: coverage/
           if-no-files-found: error
+
+  UploadCoverage:
+    name: Upload coverage report to Coveralls
+    runs-on: ubuntu-latest
+    needs: [GenerateCoverage]
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - name: Download generated coverage bundle artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage_bundle
+          path: coverage/
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+

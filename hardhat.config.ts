@@ -11,7 +11,7 @@ import 'hardhat-tracer';
 import { HardhatUserConfig, task } from 'hardhat/config';
 import 'solidity-coverage';
 import { coinMarketCapApi } from './config.hardhat';
-import { networks } from './hardhat.networks';
+import { networks } from './networks.hardhat';
 
 task('accounts', 'Prints the list of accounts', async (_, hre) => {
 	const accounts = await hre.ethers.getSigners();
