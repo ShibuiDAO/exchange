@@ -9,7 +9,7 @@ on:
     paths:
       - '.github/workflows/continuous-deployment.yml'
       - 'src/**'
-      - '.dapprc'
+      - 'foundry.toml'
       - 'remappings.txt'
       - '**.hardhat.ts'
       - 'README.md'
@@ -40,7 +40,7 @@ jobs:
       - name: Install Dependencies if Cache Miss
         if: ${{ !steps.cache-restore.outputs.cache-hit }}
         run: yarn --frozen-lockfile
-      - name: Generate GraphQL Schema code
+      - name: Generate Typechain types and ABIs
         run: |
           if ! yarn typechain; then
             echo "Most likely worked"
