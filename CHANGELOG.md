@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.3](https://github.com/shibuidao/exchange/compare/v1.2.2...v1.2.3) (2022-01-24)
+
+
+### Bug Fixes
+
+* specify upload needs ([a7c1c63](https://github.com/shibuidao/exchange/commit/a7c1c63a2244a890f89210192c9a84b51d87e352))
+
 ### [1.2.2](https://github.com/shibuidao/exchange/compare/v1.2.1...v1.2.2) (2022-01-24)
 
 

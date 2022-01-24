@@ -1,6 +1,6 @@
 {
 	"name": "@shibuidao/exchange",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"repository": "https://github.com/shibuidao/exchange.git",
 	"author": "Nejc Drobnic <yo@quantumly.dev>",
 	"license": "UNLICENSED",
