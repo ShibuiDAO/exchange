@@ -43,11 +43,12 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-      - uses: Swatinem/rust-cache@v1
-         with:
-          cache-on-failure: true
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v1
+        with:
+         cache-on-failure: true
       - name: Install Foundry
-         run: cargo install --git https://github.com/gakonst/foundry --locked
+        run: cargo install --git https://github.com/gakonst/foundry --locked
       - name: Generate gas report
         run: |
           if ! yarn suite; then
