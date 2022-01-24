@@ -128,9 +128,10 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price
 	) external override whenNotPaused {
+        cancelSellOrder(_tokenContractAddress, _tokenId);
 		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
-		_updateSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
+		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
 	/// @param _seller The seller address of the desired SellOrder.
@@ -160,7 +161,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Can only be executed by the listed SellOrder seller.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
-	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external override whenNotPaused {
+	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) public override whenNotPaused {
 		if (!sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId)) {
 			revert OrderNotExists();
 		}
@@ -347,42 +348,6 @@ contract ERC721ExchangeUpgradeable is
 
 		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
 		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
-	}
-
-	/// @param _seller The address of the asset seller/owner.
-	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param _tokenId ID of the desired ERC721 asset.
-	/// @param _sellOrder Filled in SellOrder to replace/update existing.
-	function _updateSellOrder(
-		address payable _seller,
-		address _tokenContractAddress,
-		uint256 _tokenId,
-		SellOrder memory _sellOrder
-	) internal {
-		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
-			revert OrderNotExists();
-		}
-
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
-			revert ContractNotEIP721();
-		}
-
-		if (block.timestamp > _sellOrder.expiration) {
-			revert OrderExpired();
-		}
-
-		IERC721 erc721 = IERC721(_tokenContractAddress);
-
-		if (erc721.ownerOf(_tokenId) != _seller) {
-			revert AssetStoredOwnerNotCurrentOwner();
-		}
-
-		if (!erc721.isApprovedForAll(_seller, address(this))) {
-			revert ExchangeNotApprovedEIP721();
-		}
-
-		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
-		emit SellOrderUpdated(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
 	}
 
 	/// @param _seller The address of the asset seller/owner.
