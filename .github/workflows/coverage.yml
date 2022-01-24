@@ -39,8 +39,8 @@ jobs:
       - name: Install Dependencies if Cache Miss
         if: ${{ !steps.cache-restore.outputs.cache-hit }}
         run: yarn --frozen-lockfile
-      - name: Generate gas report
-        run: yarn coverage
+      - name: Generate coverage report
+        run: yarn compile && yarn coverage
         env:
           COINMARKETCAP_API: ${{ secrets.COINMARKETCAP_API }}
           ALCHEMY_RINKEBY_ETH_KEY: ${{ secrets.ALCHEMY_RINKEBY_ETH_KEY }}
