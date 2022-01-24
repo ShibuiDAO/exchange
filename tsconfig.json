@@ -14,7 +14,7 @@
     ],
     "files": [
         "./hardhat.config.ts",
-        "./hardhat.networks.ts",
+        "networks.hardhat.ts",
         "config.hardhat.ts",
         "constants.hardhat.ts"
     ]

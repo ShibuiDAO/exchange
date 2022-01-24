@@ -12,6 +12,7 @@ on:
       - 'foundry.toml'
       - 'remappings.txt'
       - '**.hardhat.ts'
+      - 'hardhat.config.ts'
       - 'README.md'
       - 'package.json'
 

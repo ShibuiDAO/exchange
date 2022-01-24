@@ -11,6 +11,7 @@ on:
       - '.github/workflows/gas-usage.yml'
       - 'src/**'
       - '**.hardhat.ts'
+      - 'hardhat.config.ts'
       - 'package.json'
 
 jobs:
