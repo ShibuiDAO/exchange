@@ -129,8 +129,8 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _price
 	) external override whenNotPaused {
         cancelSellOrder(_tokenContractAddress, _tokenId);
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 
+		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
@@ -212,9 +212,10 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedWETH();
 		}
 
-		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
+        cancelBuyOrder(_tokenContractAddress, _tokenId);
 
-		_updateBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
+		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
+		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
 	function exerciseBuyOrder(
@@ -236,7 +237,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
-	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external whenNotPaused {
+	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public whenNotPaused {
 		if (!buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId)) {
 			revert OrderNotExists();
 		}
@@ -458,38 +459,6 @@ contract ERC721ExchangeUpgradeable is
 
 		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
 		emit BuyOrderBooked(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
-	}
-
-	/// @param _buyer Address of the user placing the BuyOrder.
-	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param _tokenId ID of the desired ERC721 asset.
-	/// @param _buyOrder Filled in BuyOrder to replace/update existing.
-	function _updateBuyOrder(
-		address payable _buyer,
-		address _tokenContractAddress,
-		uint256 _tokenId,
-		BuyOrder memory _buyOrder
-	) internal {
-		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) {
-			revert OrderNotExists();
-		}
-
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
-			revert ContractNotEIP721();
-		}
-
-		if (block.timestamp > _buyOrder.expiration) {
-			revert OrderExpired();
-		}
-
-		IERC721 erc721 = IERC721(_tokenContractAddress);
-
-		if (erc721.ownerOf(_tokenId) != _buyOrder.owner) {
-			revert AssetStoredOwnerNotCurrentOwner();
-		}
-
-		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
-		emit BuyOrderUpdated(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
 	}
 
 	/// @param _buyer Address of the user placing the BuyOrder.
