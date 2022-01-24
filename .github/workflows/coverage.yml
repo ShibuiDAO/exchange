@@ -1,0 +1,71 @@
+name: Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/gas-usage.yml'
+      - 'src/**'
+      - '**.hardhat.ts'
+      - 'hardhat.config.ts'
+      - 'package.json'
+
+jobs:
+  GenerateCoverage:
+    name: Generate test coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Restore CI Cache
+        uses: actions/cache@v2.1.5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
+      - name: Restore CI Cache
+        uses: actions/cache@v2.1.5
+        id: cache-restore
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
+      - name: Install Dependencies if Cache Miss
+        if: ${{ !steps.cache-restore.outputs.cache-hit }}
+        run: yarn --frozen-lockfile
+      - name: Generate gas report
+        run: yarn coverage
+        env:
+          COINMARKETCAP_API: ${{ secrets.COINMARKETCAP_API }}
+          ALCHEMY_RINKEBY_ETH_KEY: ${{ secrets.ALCHEMY_RINKEBY_ETH_KEY }}
+          TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
+          CI: true
+      - name: Upload coverage report bundle to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage_bundle
+          path: coverage/
+          if-no-files-found: error
+
+  UploadCoverage:
+    name: Upload coverage report to Coveralls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - name: Download generated coverage bundle artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage_bundle
+          path: coverage/
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
