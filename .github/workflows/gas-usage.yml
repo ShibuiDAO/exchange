@@ -38,12 +38,16 @@ jobs:
       - name: Install Dependencies if Cache Miss
         if: ${{ !steps.cache-restore.outputs.cache-hit }}
         run: yarn --frozen-lockfile
-      - name: Download and install FoundryUp
-        run: |
-          curl -L https://foundry.paradigm.xyz | bash
-          source ~/.bashrc
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v1
+         with:
+          cache-on-failure: true
       - name: Install Foundry
-        run: foundryup
+         run: cargo install --git https://github.com/gakonst/foundry --locked
       - name: Generate gas report
         run: |
           if ! yarn suite; then
