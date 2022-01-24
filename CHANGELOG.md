@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.2](https://github.com/shibuidao/exchange/compare/v1.2.1...v1.2.2) (2022-01-24)
+
+
+### Bug Fixes
+
+* add name ([d7bdd17](https://github.com/shibuidao/exchange/commit/d7bdd1719fb53908737be176186a2105e8d98e98))
+* source bash rc file ([0806baf](https://github.com/shibuidao/exchange/commit/0806baf0d221fa6ea746085cb13bd5941ce04146))
+
 ### [1.2.1](https://github.com/shibuidao/exchange/compare/v1.2.0...v1.2.1) (2022-01-23)
 
 ## [1.2.0](https://github.com/shibuidao/exchange/compare/v1.1.2...v1.2.0) (2022-01-23)
