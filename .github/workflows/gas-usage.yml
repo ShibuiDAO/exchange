@@ -41,6 +41,7 @@ jobs:
       - name: Download and install FoundryUp
         run: |
           curl -L https://foundry.paradigm.xyz | bash
+          source ~/.bashrc
       - name: Install Foundry
         run: foundryup
       - name: Generate gas report
