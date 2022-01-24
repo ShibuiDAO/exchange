@@ -15,14 +15,6 @@ interface IExchange {
 	/// @param price The price in wei of the given ERC721 asset.
 	event SellOrderBooked(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
 
-	/// @notice Emitted when `updateSellOrder` is called.
-	/// @param seller Address of the ERC721 asset owner and seller.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of ERC721 asset for sale.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param price The price in wei of the given ERC721 asset.
-	event SellOrderUpdated(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
-
 	/// @notice Emitted when `cancelSellOrder` is called or when `exerciseSellOrder` completes.
 	/// @param seller Address of SellOrder seller.
 	/// @param tokenContractAddress Address of the ERC721 token contract.
@@ -52,22 +44,6 @@ interface IExchange {
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param offer The offer in wei for the given ERC721 asset.
 	event BuyOrderBooked(
-		address indexed buyer,
-		address owner,
-		address indexed tokenContractAddress,
-		uint256 indexed tokenId,
-		uint256 expiration,
-		uint256 offer
-	);
-
-	/// @notice Emitted when `updateBuyOrder` is called.
-	/// @param buyer Address of the ERC721 asset bidder.
-	/// @param owner Address of the current ERC721 asset owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of ERC721 asset for sale.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param offer The offer in wei for the given ERC721 asset.
-	event BuyOrderUpdated(
 		address indexed buyer,
 		address owner,
 		address indexed tokenContractAddress,
