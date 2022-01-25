@@ -366,11 +366,6 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderPassedNotMatchStored();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
-			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-			revert ContractNotEIP721();
-		}
-
 		if (block.timestamp > sellOrder.expiration) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert OrderExpired();
@@ -400,7 +395,6 @@ contract ERC721ExchangeUpgradeable is
 		if (systemFeePayout > 0) SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
 
 		SafeTransferLib.safeTransferETH(_seller, remainingPayout);
-
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
 		_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
@@ -471,11 +465,6 @@ contract ERC721ExchangeUpgradeable is
 
 		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) {
 			revert OrderPassedNotMatchStored();
-		}
-
-		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
-			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-			revert ContractNotEIP721();
 		}
 
 		if (block.timestamp > buyOrder.expiration) {
