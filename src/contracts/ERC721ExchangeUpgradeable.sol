@@ -546,7 +546,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal pure returns (bytes memory) {
-		return abi.encodePacked(_userAddress, "-", _tokenContractAddress, "-", _tokenId);
+		return abi.encode(_userAddress, _tokenContractAddress, _tokenId);
 	}
 
 	/*///////////////////////////////////////////////////////////////
