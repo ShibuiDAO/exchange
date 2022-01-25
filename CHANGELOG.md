@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.7](https://github.com/shibuidao/exchange/compare/v1.2.6...v1.2.7) (2022-01-25)
+
+
+### Bug Fixes
+
+* dont cancel on incorrect params ([ec3ad15](https://github.com/shibuidao/exchange/commit/ec3ad15a43f281657a012fff8ab1105e039f4809))
+* move to standard encode over packed ([469f8f6](https://github.com/shibuidao/exchange/commit/469f8f6fbf8df24cd85c648638cddca65145b72d))
+
 ### [1.2.6](https://github.com/shibuidao/exchange/compare/v1.2.5...v1.2.6) (2022-01-25)
 
 
