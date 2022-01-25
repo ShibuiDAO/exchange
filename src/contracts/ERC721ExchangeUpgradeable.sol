@@ -36,7 +36,8 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
-	bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
+    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+    bytes4 private immutable interfaceIdERC721 = 0x80ac58cd;
 
 	/// @dev Interface of the main canonical WETH deployment.
 	IERC20 private wETH;
@@ -321,7 +322,7 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderExists();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
 			revert ContractNotEIP721();
 		}
 
@@ -366,7 +367,7 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderPassedNotMatchStored();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert ContractNotEIP721();
 		}
@@ -435,7 +436,7 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderExists();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
 			revert ContractNotEIP721();
 		}
 
@@ -474,7 +475,7 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderPassedNotMatchStored();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert ContractNotEIP721();
 		}
@@ -557,7 +558,7 @@ contract ERC721ExchangeUpgradeable is
 		if (!(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille)) {
 			revert RoyaltyNotWithinRange({min: 0, max: _maxRoyaltyPerMille});
 		}
-		if (!_tokenContractAddress.supportsInterface(INTERFACE_ID_ERC721)) {
+		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
 			revert ContractNotEIP721();
 		}
 
