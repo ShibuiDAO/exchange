@@ -162,10 +162,6 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) public override whenNotPaused {
-		if (!sellOrderExists(_msgSender(), _tokenContractAddress, _tokenId)) {
-			revert OrderNotExists();
-		}
-
 		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
@@ -238,10 +234,6 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
 	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public whenNotPaused {
-		if (!buyOrderExists(_msgSender(), _tokenContractAddress, _tokenId)) {
-			revert OrderNotExists();
-		}
-
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
