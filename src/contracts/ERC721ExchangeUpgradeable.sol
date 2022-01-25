@@ -363,7 +363,6 @@ contract ERC721ExchangeUpgradeable is
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
 		if (!ExchangeOrderComparisonLib.compareSellOrders(sellOrder, _sellOrder)) {
-			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert OrderPassedNotMatchStored();
 		}
 
@@ -471,7 +470,6 @@ contract ERC721ExchangeUpgradeable is
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
 		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) {
-			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert OrderPassedNotMatchStored();
 		}
 
