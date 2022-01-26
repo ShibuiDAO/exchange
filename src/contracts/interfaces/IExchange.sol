@@ -36,36 +36,6 @@ interface IExchange {
 		uint256 price
 	);
 
-	/// @notice Emitted when `bookBuyOrder` is called.
-	/// @param buyer Address of the ERC721 asset bidder.
-	/// @param owner Address of the current ERC721 asset owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of ERC721 asset for sale.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param offer The offer in wei for the given ERC721 asset.
-	event BuyOrderBooked(
-		address indexed buyer,
-		address owner,
-		address indexed tokenContractAddress,
-		uint256 indexed tokenId,
-		uint256 expiration,
-		uint256 offer
-	);
-
-	/// @notice Emitted when `cancelBuyOrder` is call edor when `exerciseBuyOrder` completes.
-	/// @param buyer Address of BuyOrder buyer.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of canceled ERC721 asset.
-	event BuyOrderCanceled(address indexed buyer, address indexed tokenContractAddress, uint256 indexed tokenId);
-
-	/// @notice Emitted when `acceptBuy` is called.
-	/// @param buyer Address of the ERC721 asset bidder.
-	/// @param seller Address of the current ERC721 asset owner.
-	/// @param tokenContractAddress Address of the ERC721 token contract.
-	/// @param tokenId ID of ERC721 asset for sale.
-	/// @param offer The offer in wei for the given ERC721 asset.
-	event BuyOrderExercised(address buyer, address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 offer);
-
 	/// @notice Emitted when `setRoyalty` is called.
 	/// @param executor Address that triggered the royalty change.
 	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
@@ -115,15 +85,6 @@ interface IExchange {
 	struct SellOrder {
 		uint256 expiration;
 		uint256 price;
-	}
-
-	/// @param owner Address of the current ERC721 asset owner.
-	/// @param expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param offer The offer in wei for the given ERC721 asset.
-	struct BuyOrder {
-		address payable owner;
-		uint256 expiration;
-		uint256 offer;
 	}
 
 	/*///////////////////////////////////////////////////////////////
