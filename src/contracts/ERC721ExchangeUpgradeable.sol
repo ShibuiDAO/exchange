@@ -36,8 +36,8 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
-    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-    bytes4 private immutable interfaceIdERC721 = 0x80ac58cd;
+	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+	bytes4 private immutable interfaceIdERC721 = 0x80ac58cd;
 
 	/// @dev Interface of the main canonical WETH deployment.
 	IERC20 private wETH;
@@ -69,8 +69,7 @@ contract ERC721ExchangeUpgradeable is
                                 ORDER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-	/// @dev Maps orderId (composed of `{sellerAddress}-{tokenContractAddress}-{tokenId}`) to the SellOrder.
-	mapping(bytes => SellOrder) private sellOrders;
+	mapping(address => mapping(uint256 => SellOrder)) private sellOrders;
 
 	/*///////////////////////////////////////////////////////////////
           UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
@@ -110,9 +109,9 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price
 	) external override whenNotPaused {
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
+		SellOrder memory sellOrder = SellOrder(_msgSender(), _expiration, _price);
 
-		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
+		_bookSellOrder(_tokenContractAddress, _tokenId, sellOrder);
 	}
 
 	/// @notice Updates/overwrites existing SellOrder.
@@ -126,10 +125,10 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price
 	) external override whenNotPaused {
-        cancelSellOrder(_tokenContractAddress, _tokenId);
+		cancelSellOrder(_tokenContractAddress, _tokenId);
 
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
-		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
+		SellOrder memory sellOrder = SellOrder(_msgSender(), _expiration, _price);
+		_bookSellOrder(_tokenContractAddress, _tokenId, sellOrder);
 	}
 
 	/// @param _seller The seller address of the desired SellOrder.
@@ -150,7 +149,7 @@ contract ERC721ExchangeUpgradeable is
 			revert PaymentMissing();
 		}
 
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
+		SellOrder memory sellOrder = SellOrder(_seller, _expiration, _price);
 
 		_exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
 	}
@@ -160,6 +159,10 @@ contract ERC721ExchangeUpgradeable is
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) public override whenNotPaused {
+        if (_msgSender() != getSellOrder(_tokenContractAddress, _tokenId).seller) {
+            revert SenderNotAuthorised();
+        }
+
 		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
@@ -168,30 +171,20 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
-	/// @param _seller Address of the sell order owner.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	/// @return Struct containing all the order data.
-	function getSellOrder(
-		address _seller,
-		address _tokenContractAddress,
-		uint256 _tokenId
-	) public view returns (SellOrder memory) {
-		return sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
+	function getSellOrder(address _tokenContractAddress, uint256 _tokenId) public view returns (SellOrder memory) {
+		return sellOrders[_tokenContractAddress][_tokenId];
 	}
 
 	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
 	/// So if a order doesn't exist it will have an expiration of 0.
-	/// @param _seller Address of the sell order owner.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	/// @return The validy of the queried order.
-	function sellOrderExists(
-		address _seller,
-		address _tokenContractAddress,
-		uint256 _tokenId
-	) public view returns (bool) {
-		SellOrder memory sellOrder = sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
+	function sellOrderExists(address _tokenContractAddress, uint256 _tokenId) public view returns (bool) {
+		SellOrder memory sellOrder = getSellOrder(_tokenContractAddress, _tokenId);
 
 		return 0 < sellOrder.expiration;
 	}
@@ -200,17 +193,15 @@ contract ERC721ExchangeUpgradeable is
                    INTERNAL ORDER MANIPULATION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-	/// @param _seller The address of the asset seller/owner.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _sellOrder Filled in SellOrder to be listed.
 	function _bookSellOrder(
-		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) internal {
-		if (sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+		if (sellOrderExists(_tokenContractAddress, _tokenId)) {
 			revert OrderExists();
 		}
 
@@ -224,16 +215,16 @@ contract ERC721ExchangeUpgradeable is
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		if (erc721.ownerOf(_tokenId) != _seller) {
+		if (erc721.ownerOf(_tokenId) != _sellOrder.seller) {
 			revert AssetStoredOwnerNotCurrentOwner();
 		}
 
-		if (!erc721.isApprovedForAll(_seller, address(this))) {
+		if (!erc721.isApprovedForAll(_sellOrder.seller, address(this))) {
 			revert ExchangeNotApprovedEIP721();
 		}
 
-		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
-		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
+		sellOrders[_tokenContractAddress][_tokenId] = _sellOrder;
+		emit SellOrderBooked(_sellOrder.seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
 	}
 
 	/// @param _seller The address of the asset seller/owner.
@@ -248,11 +239,11 @@ contract ERC721ExchangeUpgradeable is
 		SellOrder memory _sellOrder,
 		SellOrderExecutionSenders memory _senders
 	) internal {
-		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) {
+		if (!sellOrderExists(_tokenContractAddress, _tokenId)) {
 			revert OrderNotExists();
 		}
 
-		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
+		SellOrder memory sellOrder = getSellOrder(_tokenContractAddress, _tokenId);
 
 		if (!ExchangeOrderComparisonLib.compareSellOrders(sellOrder, _sellOrder)) {
 			revert OrderPassedNotMatchStored();
@@ -302,9 +293,9 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal {
-		delete (sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)]);
-
 		emit SellOrderCanceled(_seller, _tokenContractAddress, _tokenId);
+
+		delete sellOrders[_tokenContractAddress][_tokenId];
 	}
 
 	/// @notice Forms the ID used in the orders mapping.

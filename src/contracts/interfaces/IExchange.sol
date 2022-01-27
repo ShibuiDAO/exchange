@@ -83,6 +83,7 @@ interface IExchange {
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param price The price in wei of the given ERC721 asset.
 	struct SellOrder {
+		address seller;
 		uint256 expiration;
 		uint256 price;
 	}

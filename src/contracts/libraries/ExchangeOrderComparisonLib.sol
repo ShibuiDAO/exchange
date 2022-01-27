@@ -9,6 +9,6 @@ library ExchangeOrderComparisonLib {
 	/// @param _right SellOrder instance to be compared on the right side of the operator.
 	/// @return A boolean value indication if the 2 SellOrder instances match.
 	function compareSellOrders(IExchange.SellOrder memory _left, IExchange.SellOrder memory _right) internal pure returns (bool) {
-		return (_left.expiration == _right.expiration) && (_left.price == _right.price);
+		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
 	}
 }

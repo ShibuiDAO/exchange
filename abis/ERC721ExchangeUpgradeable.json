@@ -426,11 +426,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_seller",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "_tokenContractAddress",
         "type": "address"
       },
@@ -444,6 +439,11 @@
     "outputs": [
       {
         "components": [
+          {
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
           {
             "internalType": "uint256",
             "name": "expiration",
@@ -505,11 +505,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "_seller",
-        "type": "address"
-      },
       {
         "internalType": "address",
         "name": "_tokenContractAddress",

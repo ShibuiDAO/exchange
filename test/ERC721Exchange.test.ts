@@ -86,10 +86,11 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'SellOrderBooked')
 						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
-					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					const order = await contract.getSellOrder(contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(expiration);
-					expect(order[1]).to.be.equal(price);
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(expiration);
+					expect(order[2]).to.be.equal(price);
 				});
 
 				it('should create new sell order and cancel order', async () => {
@@ -108,16 +109,17 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'SellOrderBooked')
 						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
-					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					const order = await contract.getSellOrder(contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(expiration);
-					expect(order[1]).to.be.equal(price);
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(expiration);
+					expect(order[2]).to.be.equal(price);
 
 					await expect(contract.cancelSellOrder(contractERC721.address, 1))
 						.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					const canceledOrder = await contract.getSellOrder(contractERC721.address, 1);
 					expect(canceledOrder[0]).to.be.equal(zeroAddress);
 				});
 
@@ -138,10 +140,11 @@ describe('ERC721Exchange', () => {
 						.to.emit(contract, 'SellOrderBooked')
 						.withArgs(account.address, contractERC721.address, 1, expiration, price);
 
-					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					const order = await contract.getSellOrder(contractERC721.address, 1);
 
-					expect(order[0]).to.be.equal(expiration);
-					expect(order[1]).to.be.equal(price);
+					expect(order[0]).to.be.equal(account.address);
+					expect(order[1]).to.be.equal(expiration);
+					expect(order[2]).to.be.equal(price);
 
 					await contract.setSystemFeeWallet(maker.address);
 					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
@@ -156,7 +159,7 @@ describe('ERC721Exchange', () => {
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 
-					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					const canceledOrder = await contract.getSellOrder(contractERC721.address, 1);
 					expect(canceledOrder[0]).to.be.equal(zeroAddress);
 				});
 			});
