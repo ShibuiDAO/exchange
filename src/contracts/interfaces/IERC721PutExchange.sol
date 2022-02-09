@@ -2,7 +2,9 @@
 pragma solidity ^0.8.11;
 pragma abicoder v2;
 
-interface IExchange {
+import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
+
+interface IERC721PutExchange is IERC165 {
 	/*///////////////////////////////////////////////////////////////
                                   EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -36,30 +38,6 @@ interface IExchange {
 		uint256 price
 	);
 
-	/// @notice Emitted when `setRoyalty` is called.
-	/// @param executor Address that triggered the royalty change.
-	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
-	/// @param newPayoutAddress The newly set royalties payout address.
-	/// @param oldPayoutAddress The previously set royalties payout address.
-	event CollectionRoyaltyPayoutAddressUpdated(
-		address indexed tokenContractAddress,
-		address indexed executor,
-		address indexed newPayoutAddress,
-		address oldPayoutAddress
-	);
-
-	/// @notice Emitted when `setRoyalty` is called.
-	/// @param tokenContractAddress Address of the ERC721 token contract (collection).
-	/// @param executor Address that triggered the royalty change.
-	/// @param newRoyaltiesAmount The newly set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	/// @param oldRoyaltiesAmount The previously set royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	event CollectionRoyaltyFeeAmountUpdated(
-		address indexed tokenContractAddress,
-		address indexed executor,
-		uint256 newRoyaltiesAmount,
-		uint256 oldRoyaltiesAmount
-	);
-
 	/*///////////////////////////////////////////////////////////////
                                     ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -73,7 +51,6 @@ interface IExchange {
 	error ExchangeNotApprovedWETH();
 	error ExchangeNotApprovedEIP721();
 	error ContractNotEIP721();
-	error RoyaltyNotWithinRange(uint256 min, uint256 max);
 	error SenderNotAuthorised();
 
 	/*///////////////////////////////////////////////////////////////
@@ -95,20 +72,6 @@ interface IExchange {
 		address payable recipient;
 		address buyer;
 	}
-
-	/*///////////////////////////////////////////////////////////////
-          UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
-    //////////////////////////////////////////////////////////////*/
-
-	/// @notice Function acting as the contracts constructor.
-	/// @param __maxRoyaltyPerMille The overall maximum royalty fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	/// @param __systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	/// @param __wethAddress Address of the canonical WETH deployment.
-	function __ERC721Exchange_init(
-		uint256 __maxRoyaltyPerMille,
-		uint256 __systemFeePerMille,
-		address __wethAddress
-	) external;
 
 	/*///////////////////////////////////////////////////////////////
                    PUBLIC SELL ORDER MANIPULATION FUNCTIONS
@@ -163,5 +126,5 @@ interface IExchange {
     //////////////////////////////////////////////////////////////*/
 
 	/// @return The current exchange version.
-	function version() external returns (bytes memory);
+	function version() external returns (uint256);
 }

@@ -42,7 +42,7 @@ const config: HardhatUserConfig = {
 		runOnCompile: true,
 		clear: true,
 		flat: true,
-		only: ['ERC721ExchangeUpgradeable.sol']
+		only: ['ERC721PutExchange.sol']
 	},
 	gasReporter: {
 		excludeContracts: ['contracts/mocks/', 'src/contracts/mocks/', 'test/', 'src/test/'],

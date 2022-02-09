@@ -220,52 +220,52 @@
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "WETH",
             "type": "t_contract(IERC20)1056",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:42"
+            "src": "src/contracts/ERC721PutExchange.sol:42"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:49"
+            "src": "src/contracts/ERC721PutExchange.sol:49"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:52"
+            "src": "src/contracts/ERC721PutExchange.sol:52"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:59"
+            "src": "src/contracts/ERC721PutExchange.sol:59"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:62"
+            "src": "src/contracts/ERC721PutExchange.sol:62"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:65"
+            "src": "src/contracts/ERC721PutExchange.sol:65"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "sellOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5412_storage)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:72"
+            "src": "src/contracts/ERC721PutExchange.sol:72"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "buyOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5419_storage)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:75"
+            "src": "src/contracts/ERC721PutExchange.sol:75"
           }
         ],
         "types": {
@@ -288,13 +288,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5412_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721PutExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)5412_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721PutExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -307,10 +307,10 @@
             ]
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5419_storage)": {
-            "label": "mapping(bytes => struct IExchange.BuyOrder)"
+            "label": "mapping(bytes => struct IERC721PutExchange.BuyOrder)"
           },
           "t_struct(BuyOrder)5419_storage": {
-            "label": "struct IExchange.BuyOrder",
+            "label": "struct IERC721PutExchange.BuyOrder",
             "members": [
               {
                 "label": "owner",
@@ -398,52 +398,52 @@
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "wETH",
             "type": "t_contract(IERC20)1056",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:43"
+            "src": "src/contracts/ERC721PutExchange.sol:43"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:50"
+            "src": "src/contracts/ERC721PutExchange.sol:50"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:53"
+            "src": "src/contracts/ERC721PutExchange.sol:53"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:60"
+            "src": "src/contracts/ERC721PutExchange.sol:60"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:63"
+            "src": "src/contracts/ERC721PutExchange.sol:63"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:66"
+            "src": "src/contracts/ERC721PutExchange.sol:66"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "sellOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5116_storage)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:73"
+            "src": "src/contracts/ERC721PutExchange.sol:73"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "buyOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5123_storage)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:76"
+            "src": "src/contracts/ERC721PutExchange.sol:76"
           }
         ],
         "types": {
@@ -466,13 +466,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5116_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721PutExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)5116_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721PutExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -485,10 +485,10 @@
             ]
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5123_storage)": {
-            "label": "mapping(bytes => struct IExchange.BuyOrder)"
+            "label": "mapping(bytes => struct IERC721PutExchange.BuyOrder)"
           },
           "t_struct(BuyOrder)5123_storage": {
-            "label": "struct IExchange.BuyOrder",
+            "label": "struct IERC721PutExchange.BuyOrder",
             "members": [
               {
                 "label": "owner",
@@ -576,46 +576,46 @@
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "wETH",
             "type": "t_contract(IERC20)1056",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:43"
+            "src": "src/contracts/ERC721PutExchange.sol:43"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:50"
+            "src": "src/contracts/ERC721PutExchange.sol:50"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:53"
+            "src": "src/contracts/ERC721PutExchange.sol:53"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:60"
+            "src": "src/contracts/ERC721PutExchange.sol:60"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:63"
+            "src": "src/contracts/ERC721PutExchange.sol:63"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:66"
+            "src": "src/contracts/ERC721PutExchange.sol:66"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "sellOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)4529_storage)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:73"
+            "src": "src/contracts/ERC721PutExchange.sol:73"
           }
         ],
         "types": {
@@ -638,13 +638,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)4529_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721PutExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)4529_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721PutExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -728,46 +728,46 @@
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "wETH",
             "type": "t_contract(IERC20)1056",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:43"
+            "src": "src/contracts/ERC721PutExchange.sol:43"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:50"
+            "src": "src/contracts/ERC721PutExchange.sol:50"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:53"
+            "src": "src/contracts/ERC721PutExchange.sol:53"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:60"
+            "src": "src/contracts/ERC721PutExchange.sol:60"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:63"
+            "src": "src/contracts/ERC721PutExchange.sol:63"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:66"
+            "src": "src/contracts/ERC721PutExchange.sol:66"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "sellOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)4529_storage)",
-            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:73"
+            "src": "src/contracts/ERC721PutExchange.sol:73"
           }
         ],
         "types": {
@@ -790,13 +790,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)4529_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721PutExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)4529_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721PutExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",

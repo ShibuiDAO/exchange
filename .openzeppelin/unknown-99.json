@@ -207,52 +207,52 @@
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "WETH",
             "type": "t_contract(IERC20)1056",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:32"
+            "src": "contracts/ERC721PutExchange.sol:32"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeeWallet",
             "type": "t_address_payable",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:150"
+            "src": "contracts/ERC721PutExchange.sol:150"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_systemFeePerMille",
             "type": "t_uint256",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:153"
+            "src": "contracts/ERC721PutExchange.sol:153"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "_maxRoyaltyPerMille",
             "type": "t_uint256",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:160"
+            "src": "contracts/ERC721PutExchange.sol:160"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "collectionPayoutAddresses",
             "type": "t_mapping(t_address,t_address_payable)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:163"
+            "src": "contracts/ERC721PutExchange.sol:163"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "payoutPerMille",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:166"
+            "src": "contracts/ERC721PutExchange.sol:166"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "sellOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)3754_storage)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:173"
+            "src": "contracts/ERC721PutExchange.sol:173"
           },
           {
-            "contract": "ERC721ExchangeUpgradeable",
+            "contract": "ERC721PutExchange",
             "label": "buyOrders",
             "type": "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)3761_storage)",
-            "src": "contracts/ERC721ExchangeUpgradeable.sol:176"
+            "src": "contracts/ERC721PutExchange.sol:176"
           }
         ],
         "types": {
@@ -275,13 +275,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)3754_storage)": {
-            "label": "mapping(bytes => struct ERC721ExchangeUpgradeable.SellOrder)"
+            "label": "mapping(bytes => struct ERC721PutExchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)3754_storage": {
-            "label": "struct ERC721ExchangeUpgradeable.SellOrder",
+            "label": "struct ERC721PutExchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -294,10 +294,10 @@
             ]
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)3761_storage)": {
-            "label": "mapping(bytes => struct ERC721ExchangeUpgradeable.BuyOrder)"
+            "label": "mapping(bytes => struct ERC721PutExchange.BuyOrder)"
           },
           "t_struct(BuyOrder)3761_storage": {
-            "label": "struct ERC721ExchangeUpgradeable.BuyOrder",
+            "label": "struct ERC721PutExchange.BuyOrder",
             "members": [
               {
                 "label": "owner",

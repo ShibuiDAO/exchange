@@ -1,15 +1,15 @@
 import { ethers, upgrades } from 'hardhat';
 import { WETHAddress } from '../constants.hardhat';
-import type { ERC721ExchangeUpgradeable } from '../typechain';
+import type { ERC721PutExchange } from '../typechain';
 
 async function main() {
 	const [deployer] = await ethers.getSigners();
 
-	const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
-	const ERC721Exchange = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, WETHAddress], {
+	const ERC721PutExchangeContract = await ethers.getContractFactory('ERC721PutExchange');
+	const ERC721Exchange = (await upgrades.deployProxy(ERC721PutExchangeContract, [300, 29, WETHAddress], {
 		initializer: '__ERC721Exchange_init',
 		kind: 'transparent'
-	})) as ERC721ExchangeUpgradeable;
+	})) as ERC721PutExchange;
 
 	await ERC721Exchange.deployed();
 

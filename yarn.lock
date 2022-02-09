@@ -1064,6 +1064,10 @@
     "@sentry/types" "5.30.0"
     tslib "^1.9.3"
 
+"@shibuidao/solid@shibuidao/solid":
+  version "0.1.0"
+  resolved "https://codeload.github.com/shibuidao/solid/tar.gz/1fb2ede8b433bc09024fc2c1584d210c4a6cc9fa"
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"

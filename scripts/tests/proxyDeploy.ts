@@ -2,7 +2,7 @@ import { defaultAbiCoder } from '@ethersproject/abi';
 import { mkdirSync, writeFileSync } from 'fs';
 import { ethers, upgrades } from 'hardhat';
 import { join } from 'path';
-import type { ERC721ExchangeUpgradeable, WETH } from '../../typechain';
+import type { ERC721PutExchange, WETH } from '../../typechain';
 
 async function main() {
 	const [deployer] = await ethers.getSigners();
@@ -13,26 +13,26 @@ async function main() {
 
 	await WETH.deployed();
 
-	const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
-	const ERC721Exchange = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, WETH.address], {
+	const ERC721PutExchangeContract = await ethers.getContractFactory('ERC721PutExchange');
+	const ERC721Exchange = (await upgrades.deployProxy(ERC721PutExchangeContract, [300, 29, WETH.address], {
 		initializer: '__ERC721Exchange_init',
 		kind: 'transparent'
-	})) as ERC721ExchangeUpgradeable;
+	})) as ERC721PutExchange;
 
 	await ERC721Exchange.deployed();
 
-	const ERC721ExchangeUpgrades = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, WETH.address], {
+	const ERC721ExchangeUpgrades = (await upgrades.deployProxy(ERC721PutExchangeContract, [300, 29, WETH.address], {
 		initializer: '__ERC721Exchange_init',
 		kind: 'transparent'
-	})) as ERC721ExchangeUpgradeable;
+	})) as ERC721PutExchange;
 
 	await ERC721ExchangeUpgrades.deployed();
 
-	const ERC721ExchangeUpgradedContract = await ethers.getContractFactory('ERC721ExchangeUpgradeableUpgraded');
+	const ERC721ExchangeUpgradedContract = await ethers.getContractFactory('ERC721PutExchangeUpgraded');
 	const ERC721ExchangeUpgradesUpgraded = (await upgrades.upgradeProxy(
 		ERC721ExchangeUpgrades.address,
 		ERC721ExchangeUpgradedContract
-	)) as ERC721ExchangeUpgradeable;
+	)) as ERC721PutExchange;
 
 	console.log(
 		[

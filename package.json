@@ -49,6 +49,7 @@
 		"@sapphire/eslint-config": "^3.2.3",
 		"@sapphire/prettier-config": "^1.1.6",
 		"@sapphire/ts-config": "^3.0.0",
+		"@shibuidao/solid": "shibuidao/solid",
 		"@typechain/ethers-v5": "^7.1.2",
 		"@typechain/hardhat": "^2.3.0",
 		"@types/chai": "^4.2.16",

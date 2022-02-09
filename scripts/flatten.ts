@@ -2,7 +2,7 @@ import fs from 'fs';
 import hre from 'hardhat';
 import path from 'path';
 
-export const CONTRACT_FILE = 'ERC721ExchangeUpgradeable.sol';
+export const CONTRACT_FILE = 'ERC721PutExchange.sol';
 export const SDPX_LICENSE = 'BSD-3-Clause';
 export const OUT_DIR = path.join(__dirname, '..', 'dist');
 
