@@ -3,11 +3,11 @@ pragma solidity ^0.8.11;
 import {BaseTest} from "./base/BaseTest.sol";
 
 import {IHevm} from "./utils/IHevm.sol";
-import {IExchange} from "../contracts/interfaces/IExchange.sol";
+import {IERC721Exchange} from "../contracts/interfaces/IERC721Exchange.sol";
 
 contract ERC721ExchangeUpgradeableTest is BaseTest {
-	IExchange internal erc721Exchange;
-	IExchange internal erc721ExchangeUpgraded;
+	IERC721Exchange internal erc721Exchange;
+	IERC721Exchange internal erc721ExchangeUpgraded;
 
 	function setUp() public {
 		string[] memory deploymentAddressCommand = new string[](2);
@@ -17,8 +17,8 @@ contract ERC721ExchangeUpgradeableTest is BaseTest {
 		bytes memory deploymentAddresses = VM.ffi(deploymentAddressCommand);
 		(address _erc721exchange, address _erc721exchangeUpgeaded) = abi.decode(deploymentAddresses, (address, address));
 
-		erc721Exchange = IExchange(_erc721exchange);
-		erc721ExchangeUpgraded = IExchange(_erc721exchangeUpgeaded);
+		erc721Exchange = IERC721Exchange(_erc721exchange);
+		erc721ExchangeUpgraded = IERC721Exchange(_erc721exchangeUpgeaded);
 	}
 
 	function testDeploymentVersion() public {

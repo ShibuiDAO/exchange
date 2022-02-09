@@ -2,7 +2,7 @@
 pragma solidity ^0.8.11;
 pragma abicoder v2;
 
-import {IExchange} from "./interfaces/IExchange.sol";
+import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
@@ -27,7 +27,7 @@ contract ERC721ExchangeUpgradeable is
 	OwnableUpgradeable,
 	PausableUpgradeable,
 	ReentrancyGuardUpgradeable,
-	IExchange
+	IERC721Exchange
 {
 	using ERC165CheckerUpgradeable for address;
 

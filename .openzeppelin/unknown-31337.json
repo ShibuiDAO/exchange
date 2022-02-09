@@ -278,13 +278,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5412_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721Exchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)5412_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721Exchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -297,10 +297,10 @@
             ]
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5419_storage)": {
-            "label": "mapping(bytes => struct IExchange.BuyOrder)"
+            "label": "mapping(bytes => struct IERC721Exchange.BuyOrder)"
           },
           "t_struct(BuyOrder)5419_storage": {
-            "label": "struct IExchange.BuyOrder",
+            "label": "struct IERC721Exchange.BuyOrder",
             "members": [
               {
                 "label": "owner",
@@ -456,13 +456,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5116_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721Exchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)5116_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721Exchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -475,10 +475,10 @@
             ]
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5123_storage)": {
-            "label": "mapping(bytes => struct IExchange.BuyOrder)"
+            "label": "mapping(bytes => struct IERC721Exchange.BuyOrder)"
           },
           "t_struct(BuyOrder)5123_storage": {
-            "label": "struct IExchange.BuyOrder",
+            "label": "struct IERC721Exchange.BuyOrder",
             "members": [
               {
                 "label": "owner",
@@ -634,13 +634,13 @@
             "label": "mapping(address => uint256)"
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(SellOrder)5116_storage)": {
-            "label": "mapping(bytes => struct IExchange.SellOrder)"
+            "label": "mapping(bytes => struct IERC721Exchange.SellOrder)"
           },
           "t_bytes_storage": {
             "label": "bytes"
           },
           "t_struct(SellOrder)5116_storage": {
-            "label": "struct IExchange.SellOrder",
+            "label": "struct IERC721Exchange.SellOrder",
             "members": [
               {
                 "label": "expiration",
@@ -653,10 +653,10 @@
             ]
           },
           "t_mapping(t_bytes_memory_ptr,t_struct(BuyOrder)5123_storage)": {
-            "label": "mapping(bytes => struct IExchange.BuyOrder)"
+            "label": "mapping(bytes => struct IERC721Exchange.BuyOrder)"
           },
           "t_struct(BuyOrder)5123_storage": {
-            "label": "struct IExchange.BuyOrder",
+            "label": "struct IERC721Exchange.BuyOrder",
             "members": [
               {
                 "label": "owner",

@@ -640,7 +640,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct IExchange.BuyOrder",
+        "internalType": "struct IERC721Exchange.BuyOrder",
         "name": "",
         "type": "tuple"
       }
@@ -719,7 +719,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct IExchange.SellOrder",
+        "internalType": "struct IERC721Exchange.SellOrder",
         "name": "",
         "type": "tuple"
       }
