@@ -19,7 +19,6 @@ import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
-/// @author ShibuiDAO
 /// @dev Handles the creation and execution of sell orders as well as their storage.
 /// @author ShibuiDAO
 contract ERC721ExchangeUpgradeable is
