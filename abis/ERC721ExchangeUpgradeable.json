@@ -176,68 +176,6 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "tokenContractAddress",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "executor",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newRoyaltiesAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldRoyaltiesAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CollectionRoyaltyFeeAmountUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "tokenContractAddress",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "executor",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newPayoutAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "oldPayoutAddress",
-        "type": "address"
-      }
-    ],
-    "name": "CollectionRoyaltyPayoutAddressUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
@@ -386,13 +324,13 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "__maxRoyaltyPerMille",
+        "name": "__systemFeePerMille",
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "__systemFeePerMille",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_royaltyEngine",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -652,44 +590,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_tokenContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getRoyaltyPayoutAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_tokenContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getRoyaltyPayoutRate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_seller",
         "type": "address"
       },
@@ -768,6 +668,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "royaltyEngine",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -794,29 +707,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_tokenContractAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address payable",
-        "name": "_payoutAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_payoutPerMille",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRoyalty",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -2,8 +2,6 @@
 pragma solidity ^0.8.11;
 pragma abicoder v2;
 
-import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
-
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -13,14 +11,17 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/se
 import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IRoyaltyEngine} from "@shibuidao/royalty-registry/src/contracts/IRoyaltyEngine.sol";
+import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
 
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
-/// @author Nejc Drobnic
+/// @author ShibuiDAO
 /// @dev Handles the creation and execution of sell orders as well as their storage.
+/// @author ShibuiDAO
 contract ERC721ExchangeUpgradeable is
 	Initializable,
 	ContextUpgradeable,
@@ -36,8 +37,10 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
-    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-    bytes4 private immutable interfaceIdERC721 = 0x80ac58cd;
+	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+	bytes4 private immutable interfaceIdERC721 = type(IERC721).interfaceId;
+
+	address public royaltyEngine;
 
 	/// @dev Interface of the main canonical WETH deployment.
 	IERC20 private wETH;
@@ -51,19 +54,6 @@ contract ERC721ExchangeUpgradeable is
 
 	/// @dev System fee in %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	uint256 private _systemFeePerMille;
-
-	/*///////////////////////////////////////////////////////////////
-                            COLLECTION ROYALTIES
-    //////////////////////////////////////////////////////////////*/
-
-	/// @dev Maximum collection royalty fee. The maximum fee value is equal to 30%. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	uint256 private _maxRoyaltyPerMille;
-
-	/// @dev Maps a ERC721 contract address to its payout address.
-	mapping(address => address payable) private collectionPayoutAddresses;
-
-	/// @dev Maps a ERC721 contract address to its fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	mapping(address => uint256) private payoutPerMille;
 
 	/*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE
@@ -80,12 +70,12 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Function acting as the contracts constructor.
-	/// @param __maxRoyaltyPerMille The overall maximum royalty fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	/// @param __systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	/// @param __wethAddress Address of the canonical WETH deployment.
+	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
-		uint256 __maxRoyaltyPerMille,
 		uint256 __systemFeePerMille,
+		address _royaltyEngine,
 		address __wethAddress
 	) public override initializer {
 		__Context_init();
@@ -93,8 +83,8 @@ contract ERC721ExchangeUpgradeable is
 		__Pausable_init();
 		__ReentrancyGuard_init();
 
-		_maxRoyaltyPerMille = __maxRoyaltyPerMille;
 		_systemFeePerMille = __systemFeePerMille;
+		royaltyEngine = _royaltyEngine;
 
 		wETH = IERC20(__wethAddress);
 	}
@@ -129,7 +119,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price
 	) external override whenNotPaused {
-        cancelSellOrder(_tokenContractAddress, _tokenId);
+		cancelSellOrder(_tokenContractAddress, _tokenId);
 
 		SellOrder memory sellOrder = SellOrder(_expiration, _price);
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
@@ -209,7 +199,7 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedWETH();
 		}
 
-        cancelBuyOrder(_tokenContractAddress, _tokenId);
+		cancelBuyOrder(_tokenContractAddress, _tokenId);
 
 		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
 		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
@@ -383,18 +373,26 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedEIP721();
 		}
 
-		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * msg.value) / 1000;
 		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * msg.value) / 1000 : 0;
-		uint256 remainingPayout = msg.value - royaltyPayout - systemFeePayout;
-
-		if (royaltyPayout > 0) {
-			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
-			SafeTransferLib.safeTransferETH(royaltyPayoutAddress, royaltyPayout);
-		}
+		uint256 remainingPayout = msg.value - systemFeePayout;
+		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngine(royaltyEngine).getRoyalty(
+			_tokenContractAddress,
+			_tokenId,
+			remainingPayout
+		);
 
 		if (systemFeePayout > 0) SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
 
-		SafeTransferLib.safeTransferETH(_seller, remainingPayout);
+		uint256 recipientsLength = recipients.length;
+		for (uint256 i = 0; i < recipientsLength; i = uncheckedInc(i)) {
+			uint256 amount = amounts[i];
+			if (amount == 0 || remainingPayout == 0) continue;
+			uint256 cappedRoyaltyTransaction = amount <= remainingPayout ? amount : amount - (amount - remainingPayout);
+			SafeTransferLib.safeTransferETH(recipients[i], cappedRoyaltyTransaction);
+			remainingPayout -= cappedRoyaltyTransaction;
+		}
+
+		if (remainingPayout > 0) SafeTransferLib.safeTransferETH(_seller, remainingPayout);
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
 		_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
@@ -484,18 +482,26 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedEIP721();
 		}
 
-		uint256 royaltyPayout = (payoutPerMille[_tokenContractAddress] * buyOrder.offer) / 1000;
-		uint256 systemFeePayout = (_systemFeePerMille * buyOrder.offer) / 1000;
-		uint256 remainingPayout = buyOrder.offer - royaltyPayout - systemFeePayout;
+		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * buyOrder.offer) / 1000 : 0;
+		uint256 remainingPayout = buyOrder.offer - systemFeePayout;
+		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngine(royaltyEngine).getRoyalty(
+			_tokenContractAddress,
+			_tokenId,
+			remainingPayout
+		);
 
-		if (royaltyPayout > 0) {
-			address payable royaltyPayoutAddress = collectionPayoutAddresses[_tokenContractAddress];
-			wETH.transferFrom(_buyer, royaltyPayoutAddress, royaltyPayout);
+		if (systemFeePayout > 0) wETH.transferFrom(_buyer, _systemFeeWallet, systemFeePayout);
+
+		uint256 recipientsLength = recipients.length;
+		for (uint256 i = 0; i < recipientsLength; i = uncheckedInc(i)) {
+			uint256 amount = amounts[i];
+			if (amount == 0 || remainingPayout == 0) continue;
+			uint256 cappedRoyaltyTransaction = amount <= remainingPayout ? amount : amount - (amount - remainingPayout);
+            wETH.transferFrom(_buyer, recipients[i], cappedRoyaltyTransaction);
+			remainingPayout -= cappedRoyaltyTransaction;
 		}
 
-		wETH.transferFrom(_buyer, _systemFeeWallet, systemFeePayout);
-		wETH.transferFrom(_buyer, buyOrder.owner, remainingPayout);
-
+		if (remainingPayout > 0) wETH.transferFrom(_buyer, buyOrder.owner, remainingPayout);
 		erc721.safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
 
 		_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
@@ -527,58 +533,6 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId
 	) internal pure returns (bytes memory) {
 		return abi.encode(_userAddress, _tokenContractAddress, _tokenId);
-	}
-
-	/*///////////////////////////////////////////////////////////////
-                        COLLECTION ROYALTY FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-	/// @notice Sets a new or initial value for the collection royalty fee.
-	/// @param _tokenContractAddress The ERC721 contract (collection) for which to set the fee/royalty.
-	/// @param _payoutAddress The address to which royalties get paid.
-	/// @param _payoutPerMille The royalty/fee amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	function setRoyalty(
-		address _tokenContractAddress,
-		address payable _payoutAddress,
-		uint256 _payoutPerMille
-	) external {
-		if (!(_payoutPerMille >= 0 && _payoutPerMille <= _maxRoyaltyPerMille)) {
-			revert RoyaltyNotWithinRange({min: 0, max: _maxRoyaltyPerMille});
-		}
-		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
-			revert ContractNotEIP721();
-		}
-
-		if (!(_msgSender() == owner())) {
-			Ownable ownableNFTContract = Ownable(_tokenContractAddress);
-
-			if (_msgSender() != ownableNFTContract.owner()) {
-				revert SenderNotAuthorised();
-			}
-		}
-
-		emit CollectionRoyaltyPayoutAddressUpdated(
-			_tokenContractAddress,
-			_msgSender(),
-			_payoutAddress,
-			collectionPayoutAddresses[_tokenContractAddress]
-		);
-		collectionPayoutAddresses[_tokenContractAddress] = _payoutAddress;
-
-		emit CollectionRoyaltyFeeAmountUpdated(_tokenContractAddress, _msgSender(), _payoutPerMille, payoutPerMille[_tokenContractAddress]);
-		payoutPerMille[_tokenContractAddress] = _payoutPerMille;
-	}
-
-	/// @param _tokenContractAddress The ERC721 contract (collection) for which to get the payout address.
-	/// @return The collection payout address.
-	function getRoyaltyPayoutAddress(address _tokenContractAddress) public view returns (address) {
-		return collectionPayoutAddresses[_tokenContractAddress];
-	}
-
-	/// @param _tokenContractAddress The ERC721 contract (collection) for which to get the fee/royalties amount.
-	/// @return The collection fee/royalties amount. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	function getRoyaltyPayoutRate(address _tokenContractAddress) public view returns (uint256) {
-		return payoutPerMille[_tokenContractAddress];
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -615,6 +569,13 @@ contract ERC721ExchangeUpgradeable is
 	function withdraw() public onlyOwner {
 		uint256 balance = address(this).balance;
 		payable(msg.sender).transfer(balance);
+	}
+
+    /// @dev Increments a loop within a unchecked context.
+	function uncheckedInc(uint256 i) private pure returns (uint256) {
+		unchecked {
+			return i + 1;
+		}
 	}
 
 	/*///////////////////////////////////////////////////////////////
