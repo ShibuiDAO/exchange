@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.9;
 pragma abicoder v2;
 
 import {ERC165} from "@shibuidao/solid/src/utils/ERC165.sol";
@@ -16,6 +16,8 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 
 	mapping(uint256 => mapping(bytes => bytes)) public orders;
 
+	/// @dev Never called.
+	/// @custom:oz-upgrades-unsafe-allow constructor
 	// solhint-disable-next-line no-empty-blocks
 	constructor() initializer {}
 

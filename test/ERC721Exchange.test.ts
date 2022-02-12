@@ -3,12 +3,23 @@ import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
 import { zeroAddress } from '../constants.hardhat';
-import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721, WETHMock } from '../typechain';
+import type {
+	ERC721ExchangeUpgradeable,
+	ERC721ExchangeUpgradeableUpgraded,
+	OrderBookUpgradeable,
+	RoyaltyEngineV1,
+	RoyaltyRegistry,
+	TestERC721,
+	WETHMock
+} from '../typechain';
 
 chai.use(solidity);
 
 describe('ERC721Exchange', () => {
 	let contractWETH: WETHMock;
+	let contractRoyaltyRegistry: RoyaltyRegistry;
+	let contractRoyaltyEngineV1: RoyaltyEngineV1;
+	let contractOrderBookUpgradeable: OrderBookUpgradeable;
 	let contract: ERC721ExchangeUpgradeable;
 	let contractERC721: TestERC721;
 
@@ -16,12 +27,39 @@ describe('ERC721Exchange', () => {
 		const WETHContract = await ethers.getContractFactory('WETHMock');
 		contractWETH = (await WETHContract.deploy()) as WETHMock;
 
-		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
-		contract = (await upgrades.deployProxy(ERC721ExchangeUpgradeableContract, [300, 29, contractWETH.address], {
-			initializer: '__ERC721Exchange_init',
+		const RoyaltyRegistryContract = await ethers.getContractFactory('RoyaltyRegistry');
+		contractRoyaltyRegistry = (await upgrades.deployProxy(RoyaltyRegistryContract, [], {
+			initializer: '__RoyaltyRegistry_init',
 			kind: 'transparent'
-		})) as ERC721ExchangeUpgradeable;
+		})) as RoyaltyRegistry;
+		await contractRoyaltyRegistry.deployed();
+
+		const RoyaltyEngineV1Contract = await ethers.getContractFactory('RoyaltyEngineV1');
+		contractRoyaltyEngineV1 = (await upgrades.deployProxy(RoyaltyEngineV1Contract, [contractRoyaltyRegistry.address], {
+			initializer: '__RoyaltyEngineV1_init',
+			kind: 'transparent'
+		})) as RoyaltyEngineV1;
+		await contractRoyaltyEngineV1.deployed();
+
+		const OrderBookUpgradeableContract = await ethers.getContractFactory('OrderBookUpgradeable');
+		contractOrderBookUpgradeable = (await upgrades.deployProxy(OrderBookUpgradeableContract, [], {
+			initializer: '__OrderBook_init',
+			kind: 'transparent'
+		})) as OrderBookUpgradeable;
+		await contractOrderBookUpgradeable.deployed();
+
+		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
+		contract = (await upgrades.deployProxy(
+			ERC721ExchangeUpgradeableContract,
+			[29, contractRoyaltyEngineV1.address, contractOrderBookUpgradeable.address, contractWETH.address],
+			{
+				initializer: '__ERC721Exchange_init',
+				kind: 'transparent'
+			}
+		)) as ERC721ExchangeUpgradeable;
 		await contract.deployed();
+
+		await contractOrderBookUpgradeable.addOrderKeeper(contract.address);
 
 		const TestERC721Contract = await ethers.getContractFactory('TestERC721');
 		contractERC721 = (await TestERC721Contract.deploy()) as TestERC721;

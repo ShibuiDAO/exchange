@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.9;
 pragma abicoder v2;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -11,7 +11,7 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/se
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {IRoyaltyEngine} from "@shibuidao/royalty-registry/src/contracts/IRoyaltyEngine.sol";
+import {IRoyaltyEngineV1} from "@shibuidao/royalty-registry/src/contracts/IRoyaltyEngineV1.sol";
 import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
 import {IOrderBook} from "./interfaces/IOrderBook.sol";
 
@@ -60,6 +60,7 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @dev Never called.
+	/// @custom:oz-upgrades-unsafe-allow constructor
 	// solhint-disable-next-line no-empty-blocks
 	constructor() initializer {}
 
@@ -80,7 +81,7 @@ contract ERC721ExchangeUpgradeable is
 
 		_systemFeePerMille = __systemFeePerMille;
 
-		require(ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngine).interfaceId), "ENGINE_ADDRESS_NOT_COMPLIANT");
+		require(ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngineV1).interfaceId), "ENGINE_ADDRESS_NOT_COMPLIANT");
 		royaltyEngine = _royaltyEngine;
 
 		require(ERC165Checker.supportsInterface(_orderBook, type(IOrderBook).interfaceId), "ORDER_BOOK_ADDRESS_NOT_COMPLIANT");
@@ -242,11 +243,13 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (SellOrder memory) {
-		return
-			abi.decode(
-				IOrderBook(orderBook).fetchOrder(OrderBookVersioning.SELL_ORDER_INITIAL, _formOrderId(_seller, _tokenContractAddress, _tokenId)),
-				(SellOrder)
-			);
+		bytes memory order = IOrderBook(orderBook).fetchOrder(
+			OrderBookVersioning.SELL_ORDER_INITIAL,
+			_formOrderId(_seller, _tokenContractAddress, _tokenId)
+		);
+
+		if (order.length == 0) return SellOrder(0, 0);
+		return abi.decode(order, (SellOrder));
 	}
 
 	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
@@ -279,6 +282,12 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (BuyOrder memory) {
+		bytes memory order = IOrderBook(orderBook).fetchOrder(
+			OrderBookVersioning.BUY_ORDER_INITIAL,
+			_formOrderId(_buyer, _tokenContractAddress, _tokenId)
+		);
+
+		if (order.length == 0) return BuyOrder(payable(0), 0, 0);
 		return
 			abi.decode(
 				IOrderBook(orderBook).fetchOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId)),
@@ -387,7 +396,7 @@ contract ERC721ExchangeUpgradeable is
 
 		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * msg.value) / 1000 : 0;
 		uint256 remainingPayout = msg.value - systemFeePayout;
-		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngine(royaltyEngine).getRoyalty(
+		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngineV1(royaltyEngine).getRoyalty(
 			_tokenContractAddress,
 			_tokenId,
 			remainingPayout
@@ -500,7 +509,7 @@ contract ERC721ExchangeUpgradeable is
 
 		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * buyOrder.offer) / 1000 : 0;
 		uint256 remainingPayout = buyOrder.offer - systemFeePayout;
-		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngine(royaltyEngine).getRoyalty(
+		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngineV1(royaltyEngine).getRoyalty(
 			_tokenContractAddress,
 			_tokenId,
 			remainingPayout
@@ -598,7 +607,7 @@ contract ERC721ExchangeUpgradeable is
                         INFORMATIVE FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-	/// @return The current exchange version.
+	/// @inheritdoc IERC721Exchange
 	function version() public pure virtual override returns (uint256) {
 		return 1;
 	}
