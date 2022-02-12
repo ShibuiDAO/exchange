@@ -1,6 +1,11 @@
 [
   {
     "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
     "name": "AssetStoredOwnerNotCurrentOwner",
     "type": "error"
   },
@@ -334,6 +339,11 @@
       },
       {
         "internalType": "address",
+        "name": "_orderBook",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "__wethAddress",
         "type": "address"
       }
@@ -622,6 +632,19 @@
         "internalType": "struct IERC721Exchange.SellOrder",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "orderBook",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

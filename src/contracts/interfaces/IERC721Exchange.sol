@@ -123,6 +123,7 @@ interface IERC721Exchange {
 	function __ERC721Exchange_init(
 		uint256 __maxRoyaltyPerMille,
 		address _royaltyEngine,
+		address _orderBook,
 		address __wethAddress
 	) external;
 

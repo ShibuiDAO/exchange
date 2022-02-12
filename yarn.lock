@@ -1089,10 +1089,10 @@
     "@sentry/types" "5.30.0"
     tslib "^1.9.3"
 
-"@shibuidao/royalty-registry@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@shibuidao/royalty-registry/-/royalty-registry-0.1.1.tgz#a00b7e24c0f148448af86a8e0d71471a546964ec"
-  integrity sha512-MZPiIWPKoV4k884PdzVRb4sDeloA3OtQ3UWb9+d/0MsisPixAeoMDhHGUmxkqSxrHBkezWi41MNYX1C0X5v/bw==
+"@shibuidao/royalty-registry@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@shibuidao/royalty-registry/-/royalty-registry-0.1.2.tgz#b6152fc2a683cf90a09adccc2d43a6de0bba361f"
+  integrity sha512-YJehcsVZ3FwJV2cPl1LojpBUlliguFukw1tEt/Oc1+J/wc7pucdM5dUgXXqCIoSSfH2OAaRFQNkzNY668GIocA==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/bytes" "^5.5.0"

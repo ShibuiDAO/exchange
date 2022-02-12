@@ -8,15 +8,16 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
-
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IRoyaltyEngine} from "@shibuidao/royalty-registry/src/contracts/IRoyaltyEngine.sol";
 import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
+import {IOrderBook} from "./interfaces/IOrderBook.sol";
 
+import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+import {OrderBookVersioning} from "./libraries/OrderBookVersioning.sol";
 import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
 /// @dev Handles the creation and execution of sell orders as well as their storage.
@@ -29,8 +30,6 @@ contract ERC721ExchangeUpgradeable is
 	ReentrancyGuardUpgradeable,
 	IERC721Exchange
 {
-	using ERC165CheckerUpgradeable for address;
-
 	/*///////////////////////////////////////////////////////////////
                                   CONSTANTS
     //////////////////////////////////////////////////////////////*/
@@ -40,6 +39,8 @@ contract ERC721ExchangeUpgradeable is
 	bytes4 private immutable interfaceIdERC721 = type(IERC721).interfaceId;
 
 	address public royaltyEngine;
+
+	address public orderBook;
 
 	/// @dev Interface of the main canonical WETH deployment.
 	IERC20 private wETH;
@@ -55,18 +56,12 @@ contract ERC721ExchangeUpgradeable is
 	uint256 private _systemFeePerMille;
 
 	/*///////////////////////////////////////////////////////////////
-                                ORDER STORAGE
-    //////////////////////////////////////////////////////////////*/
-
-	/// @dev Maps orderId (composed of `{sellerAddress}-{tokenContractAddress}-{tokenId}`) to the SellOrder.
-	mapping(bytes => SellOrder) private sellOrders;
-
-	/// @dev Maps orderId (composed of `{buyerAddress}-{tokenContractAddress}-{tokenId}`) to the BuyOrder.
-	mapping(bytes => BuyOrder) private buyOrders;
-
-	/*///////////////////////////////////////////////////////////////
           UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
     //////////////////////////////////////////////////////////////*/
+
+	/// @dev Never called.
+	// solhint-disable-next-line no-empty-blocks
+	constructor() initializer {}
 
 	/// @notice Function acting as the contracts constructor.
 	/// @param __systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
@@ -75,6 +70,7 @@ contract ERC721ExchangeUpgradeable is
 	function __ERC721Exchange_init(
 		uint256 __systemFeePerMille,
 		address _royaltyEngine,
+		address _orderBook,
 		address __wethAddress
 	) public override initializer {
 		__Context_init();
@@ -83,7 +79,12 @@ contract ERC721ExchangeUpgradeable is
 		__ReentrancyGuard_init();
 
 		_systemFeePerMille = __systemFeePerMille;
+
+		require(ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngine).interfaceId), "ENGINE_ADDRESS_NOT_COMPLIANT");
 		royaltyEngine = _royaltyEngine;
+
+		require(ERC165Checker.supportsInterface(_orderBook, type(IOrderBook).interfaceId), "ORDER_BOOK_ADDRESS_NOT_COMPLIANT");
+		orderBook = _orderBook;
 
 		wETH = IERC20(__wethAddress);
 	}
@@ -241,7 +242,11 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (SellOrder memory) {
-		return sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
+		return
+			abi.decode(
+				IOrderBook(orderBook).fetchOrder(OrderBookVersioning.SELL_ORDER_INITIAL, _formOrderId(_seller, _tokenContractAddress, _tokenId)),
+				(SellOrder)
+			);
 	}
 
 	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
@@ -255,9 +260,9 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (bool) {
-		SellOrder memory sellOrder = sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)];
+		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
-		return 0 < sellOrder.expiration;
+		return 1 <= sellOrder.expiration;
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -274,7 +279,11 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (BuyOrder memory) {
-		return buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
+		return
+			abi.decode(
+				IOrderBook(orderBook).fetchOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId)),
+				(BuyOrder)
+			);
 	}
 
 	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
@@ -288,9 +297,9 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) public view returns (bool) {
-		BuyOrder memory buyOrder = buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)];
+		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
-		return 0 < buyOrder.expiration;
+		return 1 <= buyOrder.expiration;
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -311,7 +320,7 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderExists();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
+		if (!ERC165Checker.supportsInterface(_tokenContractAddress, interfaceIdERC721)) {
 			revert ContractNotEIP721();
 		}
 
@@ -329,7 +338,11 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedEIP721();
 		}
 
-		sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)] = _sellOrder;
+		IOrderBook(orderBook).bookOrder(
+			OrderBookVersioning.SELL_ORDER_INITIAL,
+			_formOrderId(_seller, _tokenContractAddress, _tokenId),
+			abi.encode(_sellOrder)
+		);
 		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
 	}
 
@@ -407,7 +420,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal {
-		delete (sellOrders[_formOrderId(_seller, _tokenContractAddress, _tokenId)]);
+		IOrderBook(orderBook).removeOrder(OrderBookVersioning.SELL_ORDER_INITIAL, _formOrderId(_seller, _tokenContractAddress, _tokenId));
 
 		emit SellOrderCanceled(_seller, _tokenContractAddress, _tokenId);
 	}
@@ -426,7 +439,7 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderExists();
 		}
 
-		if (!_tokenContractAddress.supportsInterface(interfaceIdERC721)) {
+		if (!ERC165Checker.supportsInterface(_tokenContractAddress, interfaceIdERC721)) {
 			revert ContractNotEIP721();
 		}
 
@@ -440,7 +453,11 @@ contract ERC721ExchangeUpgradeable is
 			revert AssetStoredOwnerNotCurrentOwner();
 		}
 
-		buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)] = _buyOrder;
+		IOrderBook(orderBook).bookOrder(
+			OrderBookVersioning.BUY_ORDER_INITIAL,
+			_formOrderId(_buyer, _tokenContractAddress, _tokenId),
+			abi.encode(_buyOrder)
+		);
 		emit BuyOrderBooked(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
 	}
 
@@ -496,7 +513,7 @@ contract ERC721ExchangeUpgradeable is
 			uint256 amount = amounts[i];
 			if (amount == 0 || remainingPayout == 0) continue;
 			uint256 cappedRoyaltyTransaction = amount <= remainingPayout ? amount : amount - (amount - remainingPayout);
-            wETH.transferFrom(_buyer, recipients[i], cappedRoyaltyTransaction);
+			wETH.transferFrom(_buyer, recipients[i], cappedRoyaltyTransaction);
 			remainingPayout -= cappedRoyaltyTransaction;
 		}
 
@@ -516,7 +533,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal {
-		delete (buyOrders[_formOrderId(_buyer, _tokenContractAddress, _tokenId)]);
+		IOrderBook(orderBook).removeOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId));
 
 		emit BuyOrderCanceled(_buyer, _tokenContractAddress, _tokenId);
 	}
@@ -570,7 +587,7 @@ contract ERC721ExchangeUpgradeable is
 		payable(msg.sender).transfer(balance);
 	}
 
-    /// @dev Increments a loop within a unchecked context.
+	/// @dev Increments a loop within a unchecked context.
 	function uncheckedInc(uint256 i) private pure returns (uint256) {
 		unchecked {
 			return i + 1;
