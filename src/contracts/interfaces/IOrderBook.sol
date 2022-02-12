@@ -6,8 +6,11 @@ import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 
 /// @author ShibuiDAO
 interface IOrderBook is IERC165 {
+	event RawOrderBook(uint256 indexed dataStructureId, bytes indexed orderKey, bytes indexed order);
+	event RawOrderCancel(uint256 indexed dataStructureId, bytes indexed orderKey);
+
 	// solhint-disable-next-line func-name-mixedcase
-    function __OrderBook_init() external;
+	function __OrderBook_init() external;
 
 	function fetchOrder(uint256 _dataStructureId, bytes calldata _orderKey) external view returns (bytes memory order);
 
@@ -17,5 +20,5 @@ interface IOrderBook is IERC165 {
 		bytes calldata _order
 	) external;
 
-	function removeOrder(uint256 _dataStructureId, bytes calldata _orderKey) external;
+	function cancelOrder(uint256 _dataStructureId, bytes calldata _orderKey) external;
 }

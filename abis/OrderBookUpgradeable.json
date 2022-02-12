@@ -24,6 +24,50 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "dataStructureId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes",
+        "name": "orderKey",
+        "type": "bytes"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes",
+        "name": "order",
+        "type": "bytes"
+      }
+    ],
+    "name": "RawOrderBook",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "dataStructureId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes",
+        "name": "orderKey",
+        "type": "bytes"
+      }
+    ],
+    "name": "RawOrderCancel",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "__OrderBook_init",
     "outputs": [],
@@ -62,6 +106,37 @@
       }
     ],
     "name": "bookOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dataStructureId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_orderKey",
+        "type": "bytes"
+      }
+    ],
+    "name": "cancelOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_keeperAddress",
+        "type": "address"
+      }
+    ],
+    "name": "cancelOrderKeeper",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -144,37 +219,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_dataStructureId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_orderKey",
-        "type": "bytes"
-      }
-    ],
-    "name": "removeOrder",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_keeperAddress",
-        "type": "address"
-      }
-    ],
-    "name": "removeOrderKeeper",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

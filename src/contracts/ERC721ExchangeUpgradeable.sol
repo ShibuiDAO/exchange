@@ -429,7 +429,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal {
-		IOrderBook(orderBook).removeOrder(OrderBookVersioning.SELL_ORDER_INITIAL, _formOrderId(_seller, _tokenContractAddress, _tokenId));
+		IOrderBook(orderBook).cancelOrder(OrderBookVersioning.SELL_ORDER_INITIAL, _formOrderId(_seller, _tokenContractAddress, _tokenId));
 
 		emit SellOrderCanceled(_seller, _tokenContractAddress, _tokenId);
 	}
@@ -542,7 +542,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId
 	) internal {
-		IOrderBook(orderBook).removeOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId));
+		IOrderBook(orderBook).cancelOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId));
 
 		emit BuyOrderCanceled(_buyer, _tokenContractAddress, _tokenId);
 	}

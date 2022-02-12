@@ -44,11 +44,13 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 		bytes calldata _orderKey,
 		bytes calldata _order
 	) external override onlyOrderKeeper {
+        emit RawOrderBook(_dataStructureId, _orderKey, _order);
 		orders[_dataStructureId][_orderKey] = _order;
 	}
 
 	/// @inheritdoc IOrderBook
-	function removeOrder(uint256 _dataStructureId, bytes calldata _orderKey) external override onlyOrderKeeper {
+	function cancelOrder(uint256 _dataStructureId, bytes calldata _orderKey) external override onlyOrderKeeper {
+        emit RawOrderCancel(_dataStructureId, _orderKey);
 		delete orders[_dataStructureId][_orderKey];
 	}
 
@@ -61,7 +63,7 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 		orderKeepers[_keeperAddress] = true;
 	}
 
-	function removeOrderKeeper(address _keeperAddress) public onlyOwner {
+	function cancelOrderKeeper(address _keeperAddress) public onlyOwner {
 		orderKeepers[_keeperAddress] = false;
 	}
 }

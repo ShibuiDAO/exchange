@@ -47,8 +47,8 @@ const config: HardhatUserConfig = {
 	gasReporter: {
 		excludeContracts: ['contracts/mocks/', 'src/contracts/mocks/', 'test/', 'src/test/'],
 		showTimeSpent: true,
-		currency: 'EUR',
-		gasPrice: 10,
+		currency: 'USD',
+		gasPrice: 1,
 		coinmarketcap: coinMarketCapApi
 	}
 };
