@@ -1,7 +1,6 @@
 import chai, { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
-import { defaultAbiCoder } from 'ethers/lib/utils';
 import { ethers, upgrades } from 'hardhat';
 import { zeroAddress } from '../constants.hardhat';
 import type { ERC721ExchangeUpgradeable, ERC721ExchangeUpgradeableUpgraded, TestERC721, WETHMock } from '../typechain';
@@ -31,14 +30,10 @@ describe('ERC721Exchange', () => {
 
 	describe('base v1', () => {
 		describe('initialization', () => {
-			it('version should equal v1.0.3', async () => {
+			it('version should equal "1"', async () => {
 				const version = await contract.version();
 
-				const [major, minor, patch] = defaultAbiCoder.decode(['uint256', 'uint256', 'uint256'], version) as BigNumber[];
-
-				expect(major).to.equal(BigNumber.from(1));
-				expect(minor).to.equal(BigNumber.from(0));
-				expect(patch).to.equal(BigNumber.from(3));
+				expect(version.toString()).to.equal('1');
 			});
 
 			it('should set sender as owner', async () => {
@@ -122,12 +117,11 @@ describe('ERC721Exchange', () => {
 				});
 
 				it('should create new sell order and execute order', async () => {
-					const [account, buyer, maker, royalty] = await ethers.getSigners();
+					const [account, buyer, maker] = await ethers.getSigners();
 					const timestamp = new Date().getTime() * 2;
 
 					const expiration = BigNumber.from(timestamp);
 					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
-					const royaltyFee = BigNumber.from(150);
 
 					await contractERC721.mintNext(account.address);
 					await expect(contractERC721.setApprovalForAll(contract.address, true))
@@ -144,7 +138,6 @@ describe('ERC721Exchange', () => {
 					expect(order[1]).to.be.equal(price);
 
 					await contract.setSystemFeeWallet(maker.address);
-					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
 
 					await expect(
 						contract
@@ -230,12 +223,11 @@ describe('ERC721Exchange', () => {
 				});
 
 				it('should create new buy order and accept order', async () => {
-					const [account, seller, maker, royalty] = await ethers.getSigners();
+					const [account, seller, maker] = await ethers.getSigners();
 					const timestamp = new Date().getTime() * 2;
 
 					const expiration = BigNumber.from(timestamp);
 					const offer = BigNumber.from('10000000000000000'); // 0.01 ETH
-					const royaltyFee = BigNumber.from(150);
 
 					await expect(contractWETH.connect(account).deposit({ value: offer }))
 						.to.emit(contractWETH, 'Deposit')
@@ -260,7 +252,6 @@ describe('ERC721Exchange', () => {
 					expect(order[2]).to.be.equal(offer);
 
 					await contract.setSystemFeeWallet(maker.address);
-					await contract.setRoyalty(contractERC721.address, royalty.address, royaltyFee);
 
 					await expect(contract.connect(seller).exerciseBuyOrder(account.address, contractERC721.address, 1, expiration, offer))
 						.to.emit(contract, 'BuyOrderExercised')
@@ -279,7 +270,6 @@ describe('ERC721Exchange', () => {
 		describe('upgradeability', () => {
 			it('should upgrade and check version', async () => {
 				const currentVersion = await contract.version();
-				const [_major, _minor, _patch] = defaultAbiCoder.decode(['uint256', 'uint256', 'uint256'], currentVersion) as BigNumber[];
 				const ERC721ExchangeUpgradeableUpgradedContract = await ethers.getContractFactory('ERC721ExchangeUpgradeableUpgraded');
 				const contractUpgraded = (await upgrades.upgradeProxy(
 					contract.address,
@@ -288,11 +278,8 @@ describe('ERC721Exchange', () => {
 				await contractUpgraded.deployed();
 
 				const version = await contractUpgraded.version();
-				const [major, minor, patch] = defaultAbiCoder.decode(['uint256', 'uint256', 'uint256'], version) as BigNumber[];
 
-				expect(major).to.equal(_major);
-				expect(minor).to.equal(_minor);
-				expect(patch).to.equal(_patch.add(1));
+				expect(currentVersion.add(1).toString()).to.equal(version.toString());
 			});
 		});
 	});

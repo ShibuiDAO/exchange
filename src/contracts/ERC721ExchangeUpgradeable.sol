@@ -599,10 +599,7 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @return The current exchange version.
-	function version() external pure virtual override returns (bytes memory) {
-		uint256 major = 1;
-		uint256 minor = 0;
-		uint256 patch = 3;
-		return abi.encode(major, minor, patch);
+	function version() public pure virtual override returns (uint256) {
+		return 1;
 	}
 }

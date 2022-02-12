@@ -180,5 +180,5 @@ interface IERC721Exchange {
     //////////////////////////////////////////////////////////////*/
 
 	/// @return The current exchange version.
-	function version() external returns (bytes memory);
+	function version() external returns (uint256);
 }
