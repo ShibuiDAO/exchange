@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.11;
 pragma abicoder v2;
 
@@ -10,6 +10,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 import {IOrderBook} from "./interfaces/IOrderBook.sol";
 
+/// @author ShibuiDAO
 contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, OwnableUpgradeable, IOrderBook {
 	mapping(address => bool) public orderKeepers;
 

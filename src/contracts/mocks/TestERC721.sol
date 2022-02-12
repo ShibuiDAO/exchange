@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.11;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
