@@ -138,8 +138,12 @@ describe('ERC721Exchange', () => {
 					const [account, buyer, maker] = await ethers.getSigners();
 					const timestamp = new Date().getTime() * 2;
 
+					// const startingBuyerBalance = await buyer.getBalance();
+
 					const expiration = BigNumber.from(timestamp);
 					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
+
+					await contract.setSystemFeeWallet(maker.address);
 
 					await contractERC721.mintNext(account.address);
 					await expect(contractERC721.setApprovalForAll(contract.address, true))
@@ -154,8 +158,9 @@ describe('ERC721Exchange', () => {
 
 					expect(order[0]).to.be.equal(expiration);
 					expect(order[1]).to.be.equal(price);
+					expect(order[2]).to.be.equal(zeroAddress);
 
-					await contract.setSystemFeeWallet(maker.address);
+					const startingAccountBalance = await account.getBalance();
 
 					await expect(
 						contract
@@ -168,6 +173,12 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price, zeroAddress)
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
+
+					expect((await account.getBalance()).toString()).to.be.equal(
+						BigNumber.from(startingAccountBalance)
+							.add(BigNumber.from(price).sub(BigNumber.from(price).mul(SYSTEM_FEE).div(1000)))
+							.toString()
+					);
 
 					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
 					expect(canceledOrder[0]).to.be.equal(zeroAddress);
