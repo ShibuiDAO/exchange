@@ -124,7 +124,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price,
 		address _token
-	) external override whenNotPaused {
+	) external payable override whenNotPaused {
 		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
@@ -141,7 +141,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price,
 		address _token
-	) external override whenNotPaused {
+	) external payable override whenNotPaused {
 		cancelSellOrder(_tokenContractAddress, _tokenId);
 
 		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
@@ -179,7 +179,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Can only be executed by the listed SellOrder seller.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
-	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) public override whenNotPaused {
+	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) public payable override whenNotPaused {
 		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
@@ -200,7 +200,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external override whenNotPaused {
+	) external payable override whenNotPaused {
 		_token = _token == address(0) ? wETH : _token;
 		if (
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -225,7 +225,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external override whenNotPaused {
+	) external payable override whenNotPaused {
 		_token = _token == address(0) ? wETH : _token;
 		if (
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -245,7 +245,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external override whenNotPaused {
+	) external payable override whenNotPaused {
 		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _token, _expiration, _offer);
 
 		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
@@ -254,7 +254,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
-	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public override whenNotPaused {
+	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public payable override whenNotPaused {
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
@@ -492,14 +492,10 @@ contract ERC721ExchangeUpgradeable is
 		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) revert OrderNotExists();
 
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-
 		address _token = buyOrder.token == address(0) ? wETH : buyOrder.token;
-		if (
-			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
-			IERC20(_token).allowance(_buyer, address(this)) < buyOrder.offer
-		) revert ExchangeNotApprovedSufficientlyEIP20(_token, buyOrder.offer);
 
 		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) revert OrderPassedNotMatchStored();
+		if (IERC20(_token).allowance(_buyer, address(this)) < buyOrder.offer) revert ExchangeNotApprovedSufficientlyEIP20(_token, buyOrder.offer);
 		if (block.timestamp > buyOrder.expiration) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert OrderExpired();

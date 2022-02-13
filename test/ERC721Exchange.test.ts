@@ -105,28 +105,6 @@ describe('ERC721Exchange', () => {
 
 		describe('orders', () => {
 			describe('sell', () => {
-				it('should create new sell order', async () => {
-					const [account] = await ethers.getSigners();
-					const timestamp = new Date().getTime() * 2;
-
-					const expiration = BigNumber.from(timestamp);
-					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
-
-					await contractERC721.mintNext(account.address);
-					await expect(contractERC721.setApprovalForAll(contract.address, true))
-						.to.emit(contractERC721, 'ApprovalForAll')
-						.withArgs(account.address, contract.address, true);
-
-					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price, zeroAddress))
-						.to.emit(contract, 'SellOrderBooked')
-						.withArgs(account.address, contractERC721.address, 1, expiration, price, zeroAddress);
-
-					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
-
-					expect(order[0]).to.be.equal(expiration);
-					expect(order[1]).to.be.equal(price);
-				});
-
 				it('should create new sell order and cancel order', async () => {
 					const [account] = await ethers.getSigners();
 					const timestamp = new Date().getTime() * 2;
@@ -246,37 +224,6 @@ describe('ERC721Exchange', () => {
 			});
 
 			describe('buy', () => {
-				it('should create new buy order', async () => {
-					const [account, seller] = await ethers.getSigners();
-					const timestamp = new Date().getTime() * 2;
-
-					const expiration = BigNumber.from(timestamp);
-					const offer = BigNumber.from('10000000000000000'); // 0.01 ETH
-
-					await expect(contractWETH.connect(account).deposit({ value: offer }))
-						.to.emit(contractWETH, 'Deposit')
-						.withArgs(account.address, offer);
-					await expect(contractWETH.connect(account).approve(contract.address, offer))
-						.to.emit(contractWETH, 'Approval')
-						.withArgs(account.address, contract.address, offer);
-
-					await contractERC721.mintNext(seller.address);
-					await expect(contractERC721.connect(seller).setApprovalForAll(contract.address, true))
-						.to.emit(contractERC721, 'ApprovalForAll')
-						.withArgs(seller.address, contract.address, true);
-
-					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer, zeroAddress))
-						.to.emit(contract, 'BuyOrderBooked')
-						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer, contractWETH.address);
-
-					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
-
-					expect(order[0]).to.be.equal(seller.address);
-					expect(order[1]).to.be.equal(contractWETH.address);
-					expect(order[2]).to.be.equal(expiration);
-					expect(order[3]).to.be.equal(offer);
-				});
-
 				it('should create new buy order and cancel order', async () => {
 					const [account, seller] = await ethers.getSigners();
 					const timestamp = new Date().getTime() * 2;

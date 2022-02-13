@@ -418,7 +418,7 @@
     ],
     "name": "bookBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -451,7 +451,7 @@
     ],
     "name": "bookSellOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -498,7 +498,7 @@
     ],
     "name": "cancelBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -516,7 +516,7 @@
     ],
     "name": "cancelSellOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -554,7 +554,7 @@
     ],
     "name": "exerciseBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -892,7 +892,7 @@
     ],
     "name": "updateBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -925,7 +925,7 @@
     ],
     "name": "updateSellOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {

@@ -168,7 +168,7 @@ interface IERC721Exchange is IERC165 {
 		uint256 _expiration,
 		uint256 _price,
 		address _token
-	) external;
+	) external payable;
 
 	/// @notice Updates/overwrites existing SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
@@ -182,7 +182,7 @@ interface IERC721Exchange is IERC165 {
 		uint256 _expiration,
 		uint256 _price,
 		address _token
-	) external;
+	) external payable;
 
 	/// @param _seller The seller address of the desired SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
@@ -205,7 +205,7 @@ interface IERC721Exchange is IERC165 {
 	/// @notice Can only be executed by the listed SellOrder seller.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
-	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external;
+	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external payable;
 
 	/*///////////////////////////////////////////////////////////////
                    PUBLIC BUY ORDER MANIPULATION FUNCTIONS
@@ -224,7 +224,7 @@ interface IERC721Exchange is IERC165 {
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external;
+	) external payable;
 
 	/// @notice Updates/overwrites existing BuyOrder.
 	/// @param _owner The current owner of the desired ERC721 asset.
@@ -239,7 +239,7 @@ interface IERC721Exchange is IERC165 {
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external;
+	) external payable;
 
 	function exerciseBuyOrder(
 		address payable _bidder,
@@ -248,12 +248,12 @@ interface IERC721Exchange is IERC165 {
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external;
+	) external payable;
 
 	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
-	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external;
+	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external payable;
 
 	/*///////////////////////////////////////////////////////////////
                           SELL ORDER VIEW FUNCTIONS
