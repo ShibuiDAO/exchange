@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
 		tests: './test'
 	},
 	solidity: {
-		version: '0.8.11',
+		version: '0.8.9',
 		settings: {
 			optimizer: {
 				enabled: true,
@@ -42,13 +42,13 @@ const config: HardhatUserConfig = {
 		runOnCompile: true,
 		clear: true,
 		flat: true,
-		only: ['ERC721ExchangeUpgradeable.sol']
+		only: ['ERC721ExchangeUpgradeable.sol', 'OrderBookUpgradeable.sol']
 	},
 	gasReporter: {
 		excludeContracts: ['contracts/mocks/', 'src/contracts/mocks/', 'test/', 'src/test/'],
 		showTimeSpent: true,
-		currency: 'EUR',
-		gasPrice: 10,
+		currency: 'USD',
+		gasPrice: 1,
 		coinmarketcap: coinMarketCapApi
 	}
 };

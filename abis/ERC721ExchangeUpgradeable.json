@@ -1,68 +1,139 @@
 [
   {
     "inputs": [],
-    "name": "AssetStoredOwnerNotCurrentOwner",
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "ASSET_STORED_OWNER_NOT_CURRENT_OWNER",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "ContractNotEIP721",
+    "name": "CONTRACT_NOT_EIP721",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ExchangeNotApprovedEIP721",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "EXCHANGE_NOT_APPROVED_EIP721",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ExchangeNotApprovedWETH",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "EXCHANGE_NOT_APPROVED_SUFFICIENTLY_EIP20",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "OrderExists",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OrderExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OrderNotExists",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OrderPassedNotMatchStored",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "PaymentMissing",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ORDER_EXISTS",
     "type": "error"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "min",
+        "name": "expiration",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "max",
+        "name": "time",
         "type": "uint256"
       }
     ],
-    "name": "RoyaltyNotWithinRange",
+    "name": "ORDER_EXPIRED",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ORDER_NOT_EXISTS",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "SenderNotAuthorised",
+    "name": "ORDER_PASSED_NOT_MATCH_STORED",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "payment",
+        "type": "uint256"
+      }
+    ],
+    "name": "PAYMENT_MISSING",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "TOKEN_NOT_EIP20",
     "type": "error"
   },
   {
@@ -103,6 +174,12 @@
         "internalType": "uint256",
         "name": "offer",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "BuyOrderBooked",
@@ -165,71 +242,15 @@
         "internalType": "uint256",
         "name": "offer",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "BuyOrderExercised",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "tokenContractAddress",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "executor",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newRoyaltiesAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldRoyaltiesAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CollectionRoyaltyFeeAmountUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "tokenContractAddress",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "executor",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newPayoutAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "oldPayoutAddress",
-        "type": "address"
-      }
-    ],
-    "name": "CollectionRoyaltyPayoutAddressUpdated",
     "type": "event"
   },
   {
@@ -296,6 +317,12 @@
         "internalType": "uint256",
         "name": "price",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "SellOrderBooked",
@@ -364,6 +391,12 @@
         "internalType": "uint256",
         "name": "price",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "SellOrderExercised",
@@ -386,23 +419,41 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "__maxRoyaltyPerMille",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "__systemFeePerMille",
+        "name": "_systemFeePerMille",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "__wethAddress",
+        "name": "_royaltyEngine",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_orderBook",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_wethAddress",
         "type": "address"
       }
     ],
     "name": "__ERC721Exchange_init",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_sunset",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -431,11 +482,16 @@
         "internalType": "uint256",
         "name": "_offer",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "bookBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -459,11 +515,16 @@
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "bookSellOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -510,7 +571,7 @@
     ],
     "name": "cancelBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -528,7 +589,7 @@
     ],
     "name": "cancelSellOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -557,11 +618,16 @@
         "internalType": "uint256",
         "name": "_offer",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "exerciseBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -594,6 +660,11 @@
       {
         "internalType": "address payable",
         "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
         "type": "address"
       }
     ],
@@ -630,6 +701,11 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
             "internalType": "uint256",
             "name": "expiration",
             "type": "uint256"
@@ -640,47 +716,9 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct IExchange.BuyOrder",
+        "internalType": "struct IERC721Exchange.BuyOrder",
         "name": "",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_tokenContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getRoyaltyPayoutAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_tokenContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getRoyaltyPayoutRate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -717,11 +755,36 @@
             "internalType": "uint256",
             "name": "price",
             "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
           }
         ],
-        "internalType": "struct IExchange.SellOrder",
+        "internalType": "struct IERC721Exchange.SellOrder",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "goTowardsTheSunset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "orderBook",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -768,6 +831,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "royaltyEngine",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -799,29 +875,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_tokenContractAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address payable",
-        "name": "_payoutAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_payoutPerMille",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRoyalty",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_newSystemFeePerMille",
         "type": "uint256"
@@ -843,6 +896,38 @@
     "name": "setSystemFeeWallet",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sunset",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -891,11 +976,16 @@
         "internalType": "uint256",
         "name": "_offer",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "updateBuyOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -919,11 +1009,16 @@
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "updateSellOrder",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -931,12 +1026,25 @@
     "name": "version",
     "outputs": [
       {
-        "internalType": "bytes",
+        "internalType": "uint256",
         "name": "",
-        "type": "bytes"
+        "type": "uint256"
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wETH",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
