@@ -115,9 +115,9 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(account.address, contract.address, true);
 
-					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price))
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price, zeroAddress))
 						.to.emit(contract, 'SellOrderBooked')
-						.withArgs(account.address, contractERC721.address, 1, expiration, price);
+						.withArgs(account.address, contractERC721.address, 1, expiration, price, zeroAddress);
 
 					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
@@ -137,9 +137,9 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(account.address, contract.address, true);
 
-					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price))
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price, zeroAddress))
 						.to.emit(contract, 'SellOrderBooked')
-						.withArgs(account.address, contractERC721.address, 1, expiration, price);
+						.withArgs(account.address, contractERC721.address, 1, expiration, price, zeroAddress);
 
 					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
@@ -166,9 +166,9 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(account.address, contract.address, true);
 
-					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price))
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price, zeroAddress))
 						.to.emit(contract, 'SellOrderBooked')
-						.withArgs(account.address, contractERC721.address, 1, expiration, price);
+						.withArgs(account.address, contractERC721.address, 1, expiration, price, zeroAddress);
 
 					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
 
@@ -180,12 +180,63 @@ describe('ERC721Exchange', () => {
 					await expect(
 						contract
 							.connect(buyer)
-							.exerciseSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, { value: price })
+							.exerciseSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, zeroAddress, {
+								value: price
+							})
 					)
 						.to.emit(contract, 'SellOrderExercised')
-						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price)
+						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price, zeroAddress)
 						.and.to.emit(contract, 'SellOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
+
+					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
+					expect(canceledOrder[0]).to.be.equal(zeroAddress);
+				});
+
+				it('should create new sell order and execute order using WETH', async () => {
+					const [account, buyer, maker] = await ethers.getSigners();
+					const timestamp = new Date().getTime() * 2;
+
+					const expiration = BigNumber.from(timestamp);
+					const price = BigNumber.from('10000000000000000'); // 0.01 ETH
+
+					await contract.setSystemFeeWallet(maker.address);
+
+					await expect(contractWETH.connect(buyer).deposit({ value: price }))
+						.to.emit(contractWETH, 'Deposit')
+						.withArgs(buyer.address, price);
+					await expect(contractWETH.connect(buyer).approve(contract.address, price))
+						.to.emit(contractWETH, 'Approval')
+						.withArgs(buyer.address, contract.address, price);
+
+					await contractERC721.mintNext(account.address);
+					await expect(contractERC721.setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(account.address, contract.address, true);
+
+					await expect(contract.bookSellOrder(contractERC721.address, 1, expiration, price, contractWETH.address))
+						.to.emit(contract, 'SellOrderBooked')
+						.withArgs(account.address, contractERC721.address, 1, expiration, price, contractWETH.address);
+
+					const order = await contract.getSellOrder(account.address, contractERC721.address, 1);
+
+					expect(order[0]).to.be.equal(expiration);
+					expect(order[1]).to.be.equal(price);
+					expect(order[2]).to.be.equal(contractWETH.address);
+
+					await expect(
+						contract
+							.connect(buyer)
+							.exerciseSellOrder(account.address, contractERC721.address, 1, expiration, price, buyer.address, contractWETH.address)
+					)
+						.to.emit(contract, 'SellOrderExercised')
+						.withArgs(account.address, buyer.address, buyer.address, contractERC721.address, 1, price, contractWETH.address)
+						.and.to.emit(contract, 'SellOrderCanceled')
+						.withArgs(account.address, contractERC721.address, 1);
+
+					expect((await contractWETH.balanceOf(account.address)).toString()).to.be.equal(
+						BigNumber.from(price).sub(BigNumber.from(price).mul(29).div(1000)).toString()
+					);
 
 					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);
 					expect(canceledOrder[0]).to.be.equal(zeroAddress);
@@ -212,15 +263,16 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer, zeroAddress))
 						.to.emit(contract, 'BuyOrderBooked')
-						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
+						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer, contractWETH.address);
 
 					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
 					expect(order[0]).to.be.equal(seller.address);
-					expect(order[1]).to.be.equal(expiration);
-					expect(order[2]).to.be.equal(offer);
+					expect(order[1]).to.be.equal(contractWETH.address);
+					expect(order[2]).to.be.equal(expiration);
+					expect(order[3]).to.be.equal(offer);
 				});
 
 				it('should create new buy order and cancel order', async () => {
@@ -242,15 +294,16 @@ describe('ERC721Exchange', () => {
 						.to.emit(contractERC721, 'ApprovalForAll')
 						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer, zeroAddress))
 						.to.emit(contract, 'BuyOrderBooked')
-						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
+						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer, contractWETH.address);
 
 					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
 					expect(order[0]).to.be.equal(seller.address);
-					expect(order[1]).to.be.equal(expiration);
-					expect(order[2]).to.be.equal(offer);
+					expect(order[1]).to.be.equal(contractWETH.address);
+					expect(order[2]).to.be.equal(expiration);
+					expect(order[3]).to.be.equal(offer);
 
 					await expect(contract.cancelBuyOrder(contractERC721.address, 1))
 						.to.emit(contract, 'BuyOrderCanceled')
@@ -267,6 +320,8 @@ describe('ERC721Exchange', () => {
 					const expiration = BigNumber.from(timestamp);
 					const offer = BigNumber.from('10000000000000000'); // 0.01 ETH
 
+					await contract.setSystemFeeWallet(maker.address);
+
 					await expect(contractWETH.connect(account).deposit({ value: offer }))
 						.to.emit(contractWETH, 'Deposit')
 						.withArgs(account.address, offer);
@@ -275,25 +330,27 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, contract.address, offer);
 
 					await contractERC721.mintNext(seller.address);
-					await expect(contractERC721.connect(seller).setApprovalForAll(contract.address, true))
-						.to.emit(contractERC721, 'ApprovalForAll')
-						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer))
+					await expect(contract.connect(account).bookBuyOrder(seller.address, contractERC721.address, 1, expiration, offer, zeroAddress))
 						.to.emit(contract, 'BuyOrderBooked')
-						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer);
+						.withArgs(account.address, seller.address, contractERC721.address, 1, expiration, offer, contractWETH.address);
 
 					const order = await contract.getBuyOrder(account.address, contractERC721.address, 1);
 
 					expect(order[0]).to.be.equal(seller.address);
-					expect(order[1]).to.be.equal(expiration);
-					expect(order[2]).to.be.equal(offer);
+					expect(order[1]).to.be.equal(contractWETH.address);
+					expect(order[2]).to.be.equal(expiration);
+					expect(order[3]).to.be.equal(offer);
 
-					await contract.setSystemFeeWallet(maker.address);
+					await expect(contractERC721.connect(seller).setApprovalForAll(contract.address, true))
+						.to.emit(contractERC721, 'ApprovalForAll')
+						.withArgs(seller.address, contract.address, true);
 
-					await expect(contract.connect(seller).exerciseBuyOrder(account.address, contractERC721.address, 1, expiration, offer))
+					await expect(
+						contract.connect(seller).exerciseBuyOrder(account.address, contractERC721.address, 1, expiration, offer, contractWETH.address)
+					)
 						.to.emit(contract, 'BuyOrderExercised')
-						.withArgs(account.address, seller.address, contractERC721.address, 1, offer)
+						.withArgs(account.address, seller.address, contractERC721.address, 1, offer, contractWETH.address)
 						.and.to.emit(contract, 'BuyOrderCanceled')
 						.withArgs(account.address, contractERC721.address, 1);
 

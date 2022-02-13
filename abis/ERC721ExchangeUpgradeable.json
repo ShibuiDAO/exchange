@@ -20,8 +20,19 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ExchangeNotApprovedWETH",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExchangeNotApprovedSufficientlyEIP20",
     "type": "error"
   },
   {
@@ -50,24 +61,19 @@
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "min",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "max",
-        "type": "uint256"
-      }
-    ],
-    "name": "RoyaltyNotWithinRange",
+    "inputs": [],
+    "name": "SenderNotAuthorised",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "SenderNotAuthorised",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "TokenNotEIP20",
     "type": "error"
   },
   {
@@ -108,6 +114,12 @@
         "internalType": "uint256",
         "name": "offer",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "BuyOrderBooked",
@@ -170,6 +182,12 @@
         "internalType": "uint256",
         "name": "offer",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "BuyOrderExercised",
@@ -239,6 +257,12 @@
         "internalType": "uint256",
         "name": "price",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "SellOrderBooked",
@@ -307,6 +331,12 @@
         "internalType": "uint256",
         "name": "price",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "SellOrderExercised",
@@ -329,7 +359,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "__systemFeePerMille",
+        "name": "_systemFeePerMille",
         "type": "uint256"
       },
       {
@@ -344,7 +374,7 @@
       },
       {
         "internalType": "address",
-        "name": "__wethAddress",
+        "name": "_wethAddress",
         "type": "address"
       }
     ],
@@ -379,6 +409,11 @@
         "internalType": "uint256",
         "name": "_offer",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "bookBuyOrder",
@@ -407,6 +442,11 @@
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "bookSellOrder",
@@ -505,6 +545,11 @@
         "internalType": "uint256",
         "name": "_offer",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "exerciseBuyOrder",
@@ -543,6 +588,11 @@
         "internalType": "address payable",
         "name": "_recipient",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "exerciseSellOrder",
@@ -575,6 +625,11 @@
           {
             "internalType": "address payable",
             "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
             "type": "address"
           },
           {
@@ -627,6 +682,11 @@
             "internalType": "uint256",
             "name": "price",
             "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
           }
         ],
         "internalType": "struct IERC721Exchange.SellOrder",
@@ -804,6 +864,11 @@
         "internalType": "uint256",
         "name": "_offer",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "updateBuyOrder",
@@ -832,6 +897,11 @@
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       }
     ],
     "name": "updateSellOrder",
@@ -850,6 +920,19 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wETH",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

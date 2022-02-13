@@ -6,6 +6,10 @@ import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 
 /// @author ShibuiDAO
 interface IOrderBook is IERC165 {
+	/*///////////////////////////////////////////////////////////////
+                                  EVENTS
+    //////////////////////////////////////////////////////////////*/
+
 	event RawOrderBook(uint256 indexed dataStructureId, bytes indexed orderKey, bytes indexed order);
 	event RawOrderCancel(uint256 indexed dataStructureId, bytes indexed orderKey);
 

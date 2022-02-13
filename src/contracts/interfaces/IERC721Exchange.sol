@@ -14,7 +14,15 @@ interface IERC721Exchange {
 	/// @param tokenId ID of ERC721 asset for sale.
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param price The price in wei of the given ERC721 asset.
-	event SellOrderBooked(address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 expiration, uint256 price);
+	/// @param token Alternative ERC20 asset used for payment.
+	event SellOrderBooked(
+		address indexed seller,
+		address indexed tokenContractAddress,
+		uint256 indexed tokenId,
+		uint256 expiration,
+		uint256 price,
+		address token
+	);
 
 	/// @notice Emitted when `cancelSellOrder` is called or when `exerciseSellOrder` completes.
 	/// @param seller Address of SellOrder seller.
@@ -28,13 +36,15 @@ interface IERC721Exchange {
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of the bought ERC721 asset.
 	/// @param price The price in wei at which the ERC721 asset was bought.
+	/// @param token Alternative ERC20 asset used for payment.
 	event SellOrderExercised(
 		address indexed seller,
 		address recipient,
 		address buyer,
 		address indexed tokenContractAddress,
 		uint256 indexed tokenId,
-		uint256 price
+		uint256 price,
+		address token
 	);
 
 	/// @notice Emitted when `bookBuyOrder` is called.
@@ -44,13 +54,15 @@ interface IERC721Exchange {
 	/// @param tokenId ID of ERC721 asset for sale.
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param offer The offer in wei for the given ERC721 asset.
+	/// @param token Alternative ERC20 asset used for payment.
 	event BuyOrderBooked(
 		address indexed buyer,
 		address owner,
 		address indexed tokenContractAddress,
 		uint256 indexed tokenId,
 		uint256 expiration,
-		uint256 offer
+		uint256 offer,
+		address token
 	);
 
 	/// @notice Emitted when `cancelBuyOrder` is call edor when `exerciseBuyOrder` completes.
@@ -65,7 +77,15 @@ interface IERC721Exchange {
 	/// @param tokenContractAddress Address of the ERC721 token contract.
 	/// @param tokenId ID of ERC721 asset for sale.
 	/// @param offer The offer in wei for the given ERC721 asset.
-	event BuyOrderExercised(address buyer, address indexed seller, address indexed tokenContractAddress, uint256 indexed tokenId, uint256 offer);
+	/// @param token Alternative ERC20 asset used for payment.
+	event BuyOrderExercised(
+		address buyer,
+		address indexed seller,
+		address indexed tokenContractAddress,
+		uint256 indexed tokenId,
+		uint256 offer,
+		address token
+	);
 
 	/*///////////////////////////////////////////////////////////////
                                     ERRORS
@@ -77,10 +97,10 @@ interface IERC721Exchange {
 	error OrderPassedNotMatchStored();
 	error AssetStoredOwnerNotCurrentOwner();
 	error PaymentMissing();
-	error ExchangeNotApprovedWETH();
+	error ExchangeNotApprovedSufficientlyEIP20(address token, uint256 amount);
 	error ExchangeNotApprovedEIP721();
 	error ContractNotEIP721();
-	error RoyaltyNotWithinRange(uint256 min, uint256 max);
+	error TokenNotEIP20(address token);
 	error SenderNotAuthorised();
 
 	/*///////////////////////////////////////////////////////////////
@@ -89,16 +109,20 @@ interface IERC721Exchange {
 
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param price The price in wei of the given ERC721 asset.
+	/// @param token Alternative ERC20 asset used for payment.
 	struct SellOrder {
 		uint256 expiration;
 		uint256 price;
+		address token;
 	}
 
 	/// @param owner Address of the current ERC721 asset owner.
+	/// @param token Alternative ERC20 asset used for payment.
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param offer The offer in wei for the given ERC721 asset.
 	struct BuyOrder {
 		address payable owner;
+		address token;
 		uint256 expiration;
 		uint256 offer;
 	}
@@ -117,14 +141,14 @@ interface IERC721Exchange {
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Function acting as the contracts constructor.
-	/// @param __maxRoyaltyPerMille The overall maximum royalty fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	/// @param __wethAddress Address of the canonical WETH deployment.
+	/// @param _maxRoyaltyPerMille The overall maximum royalty fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
-		uint256 __maxRoyaltyPerMille,
+		uint256 _maxRoyaltyPerMille,
 		address _royaltyEngine,
 		address _orderBook,
-		address __wethAddress
+		address _wethAddress
 	) external;
 
 	/*///////////////////////////////////////////////////////////////
@@ -135,11 +159,13 @@ interface IERC721Exchange {
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function bookSellOrder(
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _price
+		uint256 _price,
+		address _token
 	) external;
 
 	/// @notice Updates/overwrites existing SellOrder.
@@ -147,11 +173,13 @@ interface IERC721Exchange {
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function updateSellOrder(
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _price
+		uint256 _price,
+		address _token
 	) external;
 
 	/// @param _seller The seller address of the desired SellOrder.
@@ -160,13 +188,15 @@ interface IERC721Exchange {
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
 	/// @param _recipient The address of the ERC721 asset recipient.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function exerciseSellOrder(
 		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
 		uint256 _price,
-		address payable _recipient
+		address payable _recipient,
+		address _token
 	) external payable;
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.

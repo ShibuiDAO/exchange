@@ -38,22 +38,27 @@ contract ERC721ExchangeUpgradeable is
 	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
 	bytes4 private immutable interfaceIdERC721 = type(IERC721).interfaceId;
 
+	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+	bytes4 private immutable interfaceIdERC20 = type(IERC20).interfaceId;
+
+	/// @notice Address of the "RoyaltyEngineV1" deployment.
 	address public royaltyEngine;
 
+	/// @notice Address of the "OrderBook" deployment.
 	address public orderBook;
 
-	/// @dev Interface of the main canonical WETH deployment.
-	IERC20 private wETH;
+	/// @notice Addeess of the main canonical WETH deployment.
+	address public wETH;
 
 	/*///////////////////////////////////////////////////////////////
                                  SYSTEM FEE
     //////////////////////////////////////////////////////////////*/
 
 	/// @dev The wallet address to which system fees get paid.
-	address payable private _systemFeeWallet;
+	address payable private systemFeeWallet;
 
 	/// @dev System fee in %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	uint256 private _systemFeePerMille;
+	uint256 private systemFeePerMille;
 
 	/*///////////////////////////////////////////////////////////////
           UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
@@ -65,21 +70,21 @@ contract ERC721ExchangeUpgradeable is
 	constructor() initializer {}
 
 	/// @notice Function acting as the contracts constructor.
-	/// @param __systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-	/// @param __wethAddress Address of the canonical WETH deployment.
+	/// @param _systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
-		uint256 __systemFeePerMille,
+		uint256 _systemFeePerMille,
 		address _royaltyEngine,
 		address _orderBook,
-		address __wethAddress
+		address _wethAddress
 	) public override initializer {
 		__Context_init();
 		__Ownable_init();
 		__Pausable_init();
 		__ReentrancyGuard_init();
 
-		_systemFeePerMille = __systemFeePerMille;
+		systemFeePerMille = _systemFeePerMille;
 
 		require(ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngineV1).interfaceId), "ENGINE_ADDRESS_NOT_COMPLIANT");
 		royaltyEngine = _royaltyEngine;
@@ -87,7 +92,7 @@ contract ERC721ExchangeUpgradeable is
 		require(ERC165Checker.supportsInterface(_orderBook, type(IOrderBook).interfaceId), "ORDER_BOOK_ADDRESS_NOT_COMPLIANT");
 		orderBook = _orderBook;
 
-		wETH = IERC20(__wethAddress);
+		wETH = _wethAddress;
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -102,9 +107,10 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _price
+		uint256 _price,
+		address _token
 	) external override whenNotPaused {
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
+		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
@@ -118,11 +124,12 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _price
+		uint256 _price,
+		address _token
 	) external override whenNotPaused {
 		cancelSellOrder(_tokenContractAddress, _tokenId);
 
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
+		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
@@ -138,13 +145,21 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		uint256 _expiration,
 		uint256 _price,
-		address payable _recipient
+		address payable _recipient,
+		address _token
 	) external payable override whenNotPaused nonReentrant {
-		if (msg.value < _price) {
+		if (_token == address(0) && msg.value < _price) {
 			revert PaymentMissing();
 		}
+		if (
+			_token != address(0) &&
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			IERC20(_token).allowance(_msgSender(), address(this)) < _price
+		) {
+			revert ExchangeNotApprovedSufficientlyEIP20(_token, _price);
+		}
 
-		SellOrder memory sellOrder = SellOrder(_expiration, _price);
+		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 
 		_exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
 	}
@@ -172,13 +187,18 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _offer
+		uint256 _offer,
+		address _token
 	) external whenNotPaused {
-		if (wETH.allowance(_msgSender(), address(this)) < _offer) {
-			revert ExchangeNotApprovedWETH();
+		_token = _token == address(0) ? wETH : _token;
+		if (
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			IERC20(_token).allowance(_msgSender(), address(this)) < _offer
+		) {
+			revert ExchangeNotApprovedSufficientlyEIP20(_token, _offer);
 		}
 
-		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
+		BuyOrder memory buyOrder = BuyOrder(_owner, _token, _expiration, _offer);
 
 		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
@@ -194,15 +214,20 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _offer
+		uint256 _offer,
+		address _token
 	) external whenNotPaused {
-		if (wETH.allowance(_msgSender(), address(this)) < _offer) {
-			revert ExchangeNotApprovedWETH();
+		_token = _token == address(0) ? wETH : _token;
+		if (
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			IERC20(_token).allowance(_msgSender(), address(this)) < _offer
+		) {
+			revert ExchangeNotApprovedSufficientlyEIP20(_token, _offer);
 		}
 
 		cancelBuyOrder(_tokenContractAddress, _tokenId);
 
-		BuyOrder memory buyOrder = BuyOrder(_owner, _expiration, _offer);
+		BuyOrder memory buyOrder = BuyOrder(_owner, _token, _expiration, _offer);
 		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
@@ -211,13 +236,10 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
-		uint256 _offer
+		uint256 _offer,
+		address _token
 	) external whenNotPaused {
-		if (wETH.allowance(_bidder, address(this)) < _offer) {
-			revert ExchangeNotApprovedWETH();
-		}
-
-		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _expiration, _offer);
+		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _token, _expiration, _offer);
 
 		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
 	}
@@ -248,7 +270,7 @@ contract ERC721ExchangeUpgradeable is
 			_formOrderId(_seller, _tokenContractAddress, _tokenId)
 		);
 
-		if (order.length == 0) return SellOrder(0, 0);
+		if (order.length == 0) return SellOrder(0, 0, address(0));
 		return abi.decode(order, (SellOrder));
 	}
 
@@ -287,7 +309,7 @@ contract ERC721ExchangeUpgradeable is
 			_formOrderId(_buyer, _tokenContractAddress, _tokenId)
 		);
 
-		if (order.length == 0) return BuyOrder(payable(0), 0, 0);
+		if (order.length == 0) return BuyOrder(payable(0), address(0), 0, 0);
 		return
 			abi.decode(
 				IOrderBook(orderBook).fetchOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId)),
@@ -347,12 +369,16 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedEIP721();
 		}
 
+		if (_sellOrder.token != address(0) && _sellOrder.token != wETH && !ERC165Checker.supportsInterface(_sellOrder.token, interfaceIdERC20)) {
+			revert TokenNotEIP20(_sellOrder.token);
+		}
+
 		IOrderBook(orderBook).bookOrder(
 			OrderBookVersioning.SELL_ORDER_INITIAL,
 			_formOrderId(_seller, _tokenContractAddress, _tokenId),
 			abi.encode(_sellOrder)
 		);
-		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price);
+		emit SellOrderBooked(_seller, _tokenContractAddress, _tokenId, _sellOrder.expiration, _sellOrder.price, _sellOrder.token);
 	}
 
 	/// @param _seller The address of the asset seller/owner.
@@ -394,30 +420,37 @@ contract ERC721ExchangeUpgradeable is
 			revert ExchangeNotApprovedEIP721();
 		}
 
-		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * msg.value) / 1000 : 0;
-		uint256 remainingPayout = msg.value - systemFeePayout;
+		uint256 value = sellOrder.token == address(0) ? msg.value : sellOrder.price;
+		uint256 systemFeePayout = systemFeeWallet != address(0) ? (systemFeePerMille * value) / 1000 : 0;
+		uint256 remainingPayout = value - systemFeePayout;
 		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngineV1(royaltyEngine).getRoyalty(
 			_tokenContractAddress,
 			_tokenId,
 			remainingPayout
 		);
 
-		if (systemFeePayout > 0) SafeTransferLib.safeTransferETH(_systemFeeWallet, systemFeePayout);
-
+		if (systemFeePayout > 0) {
+			if (sellOrder.token == address(0)) SafeTransferLib.safeTransferETH(systemFeeWallet, systemFeePayout);
+			else IERC20(sellOrder.token).transferFrom(_senders.buyer, systemFeeWallet, systemFeePayout);
+		}
 		uint256 recipientsLength = recipients.length;
 		for (uint256 i = 0; i < recipientsLength; i = uncheckedInc(i)) {
 			uint256 amount = amounts[i];
 			if (amount == 0 || remainingPayout == 0) continue;
 			uint256 cappedRoyaltyTransaction = amount <= remainingPayout ? amount : amount - (amount - remainingPayout);
-			SafeTransferLib.safeTransferETH(recipients[i], cappedRoyaltyTransaction);
+			if (sellOrder.token == address(0)) SafeTransferLib.safeTransferETH(recipients[i], cappedRoyaltyTransaction);
+			else IERC20(sellOrder.token).transferFrom(_senders.buyer, recipients[i], cappedRoyaltyTransaction);
 			remainingPayout -= cappedRoyaltyTransaction;
 		}
 
-		if (remainingPayout > 0) SafeTransferLib.safeTransferETH(_seller, remainingPayout);
+		if (remainingPayout > 0) {
+			if (sellOrder.token == address(0)) SafeTransferLib.safeTransferETH(_seller, remainingPayout);
+			else IERC20(sellOrder.token).transferFrom(_senders.buyer, _seller, remainingPayout);
+		}
 		erc721.safeTransferFrom(_seller, _senders.recipient, _tokenId);
 
 		_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
-		emit SellOrderExercised(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price);
+		emit SellOrderExercised(_seller, _senders.recipient, _senders.buyer, _tokenContractAddress, _tokenId, sellOrder.price, sellOrder.token);
 	}
 
 	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
@@ -467,7 +500,7 @@ contract ERC721ExchangeUpgradeable is
 			_formOrderId(_buyer, _tokenContractAddress, _tokenId),
 			abi.encode(_buyOrder)
 		);
-		emit BuyOrderBooked(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer);
+		emit BuyOrderBooked(_buyer, _buyOrder.owner, _tokenContractAddress, _tokenId, _buyOrder.expiration, _buyOrder.offer, _buyOrder.token);
 	}
 
 	/// @param _buyer Address of the user placing the BuyOrder.
@@ -486,6 +519,14 @@ contract ERC721ExchangeUpgradeable is
 
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
+		address _token = buyOrder.token == address(0) ? wETH : buyOrder.token;
+		if (
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			IERC20(_token).allowance(_buyer, address(this)) < buyOrder.offer
+		) {
+			revert ExchangeNotApprovedSufficientlyEIP20(_token, buyOrder.offer);
+		}
+
 		if (!ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder)) {
 			revert OrderPassedNotMatchStored();
 		}
@@ -495,19 +536,17 @@ contract ERC721ExchangeUpgradeable is
 			revert OrderExpired();
 		}
 
-		IERC721 erc721 = IERC721(_tokenContractAddress);
-
-		if (!(erc721.ownerOf(_tokenId) == buyOrder.owner)) {
+		if (!(IERC721(_tokenContractAddress).ownerOf(_tokenId) == buyOrder.owner)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert AssetStoredOwnerNotCurrentOwner();
 		}
 
-		if (!erc721.isApprovedForAll(buyOrder.owner, address(this))) {
+		if (!IERC721(_tokenContractAddress).isApprovedForAll(buyOrder.owner, address(this))) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert ExchangeNotApprovedEIP721();
 		}
 
-		uint256 systemFeePayout = _systemFeeWallet != address(0) ? (_systemFeePerMille * buyOrder.offer) / 1000 : 0;
+		uint256 systemFeePayout = systemFeeWallet != address(0) ? (systemFeePerMille * buyOrder.offer) / 1000 : 0;
 		uint256 remainingPayout = buyOrder.offer - systemFeePayout;
 		(address payable[] memory recipients, uint256[] memory amounts) = IRoyaltyEngineV1(royaltyEngine).getRoyalty(
 			_tokenContractAddress,
@@ -515,22 +554,22 @@ contract ERC721ExchangeUpgradeable is
 			remainingPayout
 		);
 
-		if (systemFeePayout > 0) wETH.transferFrom(_buyer, _systemFeeWallet, systemFeePayout);
+		if (systemFeePayout > 0) IERC20(_token).transferFrom(_buyer, systemFeeWallet, systemFeePayout);
 
 		uint256 recipientsLength = recipients.length;
 		for (uint256 i = 0; i < recipientsLength; i = uncheckedInc(i)) {
 			uint256 amount = amounts[i];
 			if (amount == 0 || remainingPayout == 0) continue;
 			uint256 cappedRoyaltyTransaction = amount <= remainingPayout ? amount : amount - (amount - remainingPayout);
-			wETH.transferFrom(_buyer, recipients[i], cappedRoyaltyTransaction);
+			IERC20(_token).transferFrom(_buyer, recipients[i], cappedRoyaltyTransaction);
 			remainingPayout -= cappedRoyaltyTransaction;
 		}
 
-		if (remainingPayout > 0) wETH.transferFrom(_buyer, buyOrder.owner, remainingPayout);
-		erc721.safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
+		if (remainingPayout > 0) IERC20(_token).transferFrom(_buyer, buyOrder.owner, remainingPayout);
+		IERC721(_tokenContractAddress).safeTransferFrom(buyOrder.owner, _buyer, _tokenId);
 
 		_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
-		emit BuyOrderExercised(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer);
+		emit BuyOrderExercised(_buyer, buyOrder.owner, _tokenContractAddress, _tokenId, buyOrder.offer, _token);
 	}
 
 	/// @notice Cancels a given BuyOrder and emits `BuyOrderCanceled`.
@@ -567,13 +606,13 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Sets the new wallet to which all system fees get paid.
 	/// @param _newSystemFeeWallet Address of the new system fee wallet.
 	function setSystemFeeWallet(address payable _newSystemFeeWallet) external onlyOwner {
-		_systemFeeWallet = _newSystemFeeWallet;
+		systemFeeWallet = _newSystemFeeWallet;
 	}
 
 	/// @notice Sets the new overall fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	/// @param _newSystemFeePerMille New fee amount.
 	function setSystemFeePerMille(uint256 _newSystemFeePerMille) external onlyOwner {
-		_systemFeePerMille = _newSystemFeePerMille;
+		systemFeePerMille = _newSystemFeePerMille;
 	}
 
 	/*///////////////////////////////////////////////////////////////
