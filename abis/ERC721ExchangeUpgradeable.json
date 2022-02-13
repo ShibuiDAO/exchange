@@ -444,6 +444,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "_sunset",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address payable",
@@ -759,6 +772,13 @@
   },
   {
     "inputs": [],
+    "name": "goTowardsTheSunset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "orderBook",
     "outputs": [
       {
@@ -876,6 +896,19 @@
     "name": "setSystemFeeWallet",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sunset",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

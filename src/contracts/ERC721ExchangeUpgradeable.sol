@@ -44,6 +44,12 @@ contract ERC721ExchangeUpgradeable is
 	bytes4 private constant INTERFACE_ID_ERC20 = 0x36372b07;
 
 	/*///////////////////////////////////////////////////////////////
+                                SUNSET
+    //////////////////////////////////////////////////////////////*/
+
+	bool public _sunset;
+
+	/*///////////////////////////////////////////////////////////////
                                 ADDRESS'
     //////////////////////////////////////////////////////////////*/
 
@@ -90,6 +96,7 @@ contract ERC721ExchangeUpgradeable is
 		__Pausable_init();
 		__ReentrancyGuard_init();
 
+		_sunset = false;
 		systemFeePerMille = _systemFeePerMille;
 
 		require(ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngineV1).interfaceId), "ENGINE_ADDRESS_NOT_COMPLIANT");
@@ -124,7 +131,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price,
 		address _token
-	) external payable override whenNotPaused {
+	) external payable override whenNotPaused nonReentrant {
 		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
@@ -141,7 +148,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _price,
 		address _token
-	) external payable override whenNotPaused {
+	) external payable override whenNotPaused nonReentrant {
 		cancelSellOrder(_tokenContractAddress, _tokenId);
 
 		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
@@ -200,7 +207,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external payable override whenNotPaused {
+	) external payable override whenNotPaused nonReentrant {
 		_token = _token == address(0) ? wETH : _token;
 		if (
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -225,7 +232,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external payable override whenNotPaused {
+	) external payable override whenNotPaused nonReentrant {
 		_token = _token == address(0) ? wETH : _token;
 		if (
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -245,7 +252,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external payable override whenNotPaused {
+	) external payable override whenNotPaused nonReentrant {
 		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _token, _expiration, _offer);
 
 		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
@@ -271,7 +278,7 @@ contract ERC721ExchangeUpgradeable is
 		address _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view override returns (SellOrder memory) {
+	) public view override whenNotSunset returns (SellOrder memory) {
 		bytes memory order = IOrderBook(orderBook).fetchOrder(
 			OrderBookVersioning.SELL_ORDER_INITIAL,
 			_formOrderId(_seller, _tokenContractAddress, _tokenId)
@@ -291,7 +298,7 @@ contract ERC721ExchangeUpgradeable is
 		address _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view override returns (bool) {
+	) public view override whenNotSunset returns (bool) {
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
 		return 1 <= sellOrder.expiration;
@@ -310,7 +317,7 @@ contract ERC721ExchangeUpgradeable is
 		address _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view override returns (BuyOrder memory) {
+	) public view override whenNotSunset returns (BuyOrder memory) {
 		bytes memory order = IOrderBook(orderBook).fetchOrder(
 			OrderBookVersioning.BUY_ORDER_INITIAL,
 			_formOrderId(_buyer, _tokenContractAddress, _tokenId)
@@ -334,7 +341,7 @@ contract ERC721ExchangeUpgradeable is
 		address _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view override returns (bool) {
+	) public view override whenNotSunset returns (bool) {
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
 		return 1 <= buyOrder.expiration;
@@ -353,7 +360,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
-	) internal {
+	) private {
 		if (sellOrderExists(_seller, _tokenContractAddress, _tokenId)) revert ORDER_EXISTS(_seller, _tokenContractAddress, _tokenId);
 		if (!ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721)) revert CONTRACT_NOT_EIP721();
 		if (block.timestamp > _sellOrder.expiration) revert ORDER_EXPIRED(_sellOrder.expiration, block.timestamp);
@@ -361,7 +368,8 @@ contract ERC721ExchangeUpgradeable is
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
 		if (erc721.ownerOf(_tokenId) != _seller) revert ASSET_STORED_OWNER_NOT_CURRENT_OWNER();
-		if (!(erc721.isApprovedForAll(_seller, address(this)) || erc721.getApproved(_tokenId) == address(this))) revert EXCHANGE_NOT_APPROVED_EIP721(_tokenContractAddress, _tokenId);
+		if (!(erc721.isApprovedForAll(_seller, address(this)) || erc721.getApproved(_tokenId) == address(this)))
+			revert EXCHANGE_NOT_APPROVED_EIP721(_tokenContractAddress, _tokenId);
 		if (_sellOrder.token != address(0) && _sellOrder.token != wETH && !ERC165Checker.supportsInterface(_sellOrder.token, INTERFACE_ID_ERC20))
 			revert TOKEN_NOT_EIP20(_sellOrder.token);
 
@@ -384,7 +392,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder,
 		SellOrderExecutionSenders memory _senders
-	) internal {
+	) private {
 		if (!sellOrderExists(_seller, _tokenContractAddress, _tokenId)) revert ORDER_NOT_EXISTS(_seller, _tokenContractAddress, _tokenId);
 
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
@@ -447,7 +455,7 @@ contract ERC721ExchangeUpgradeable is
 		address _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) internal {
+	) private {
 		IOrderBook(orderBook).cancelOrder(OrderBookVersioning.SELL_ORDER_INITIAL, _formOrderId(_seller, _tokenContractAddress, _tokenId));
 
 		emit SellOrderCanceled(_seller, _tokenContractAddress, _tokenId);
@@ -462,7 +470,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
-	) internal {
+	) private {
 		if (buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) revert ORDER_EXISTS(_buyer, _tokenContractAddress, _tokenId);
 		if (!ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721)) revert CONTRACT_NOT_EIP721();
 		if (block.timestamp > _buyOrder.expiration) revert ORDER_EXPIRED(_buyOrder.expiration, block.timestamp);
@@ -488,7 +496,7 @@ contract ERC721ExchangeUpgradeable is
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
-	) internal {
+	) private {
 		if (!buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) revert ORDER_NOT_EXISTS(_buyer, _tokenContractAddress, _tokenId);
 
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
@@ -546,7 +554,7 @@ contract ERC721ExchangeUpgradeable is
 		address _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) internal {
+	) private {
 		IOrderBook(orderBook).cancelOrder(OrderBookVersioning.BUY_ORDER_INITIAL, _formOrderId(_buyer, _tokenContractAddress, _tokenId));
 
 		emit BuyOrderCanceled(_buyer, _tokenContractAddress, _tokenId);
@@ -571,13 +579,13 @@ contract ERC721ExchangeUpgradeable is
 
 	/// @notice Sets the new wallet to which all system fees get paid.
 	/// @param _newSystemFeeWallet Address of the new system fee wallet.
-	function setSystemFeeWallet(address payable _newSystemFeeWallet) external onlyOwner {
+	function setSystemFeeWallet(address payable _newSystemFeeWallet) external whenNotSunset onlyOwner {
 		systemFeeWallet = _newSystemFeeWallet;
 	}
 
 	/// @notice Sets the new overall fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	/// @param _newSystemFeePerMille New fee amount.
-	function setSystemFeePerMille(uint256 _newSystemFeePerMille) external onlyOwner {
+	function setSystemFeePerMille(uint256 _newSystemFeePerMille) external whenNotSunset onlyOwner {
 		systemFeePerMille = _newSystemFeePerMille;
 	}
 
@@ -586,17 +594,17 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Pauses the execution and creation of sell orders on the exchange. Should only be used in emergencies.
-	function pause() external onlyOwner {
+	function pause() external whenNotSunset onlyOwner {
 		_pause();
 	}
 
 	/// @notice Unpauses the execution and creation of sell orders on the exchange. Should only be used in emergencies.
-	function unpause() external onlyOwner {
+	function unpause() external whenNotSunset onlyOwner {
 		_unpause();
 	}
 
 	/// @notice Withdraws any Ether in-case it's ever accidentaly sent to the contract.
-	function withdraw() public onlyOwner {
+	function withdraw() public whenNotSunset onlyOwner {
 		uint256 balance = address(this).balance;
 		payable(msg.sender).transfer(balance);
 	}
@@ -606,6 +614,29 @@ contract ERC721ExchangeUpgradeable is
 		unchecked {
 			return i + 1;
 		}
+	}
+
+	/*///////////////////////////////////////////////////////////////
+                           SUNSET FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function goTowardsTheSunset() public whenNotSunset onlyOwner {
+        _pause();
+        renounceOwnership();
+        _sunset = true;
+    }
+
+	function sunset() public view returns (bool) {
+		return _sunset;
+	}
+
+	/*///////////////////////////////////////////////////////////////
+                          SUNSET MODIFIERS
+    //////////////////////////////////////////////////////////////*/
+
+	modifier whenNotSunset() {
+		require(!sunset(), "SUNSET");
+		_;
 	}
 
 	/*///////////////////////////////////////////////////////////////

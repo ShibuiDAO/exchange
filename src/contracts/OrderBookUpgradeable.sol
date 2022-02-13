@@ -55,7 +55,7 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 	}
 
 	modifier onlyOrderKeeper() {
-		require(orderKeepers[msg.sender], "Invalid Caller Address");
+		require(orderKeepers[msg.sender], "CALLER_NOT_KEEPER");
 		_;
 	}
 
