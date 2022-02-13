@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 pragma abicoder v2;
 
+import {ERC165} from "@shibuidao/solid/src/utils/ERC165.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -10,6 +11,7 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/se
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IRoyaltyEngineV1} from "@shibuidao/royalty-registry/src/contracts/IRoyaltyEngineV1.sol";
 import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
@@ -23,6 +25,7 @@ import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib
 /// @dev Handles the creation and execution of sell orders as well as their storage.
 /// @author ShibuiDAO
 contract ERC721ExchangeUpgradeable is
+	ERC165,
 	Initializable,
 	ContextUpgradeable,
 	OwnableUpgradeable,
@@ -39,6 +42,10 @@ contract ERC721ExchangeUpgradeable is
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP20.
 	bytes4 private constant INTERFACE_ID_ERC20 = 0x36372b07;
+
+	/*///////////////////////////////////////////////////////////////
+                                ADDRESS'
+    //////////////////////////////////////////////////////////////*/
 
 	/// @notice Address of the "RoyaltyEngineV1" deployment.
 	address public royaltyEngine;
@@ -92,6 +99,15 @@ contract ERC721ExchangeUpgradeable is
 		orderBook = _orderBook;
 
 		wETH = _wethAddress;
+	}
+
+	/*///////////////////////////////////////////////////////////////
+                             ERC165 FUNCTION
+    //////////////////////////////////////////////////////////////*/
+
+	/// @inheritdoc IERC165
+	function supportsInterface(bytes4 interfaceId) public pure virtual override(ERC165, IERC165) returns (bool) {
+		return interfaceId == type(IERC721Exchange).interfaceId || super.supportsInterface(interfaceId);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -184,7 +200,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external whenNotPaused {
+	) external override whenNotPaused {
 		_token = _token == address(0) ? wETH : _token;
 		if (
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -209,7 +225,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external whenNotPaused {
+	) external override whenNotPaused {
 		_token = _token == address(0) ? wETH : _token;
 		if (
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -229,7 +245,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _expiration,
 		uint256 _offer,
 		address _token
-	) external whenNotPaused {
+	) external override whenNotPaused {
 		BuyOrder memory buyOrder = BuyOrder(payable(_msgSender()), _token, _expiration, _offer);
 
 		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
@@ -238,7 +254,7 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being bought.
-	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public whenNotPaused {
+	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public override whenNotPaused {
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
@@ -255,7 +271,7 @@ contract ERC721ExchangeUpgradeable is
 		address _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view returns (SellOrder memory) {
+	) public view override returns (SellOrder memory) {
 		bytes memory order = IOrderBook(orderBook).fetchOrder(
 			OrderBookVersioning.SELL_ORDER_INITIAL,
 			_formOrderId(_seller, _tokenContractAddress, _tokenId)
@@ -275,7 +291,7 @@ contract ERC721ExchangeUpgradeable is
 		address _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view returns (bool) {
+	) public view override returns (bool) {
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
 		return 1 <= sellOrder.expiration;
@@ -294,7 +310,7 @@ contract ERC721ExchangeUpgradeable is
 		address _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view returns (BuyOrder memory) {
+	) public view override returns (BuyOrder memory) {
 		bytes memory order = IOrderBook(orderBook).fetchOrder(
 			OrderBookVersioning.BUY_ORDER_INITIAL,
 			_formOrderId(_buyer, _tokenContractAddress, _tokenId)
@@ -318,7 +334,7 @@ contract ERC721ExchangeUpgradeable is
 		address _buyer,
 		address _tokenContractAddress,
 		uint256 _tokenId
-	) public view returns (bool) {
+	) public view override returns (bool) {
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
 		return 1 <= buyOrder.expiration;
@@ -492,7 +508,10 @@ contract ERC721ExchangeUpgradeable is
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert AssetStoredOwnerNotCurrentOwner();
 		}
-		if (!(IERC721(_tokenContractAddress).isApprovedForAll(buyOrder.owner, address(this)) || IERC721(_tokenContractAddress).getApproved(_tokenId) == address(this))) {
+		if (
+			!(IERC721(_tokenContractAddress).isApprovedForAll(buyOrder.owner, address(this)) ||
+				IERC721(_tokenContractAddress).getApproved(_tokenId) == address(this))
+		) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert ExchangeNotApprovedEIP721();
 		}

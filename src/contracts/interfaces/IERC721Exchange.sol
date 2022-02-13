@@ -2,8 +2,10 @@
 pragma solidity ^0.8.9;
 pragma abicoder v2;
 
+import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
+
 /// @author ShibuiDAO
-interface IERC721Exchange {
+interface IERC721Exchange is IERC165 {
 	/*///////////////////////////////////////////////////////////////
                                   EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -204,6 +206,108 @@ interface IERC721Exchange {
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external;
+
+	/*///////////////////////////////////////////////////////////////
+                   PUBLIC BUY ORDER MANIPULATION FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+	/// @notice Stores a new offer/bid for a given ERC721 asset.
+	/// @param _owner The current owner of the desired ERC721 asset.
+	/// @param _tokenContractAddress The ERC721 asset contract address.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _offer The offered amount in wei for the given ERC721 asset.
+	function bookBuyOrder(
+		address payable _owner,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _offer,
+		address _token
+	) external;
+
+	/// @notice Updates/overwrites existing BuyOrder.
+	/// @param _owner The current owner of the desired ERC721 asset.
+	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _offer The offered amount in wei for the given ERC721 asset.
+	function updateBuyOrder(
+		address payable _owner,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _offer,
+		address _token
+	) external;
+
+	function exerciseBuyOrder(
+		address payable _bidder,
+		address _tokenContractAddress,
+		uint256 _tokenId,
+		uint256 _expiration,
+		uint256 _offer,
+		address _token
+	) external;
+
+	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
+	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external;
+
+	/*///////////////////////////////////////////////////////////////
+                          SELL ORDER VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
+	/// @param _seller Address of the sell order owner.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being sold.
+	/// @return Struct containing all the order data.
+	function getSellOrder(
+		address _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId
+	) external view returns (SellOrder memory);
+
+	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
+	/// So if a order doesn't exist it will have an expiration of 0.
+	/// @param _seller Address of the sell order owner.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being sold.
+	/// @return The validy of the queried order.
+	function sellOrderExists(
+		address _seller,
+		address _tokenContractAddress,
+		uint256 _tokenId
+	) external view returns (bool);
+
+	/*///////////////////////////////////////////////////////////////
+                          BUY ORDER VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
+	/// @param _buyer Address of the buy order creator.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
+	/// @return Struct containing all the order data.
+	function getBuyOrder(
+		address _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId
+	) external view returns (BuyOrder memory);
+
+	/// @notice This relies on the fact that for one we treat expired orders as non-existant and that the default for structs in a mapping is that they have all their values set to 0.
+	/// So if a order doesn't exist it will have an expiration of 0.
+	/// @param _buyer Address of the buy order creator.
+	/// @param _tokenContractAddress Address of the ERC721 token contract.
+	/// @param _tokenId ID of the token being bought.
+	/// @return The validy of the queried order.
+	function buyOrderExists(
+		address _buyer,
+		address _tokenContractAddress,
+		uint256 _tokenId
+	) external view returns (bool);
 
 	/*///////////////////////////////////////////////////////////////
                         INFORMATIVE FUNCTIONS
