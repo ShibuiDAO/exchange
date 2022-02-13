@@ -6,17 +6,28 @@
   },
   {
     "inputs": [],
-    "name": "AssetStoredOwnerNotCurrentOwner",
+    "name": "ASSET_STORED_OWNER_NOT_CURRENT_OWNER",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "ContractNotEIP721",
+    "name": "CONTRACT_NOT_EIP721",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ExchangeNotApprovedEIP721",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "EXCHANGE_NOT_APPROVED_EIP721",
     "type": "error"
   },
   {
@@ -32,37 +43,86 @@
         "type": "uint256"
       }
     ],
-    "name": "ExchangeNotApprovedSufficientlyEIP20",
+    "name": "EXCHANGE_NOT_APPROVED_SUFFICIENTLY_EIP20",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ORDER_EXISTS",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "expiration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "time",
+        "type": "uint256"
+      }
+    ],
+    "name": "ORDER_EXPIRED",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ORDER_NOT_EXISTS",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "OrderExists",
+    "name": "ORDER_PASSED_NOT_MATCH_STORED",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "OrderExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OrderNotExists",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OrderPassedNotMatchStored",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "PaymentMissing",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "SenderNotAuthorised",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "payment",
+        "type": "uint256"
+      }
+    ],
+    "name": "PAYMENT_MISSING",
     "type": "error"
   },
   {
@@ -73,7 +133,7 @@
         "type": "address"
       }
     ],
-    "name": "TokenNotEIP20",
+    "name": "TOKEN_NOT_EIP20",
     "type": "error"
   },
   {
