@@ -36,10 +36,10 @@ contract ERC721ExchangeUpgradeable is
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
 	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-	bytes4 private immutable interfaceIdERC721 = type(IERC721).interfaceId;
+	bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
 
 	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-	bytes4 private immutable interfaceIdERC20 = type(IERC20).interfaceId;
+	bytes4 private constant INTERFACE_ID_ERC20 = 0x36372b07;
 
 	/// @notice Address of the "RoyaltyEngineV1" deployment.
 	address public royaltyEngine;
@@ -151,7 +151,7 @@ contract ERC721ExchangeUpgradeable is
 		if (_token == address(0) && msg.value < _price) revert PaymentMissing();
 		if (
 			_token != address(0) &&
-			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
 			IERC20(_token).allowance(_msgSender(), address(this)) < _price
 		) revert ExchangeNotApprovedSufficientlyEIP20(_token, _price);
 
@@ -188,7 +188,7 @@ contract ERC721ExchangeUpgradeable is
 	) external whenNotPaused {
 		_token = _token == address(0) ? wETH : _token;
 		if (
-			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
 			IERC20(_token).allowance(_msgSender(), address(this)) < _offer
 		) revert ExchangeNotApprovedSufficientlyEIP20(_token, _offer);
 
@@ -213,7 +213,7 @@ contract ERC721ExchangeUpgradeable is
 	) external whenNotPaused {
 		_token = _token == address(0) ? wETH : _token;
 		if (
-			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
 			IERC20(_token).allowance(_msgSender(), address(this)) < _offer
 		) revert ExchangeNotApprovedSufficientlyEIP20(_token, _offer);
 
@@ -340,14 +340,14 @@ contract ERC721ExchangeUpgradeable is
 		SellOrder memory _sellOrder
 	) internal {
 		if (sellOrderExists(_seller, _tokenContractAddress, _tokenId)) revert OrderExists();
-		if (!ERC165Checker.supportsInterface(_tokenContractAddress, interfaceIdERC721)) revert ContractNotEIP721();
+		if (!ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721)) revert ContractNotEIP721();
 		if (block.timestamp > _sellOrder.expiration) revert OrderExpired();
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
 		if (erc721.ownerOf(_tokenId) != _seller) revert AssetStoredOwnerNotCurrentOwner();
-		if (!erc721.isApprovedForAll(_seller, address(this))) revert ExchangeNotApprovedEIP721();
-		if (_sellOrder.token != address(0) && _sellOrder.token != wETH && !ERC165Checker.supportsInterface(_sellOrder.token, interfaceIdERC20))
+		if (!(erc721.isApprovedForAll(_seller, address(this)) || erc721.getApproved(_tokenId) == address(this))) revert ExchangeNotApprovedEIP721();
+		if (_sellOrder.token != address(0) && _sellOrder.token != wETH && !ERC165Checker.supportsInterface(_sellOrder.token, INTERFACE_ID_ERC20))
 			revert TokenNotEIP20(_sellOrder.token);
 
 		IOrderBook(orderBook).bookOrder(
@@ -386,7 +386,7 @@ contract ERC721ExchangeUpgradeable is
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert AssetStoredOwnerNotCurrentOwner();
 		}
-		if (!erc721.isApprovedForAll(_seller, address(this))) {
+		if (!(erc721.isApprovedForAll(_seller, address(this)) || erc721.getApproved(_tokenId) == address(this))) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert ExchangeNotApprovedEIP721();
 		}
@@ -449,7 +449,7 @@ contract ERC721ExchangeUpgradeable is
 		BuyOrder memory _buyOrder
 	) internal {
 		if (buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) revert OrderExists();
-		if (!ERC165Checker.supportsInterface(_tokenContractAddress, interfaceIdERC721)) revert ContractNotEIP721();
+		if (!ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721)) revert ContractNotEIP721();
 		if (block.timestamp > _buyOrder.expiration) revert OrderExpired();
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
@@ -480,7 +480,7 @@ contract ERC721ExchangeUpgradeable is
 
 		address _token = buyOrder.token == address(0) ? wETH : buyOrder.token;
 		if (
-			(_token == wETH || !ERC165Checker.supportsInterface(_token, interfaceIdERC20)) &&
+			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
 			IERC20(_token).allowance(_buyer, address(this)) < buyOrder.offer
 		) revert ExchangeNotApprovedSufficientlyEIP20(_token, buyOrder.offer);
 
@@ -493,7 +493,7 @@ contract ERC721ExchangeUpgradeable is
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert AssetStoredOwnerNotCurrentOwner();
 		}
-		if (!IERC721(_tokenContractAddress).isApprovedForAll(buyOrder.owner, address(this))) {
+		if (!(IERC721(_tokenContractAddress).isApprovedForAll(buyOrder.owner, address(this)) || IERC721(_tokenContractAddress).getApproved(_tokenId) == address(this))) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert ExchangeNotApprovedEIP721();
 		}
