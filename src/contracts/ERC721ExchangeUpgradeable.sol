@@ -35,10 +35,9 @@ contract ERC721ExchangeUpgradeable is
     //////////////////////////////////////////////////////////////*/
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
-	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
 	bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
 
-	/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+	/// @dev Number used to check if the passed contract address correctly implements EIP20.
 	bytes4 private constant INTERFACE_ID_ERC20 = 0x36372b07;
 
 	/// @notice Address of the "RoyaltyEngineV1" deployment.
