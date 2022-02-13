@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/shibuidao/exchange/compare/v1.2.8...v1.3.0) (2022-02-13)
+
+
+### Features
+
+* allow listings using erc20 tokens ([2080e96](https://github.com/shibuidao/exchange/commit/2080e966ebbc2ec8935bcf947fad87cf5f9d7684))
+* base for external order book ([424f21f](https://github.com/shibuidao/exchange/commit/424f21f85b77fe13f7f7d03ffccc1d2c6ec97e62))
+* compare order from stored bytes ([2aeefa2](https://github.com/shibuidao/exchange/commit/2aeefa2a3607db196f8a5ceb757bc5d7533f8bb8))
+* create script to deploy exchange ([c5f3e5d](https://github.com/shibuidao/exchange/commit/c5f3e5d6a3b2195badf8fc83460025948c78cc0d))
+* emit raw events on order book ([416d994](https://github.com/shibuidao/exchange/commit/416d9940d4076373956bdbaf8b92eecf1d77feb9))
+* implement new onchain stuff to tests ([c26a2d1](https://github.com/shibuidao/exchange/commit/c26a2d133bee6571688ce369c30534a311f607d4))
+* implement sunsetting ([f68b98f](https://github.com/shibuidao/exchange/commit/f68b98f83f6280b95add7685b04b5c60786acbe8))
+* test for balance change in eth ([dab970f](https://github.com/shibuidao/exchange/commit/dab970fd9694e33dc2529343a2db6946ba3cb729))
+* use external order book in exchange ([6971df4](https://github.com/shibuidao/exchange/commit/6971df405df3c292caac039cfab5f99ee6cdc697))
+* use royaltyengine for royalties ([ab91240](https://github.com/shibuidao/exchange/commit/ab91240f4adf4b2e5f7f30d037078b76b72bad47))
+
 ### [1.2.8](https://github.com/shibuidao/exchange/compare/v1.2.7...v1.2.8) (2022-01-25)
 
 ### [1.2.7](https://github.com/shibuidao/exchange/compare/v1.2.6...v1.2.7) (2022-01-25)
