@@ -3,6 +3,9 @@ import { alchemyRinkebyEthKey, testnetPrivateKey } from './config.hardhat';
 
 export const networks: NetworksUserConfig = {
 	hardhat: {},
+	frame: {
+		url: 'http://127.0.0.1:1248'
+	},
 	local: {
 		chainId: 99,
 		url: 'http://127.0.0.1:8545',
