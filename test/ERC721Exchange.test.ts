@@ -15,6 +15,8 @@ import type {
 
 chai.use(solidity);
 
+const SYSTEM_FEE = 29; // 2,9%
+
 describe('ERC721Exchange', () => {
 	let contractWETH: WETHMock;
 	let contractRoyaltyRegistry: RoyaltyRegistry;
@@ -51,7 +53,7 @@ describe('ERC721Exchange', () => {
 		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
 		contract = (await upgrades.deployProxy(
 			ERC721ExchangeUpgradeableContract,
-			[29, contractRoyaltyEngineV1.address, contractOrderBookUpgradeable.address, contractWETH.address],
+			[SYSTEM_FEE, contractRoyaltyEngineV1.address, contractOrderBookUpgradeable.address, contractWETH.address],
 			{
 				initializer: '__ERC721Exchange_init',
 				kind: 'transparent'
@@ -235,7 +237,7 @@ describe('ERC721Exchange', () => {
 						.withArgs(account.address, contractERC721.address, 1);
 
 					expect((await contractWETH.balanceOf(account.address)).toString()).to.be.equal(
-						BigNumber.from(price).sub(BigNumber.from(price).mul(29).div(1000)).toString()
+						BigNumber.from(price).sub(BigNumber.from(price).mul(SYSTEM_FEE).div(1000)).toString()
 					);
 
 					const canceledOrder = await contract.getSellOrder(account.address, contractERC721.address, 1);

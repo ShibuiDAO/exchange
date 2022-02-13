@@ -28,7 +28,9 @@
 		"test:localh:hardhat:deploy": "hardhat run ./scripts/tests/proxyDeploy.ts --network localh",
 		"test:localh:forge": "forge test --ffi --rpc-url=http://127.0.0.1:8545/",
 		"test:hardhat:coverage": "hardhat coverage --network hardhat",
-		"sversion": "standard-version"
+		"sversion": "standard-version",
+		"predeploy:exchange:frame": "yarn clean",
+		"deploy:exchange:frame": "hardhat run ./scripts/deploy.ts --network frame"
 	},
 	"files": [
 		"typechain",
