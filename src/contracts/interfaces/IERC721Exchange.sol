@@ -90,21 +90,6 @@ interface IERC721Exchange is IERC165 {
 	);
 
 	/*///////////////////////////////////////////////////////////////
-                                    ERRORS
-    //////////////////////////////////////////////////////////////*/
-
-	error ORDER_EXISTS(address account, address tokenContractAddress, uint256 tokenId);
-	error ORDER_NOT_EXISTS(address account, address tokenContractAddress, uint256 tokenId);
-	error ORDER_EXPIRED(uint256 expiration, uint256 time);
-	error ORDER_PASSED_NOT_MATCH_STORED();
-	error ASSET_STORED_OWNER_NOT_CURRENT_OWNER();
-	error PAYMENT_MISSING(uint256 price, uint256 payment);
-	error EXCHANGE_NOT_APPROVED_SUFFICIENTLY_EIP20(address token, uint256 amount);
-	error EXCHANGE_NOT_APPROVED_EIP721(address tokenContractAddress, uint256 tokenId);
-	error CONTRACT_NOT_EIP721();
-	error TOKEN_NOT_EIP20(address token);
-
-	/*///////////////////////////////////////////////////////////////
                                 ORDER STORAGE
     //////////////////////////////////////////////////////////////*/
 
