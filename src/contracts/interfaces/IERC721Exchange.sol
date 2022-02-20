@@ -127,11 +127,13 @@ interface IERC721Exchange is IERC165 {
     //////////////////////////////////////////////////////////////*/
 
 	/// @notice Function acting as the contracts constructor.
-	/// @param _maxRoyaltyPerMille The overall maximum royalty fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	/// @param _systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+    /// @param _royaltyEngine Address of the RoyaltyEngine deployment.
+    /// @param _orderBook Address of the shared OrderBook deployment.
 	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
-		uint256 _maxRoyaltyPerMille,
+		uint256 _systemFeePerMille,
 		address _royaltyEngine,
 		address _orderBook,
 		address _wethAddress

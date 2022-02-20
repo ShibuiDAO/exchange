@@ -47,6 +47,7 @@ contract ERC721ExchangeUpgradeable is
                                 SUNSET
     //////////////////////////////////////////////////////////////*/
 
+	/// @notice Indicates if the exchange has been permanently disabled.
 	bool public _sunset;
 
 	/*///////////////////////////////////////////////////////////////
@@ -83,6 +84,8 @@ contract ERC721ExchangeUpgradeable is
 
 	/// @notice Function acting as the contracts constructor.
 	/// @param _systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
+	/// @param _royaltyEngine Address of the RoyaltyEngine deployment.
+	/// @param _orderBook Address of the shared OrderBook deployment.
 	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
@@ -594,6 +597,22 @@ contract ERC721ExchangeUpgradeable is
 	}
 
 	/*///////////////////////////////////////////////////////////////
+                        SHARED DEPLOYMENT FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+	/// @notice Sets the new RoyaltyEngine address.
+	/// @param _newRoyaltyEngine New address for the RoyaltyEngine.
+	function setRoyaltyEngine(address _newRoyaltyEngine) external whenNotSunset onlyOwner {
+		royaltyEngine = _newRoyaltyEngine;
+	}
+
+	/// @notice Sets the new OrderBook address.
+	/// @param _newOrderBook New address for the OrderBook.
+	function setOrderBook(address _newOrderBook) external whenNotSunset onlyOwner {
+		orderBook = _newOrderBook;
+	}
+
+	/*///////////////////////////////////////////////////////////////
                         ADMINISTRATIVE FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
@@ -611,13 +630,6 @@ contract ERC721ExchangeUpgradeable is
 	function withdraw() public whenNotSunset onlyOwner {
 		uint256 balance = address(this).balance;
 		payable(msg.sender).transfer(balance);
-	}
-
-	/// @dev Increments a loop within a unchecked context.
-	function uncheckedInc(uint256 i) private pure returns (uint256) {
-		unchecked {
-			return i + 1;
-		}
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -650,5 +662,16 @@ contract ERC721ExchangeUpgradeable is
 	/// @inheritdoc IERC721Exchange
 	function version() public pure virtual override returns (uint256) {
 		return 1;
+	}
+
+	/*///////////////////////////////////////////////////////////////
+                        UTILITY FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+	/// @dev Increments a loop within a unchecked context.
+	function uncheckedInc(uint256 i) private pure returns (uint256) {
+		unchecked {
+			return i + 1;
+		}
 	}
 }
