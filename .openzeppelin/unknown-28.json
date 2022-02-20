@@ -49,6 +49,16 @@
       "address": "0xd9Eb8E862746907aA5f334C5ab1FF8aF9BD8eB03",
       "txHash": "0x457695b6043b6c18c2cb2e4a784b25bffeecbabfc47b7ea77642dfbbd4a27670",
       "kind": "transparent"
+    },
+    {
+      "address": "0x1284a3e936f3aaE381E1A948Ea9418682Af8cfe7",
+      "txHash": "0x724d117d1c42363769c57dedf27eafe88aa7b7ff055afd522120f5d2dbba26c7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5B4E729bD03d1984d744e0430A6C4eA073cc993C",
+      "txHash": "0x001669f9fc44d881cfd6a4cf5e79fdbab7d481ce3f24b6b098546abc76331045",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -312,6 +322,124 @@
     "653f04ba2c50aba5d2c1e2e67e644672ec8106d7f12cc0ea3ea0e2e5016f4e19": {
       "address": "0xe882E56A56bbf6Eab4B903a9f048052266606f5a",
       "txHash": "0x83d09b903b1238d102a672f945be7b6f3ccd392959585d4cc5e6203890906446",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
+          },
+          {
+            "contract": "ERC721ExchangeUpgradeable",
+            "label": "_sunset",
+            "type": "t_bool",
+            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:50"
+          },
+          {
+            "contract": "ERC721ExchangeUpgradeable",
+            "label": "royaltyEngine",
+            "type": "t_address",
+            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:57"
+          },
+          {
+            "contract": "ERC721ExchangeUpgradeable",
+            "label": "orderBook",
+            "type": "t_address",
+            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:60"
+          },
+          {
+            "contract": "ERC721ExchangeUpgradeable",
+            "label": "wETH",
+            "type": "t_address",
+            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:63"
+          },
+          {
+            "contract": "ERC721ExchangeUpgradeable",
+            "label": "systemFeeWallet",
+            "type": "t_address_payable",
+            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:70"
+          },
+          {
+            "contract": "ERC721ExchangeUpgradeable",
+            "label": "systemFeePerMille",
+            "type": "t_uint256",
+            "src": "src/contracts/ERC721ExchangeUpgradeable.sol:73"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "8697602c3f505c895f7f34bdd5641816d893ee7209121d205755387c4eecef92": {
+      "address": "0x1D976565d2b170c73CfBf607D8827e4477eDbf93",
+      "txHash": "0xe33948a87848c6dd928e7d5afbdb91089d8e3cb1714f307c50552a40fc1b83ab",
       "layout": {
         "storage": [
           {
