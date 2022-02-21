@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/shibuidao/exchange/compare/v1.3.3...v1.4.0) (2022-02-21)
+
+
+### Features
+
+* provide fee wallet at initialization ([b5d1b47](https://github.com/shibuidao/exchange/commit/b5d1b470917ec5d6e3edb41eea33c0fe4b78e182))
+
 ### [1.3.3](https://github.com/shibuidao/exchange/compare/v1.3.2...v1.3.3) (2022-02-21)
 
 ### [1.3.2](https://github.com/shibuidao/exchange/compare/v1.3.1...v1.3.2) (2022-02-20)
