@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/shibuidao/exchange/compare/v1.4.0...v1.5.0) (2022-02-21)
+
+
+### Features
+
+* add diagrams ([5c1d566](https://github.com/shibuidao/exchange/commit/5c1d56699a253f5037cb5fc3fd9698dc485a4ed3))
+
 ## [1.4.0](https://github.com/shibuidao/exchange/compare/v1.3.3...v1.4.0) (2022-02-21)
 
 
