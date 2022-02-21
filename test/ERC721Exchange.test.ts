@@ -26,6 +26,8 @@ describe('ERC721Exchange', () => {
 	let contractERC721: TestERC721;
 
 	beforeEach(async () => {
+		const [account] = await ethers.getSigners();
+
 		const WETHContract = await ethers.getContractFactory('WETHMock');
 		contractWETH = (await WETHContract.deploy()) as WETHMock;
 
@@ -53,7 +55,7 @@ describe('ERC721Exchange', () => {
 		const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
 		contract = (await upgrades.deployProxy(
 			ERC721ExchangeUpgradeableContract,
-			[SYSTEM_FEE, contractRoyaltyEngineV1.address, contractOrderBookUpgradeable.address, contractWETH.address],
+			[account.address, SYSTEM_FEE, contractRoyaltyEngineV1.address, contractOrderBookUpgradeable.address, contractWETH.address],
 			{
 				initializer: '__ERC721Exchange_init',
 				kind: 'transparent'

@@ -118,7 +118,7 @@ interface IERC721Exchange is IERC165 {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	struct SellOrderExecutionSenders {
-		address payable recipient;
+		address recipient;
 		address buyer;
 	}
 
@@ -127,12 +127,14 @@ interface IERC721Exchange is IERC165 {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Function acting as the contracts constructor.
+	/// @param _systemFeeWallet Address to which system fees get paid.
 	/// @param _systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	/// @param _royaltyEngine Address of the RoyaltyEngine deployment.
 	/// @param _orderBook Address of the shared OrderBook deployment.
 	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
+		address _systemFeeWallet,
 		uint256 _systemFeePerMille,
 		address _royaltyEngine,
 		address _orderBook,
@@ -143,6 +145,7 @@ interface IERC721Exchange is IERC165 {
 	///                              PUBLIC SELL ORDER MANIPULATION FUNCTIONS                              ///
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	/// @dev If `_token` is a zero address then the order will treat it as plain ETH.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
@@ -156,6 +159,7 @@ interface IERC721Exchange is IERC165 {
 		address _token
 	) external payable;
 
+	/// @dev If `_token` is a zero address then the order will treat it as plain ETH.
 	/// @param _seller The seller address of the desired SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
@@ -169,7 +173,7 @@ interface IERC721Exchange is IERC165 {
 		uint256 _tokenId,
 		uint256 _expiration,
 		uint256 _price,
-		address payable _recipient,
+		address _recipient,
 		address _token
 	) external payable;
 
@@ -184,11 +188,13 @@ interface IERC721Exchange is IERC165 {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Stores a new offer/bid for a given ERC721 asset.
+	/// @dev If `_token` is a zero address then the order will treat it as being WETH.
 	/// @param _owner The current owner of the desired ERC721 asset.
 	/// @param _tokenContractAddress The ERC721 asset contract address.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _offer The offered amount in wei for the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function bookBuyOrder(
 		address payable _owner,
 		address _tokenContractAddress,
@@ -198,6 +204,13 @@ interface IERC721Exchange is IERC165 {
 		address _token
 	) external payable;
 
+	/// @dev If `_token` is a zero address then the order will treat it as being WETH.
+	/// @param _bidder Address that placed the bid.
+	/// @param _tokenContractAddress The ERC721 asset contract address.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _offer The offered amount in wei for the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function exerciseBuyOrder(
 		address payable _bidder,
 		address _tokenContractAddress,
@@ -207,9 +220,10 @@ interface IERC721Exchange is IERC165 {
 		address _token
 	) external payable;
 
-	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
+	/// @notice Cancels a given BuyOrder and emits "BuyOrderCanceled".
+	/// @dev Can only be executed by the listed BuyOrder placer.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
-	/// @param _tokenId ID of the token being bought.
+	/// @param _tokenId ID of the token being bid on.
 	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external payable;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

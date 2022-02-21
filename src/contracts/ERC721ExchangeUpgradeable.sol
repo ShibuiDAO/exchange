@@ -83,12 +83,14 @@ contract ERC721ExchangeUpgradeable is
 	constructor() initializer {}
 
 	/// @notice Function acting as the contracts constructor.
+	/// @param _systemFeeWallet Address to which system fees get paid.
 	/// @param _systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	/// @param _royaltyEngine Address of the RoyaltyEngine deployment.
 	/// @param _orderBook Address of the shared OrderBook deployment.
 	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
+		address _systemFeeWallet,
 		uint256 _systemFeePerMille,
 		address _royaltyEngine,
 		address _orderBook,
@@ -100,6 +102,8 @@ contract ERC721ExchangeUpgradeable is
 		__ReentrancyGuard_init();
 
 		_sunset = false;
+
+		systemFeeWallet = payable(_systemFeeWallet);
 		systemFeePerMille = _systemFeePerMille;
 
 		require(ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngineV1).interfaceId), "ENGINE_ADDRESS_NOT_COMPLIANT");
@@ -124,10 +128,12 @@ contract ERC721ExchangeUpgradeable is
 	///                              PUBLIC SELL ORDER MANIPULATION FUNCTIONS                              ///
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	/// @dev If `_token` is a zero address then the order will treat it as plain ETH.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function bookSellOrder(
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -140,19 +146,21 @@ contract ERC721ExchangeUpgradeable is
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
+	/// @dev If `_token` is a zero address then the order will treat it as plain ETH.
 	/// @param _seller The seller address of the desired SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _price The price in wei of the given ERC721 asset.
 	/// @param _recipient The address of the ERC721 asset recipient.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function exerciseSellOrder(
 		address payable _seller,
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
 		uint256 _price,
-		address payable _recipient,
+		address _recipient,
 		address _token
 	) external payable override whenNotPaused nonReentrant {
 		require(_token != address(0) || (_token == address(0) && msg.value >= _price), "PAYMENT_MISSING");
@@ -168,8 +176,8 @@ contract ERC721ExchangeUpgradeable is
 		_exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
 	}
 
-	/// @notice Cancels a given SellOrder and emits `SellOrderCanceled`.
-	/// @notice Can only be executed by the listed SellOrder seller.
+	/// @notice Cancels a given SellOrder and emits "SellOrderCanceled".
+	/// @dev Can only be executed by the listed SellOrder seller.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) public payable override whenNotPaused {
@@ -181,11 +189,13 @@ contract ERC721ExchangeUpgradeable is
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Stores a new offer/bid for a given ERC721 asset.
+	/// @dev If `_token` is a zero address then the order will treat it as being WETH.
 	/// @param _owner The current owner of the desired ERC721 asset.
 	/// @param _tokenContractAddress The ERC721 asset contract address.
 	/// @param _tokenId ID of the desired ERC721 asset.
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _offer The offered amount in wei for the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function bookBuyOrder(
 		address payable _owner,
 		address _tokenContractAddress,
@@ -206,6 +216,13 @@ contract ERC721ExchangeUpgradeable is
 		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
+	/// @dev If `_token` is a zero address then the order will treat it as being WETH.
+	/// @param _bidder Address that placed the bid.
+	/// @param _tokenContractAddress The ERC721 asset contract address.
+	/// @param _tokenId ID of the desired ERC721 asset.
+	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
+	/// @param _offer The offered amount in wei for the given ERC721 asset.
+	/// @param _token Alternative ERC20 asset used for payment.
 	function exerciseBuyOrder(
 		address payable _bidder,
 		address _tokenContractAddress,
@@ -219,9 +236,10 @@ contract ERC721ExchangeUpgradeable is
 		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
 	}
 
-	/// @notice Cancels a given BuyOrder where the buyer is the msg sender and emits `BuyOrderCanceled`.
+	/// @notice Cancels a given BuyOrder and emits "BuyOrderCanceled".
+	/// @dev Can only be executed by the listed BuyOrder placer.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
-	/// @param _tokenId ID of the token being bought.
+	/// @param _tokenId ID of the token being bid on.
 	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) public payable override whenNotPaused {
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
@@ -589,12 +607,15 @@ contract ERC721ExchangeUpgradeable is
 	///                                SUNSET FUNCTIONS                                ///
 	//////////////////////////////////////////////////////////////////////////////////////
 
+	/// @notice Sunsets the contract.
 	function goTowardsTheSunset() public whenNotSunset onlyOwner {
 		_pause();
 		renounceOwnership();
 		_sunset = true;
 	}
 
+	/// @notice Returns the status of the sunset.
+	/// @return The status of sunset.
 	function sunset() public view returns (bool) {
 		return _sunset;
 	}
@@ -603,6 +624,7 @@ contract ERC721ExchangeUpgradeable is
 	///                                SUNSET MODIFIERS                                ///
 	//////////////////////////////////////////////////////////////////////////////////////
 
+	/// @notice Throws if called when the contract is sunset.
 	modifier whenNotSunset() {
 		require(!sunset(), "SUNSET");
 		_;
@@ -622,6 +644,8 @@ contract ERC721ExchangeUpgradeable is
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @dev Increments a loop within a unchecked context.
+	/// @param i The number to increment.
+	/// @return The incremented number.
 	function uncheckedInc(uint256 i) private pure returns (uint256) {
 		unchecked {
 			return i + 1;
