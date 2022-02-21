@@ -33,9 +33,9 @@ contract ERC721ExchangeUpgradeable is
 	ReentrancyGuardUpgradeable,
 	IERC721Exchange
 {
-	/*///////////////////////////////////////////////////////////////
-                                  CONSTANTS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////
+	///                  CONSTANTS                  ///
+	///////////////////////////////////////////////////
 
 	/// @dev Number used to check if the passed contract address correctly implements EIP721.
 	bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
@@ -43,16 +43,16 @@ contract ERC721ExchangeUpgradeable is
 	/// @dev Number used to check if the passed contract address correctly implements EIP20.
 	bytes4 private constant INTERFACE_ID_ERC20 = 0x36372b07;
 
-	/*///////////////////////////////////////////////////////////////
-                                SUNSET
-    //////////////////////////////////////////////////////////////*/
+	////////////////////////////////////
+	///            SUNSET            ///
+	////////////////////////////////////
 
-	/// @notice Indicates if the exchange has been permanently disabled.
-	bool public _sunset;
+	/// @dev Indicates if the exchange has been permanently disabled.
+	bool private _sunset;
 
-	/*///////////////////////////////////////////////////////////////
-                                ADDRESS'
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////
+	///                ADDRESS'                ///
+	//////////////////////////////////////////////
 
 	/// @notice Address of the "RoyaltyEngineV1" deployment.
 	address public royaltyEngine;
@@ -63,9 +63,9 @@ contract ERC721ExchangeUpgradeable is
 	/// @notice Addeess of the main canonical WETH deployment.
 	address public wETH;
 
-	/*///////////////////////////////////////////////////////////////
-                                 SYSTEM FEE
-    //////////////////////////////////////////////////////////////*/
+	////////////////////////////////////////////////////////
+	///                    SYSTEM FEE                    ///
+	////////////////////////////////////////////////////////
 
 	/// @dev The wallet address to which system fees get paid.
 	address payable private systemFeeWallet;
@@ -73,9 +73,9 @@ contract ERC721ExchangeUpgradeable is
 	/// @dev System fee in %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
 	uint256 private systemFeePerMille;
 
-	/*///////////////////////////////////////////////////////////////
-          UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	///                    UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION                    ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @dev Never called.
 	/// @custom:oz-upgrades-unsafe-allow constructor
@@ -111,18 +111,18 @@ contract ERC721ExchangeUpgradeable is
 		wETH = _wethAddress;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                             ERC165 FUNCTION
-    //////////////////////////////////////////////////////////////*/
+	/////////////////////////////////////////////////////////////////////////////////
+	///                              ERC165 FUNCTION                              ///
+	/////////////////////////////////////////////////////////////////////////////////
 
 	/// @inheritdoc IERC165
 	function supportsInterface(bytes4 interfaceId) public pure virtual override(ERC165, IERC165) returns (bool) {
 		return interfaceId == type(IERC721Exchange).interfaceId || super.supportsInterface(interfaceId);
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                   PUBLIC SELL ORDER MANIPULATION FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                              PUBLIC SELL ORDER MANIPULATION FUNCTIONS                              ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
@@ -137,24 +137,6 @@ contract ERC721ExchangeUpgradeable is
 	) external payable override whenNotPaused nonReentrant {
 		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 
-		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
-	}
-
-	/// @notice Updates/overwrites existing SellOrder.
-	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param _tokenId ID of the desired ERC721 asset.
-	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param _price The price in wei of the given ERC721 asset.
-	function updateSellOrder(
-		address _tokenContractAddress,
-		uint256 _tokenId,
-		uint256 _expiration,
-		uint256 _price,
-		address _token
-	) external payable override whenNotPaused nonReentrant {
-		cancelSellOrder(_tokenContractAddress, _tokenId);
-
-		SellOrder memory sellOrder = SellOrder(_expiration, _price, _token);
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
@@ -194,9 +176,9 @@ contract ERC721ExchangeUpgradeable is
 		_cancelSellOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                   PUBLIC BUY ORDER MANIPULATION FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                              PUBLIC BUY ORDER MANIPULATION FUNCTIONS                              ///
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Stores a new offer/bid for a given ERC721 asset.
 	/// @param _owner The current owner of the desired ERC721 asset.
@@ -224,33 +206,6 @@ contract ERC721ExchangeUpgradeable is
 		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
-	/// @notice Updates/overwrites existing BuyOrder.
-	/// @param _owner The current owner of the desired ERC721 asset.
-	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param _tokenId ID of the desired ERC721 asset.
-	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param _offer The offered amount in wei for the given ERC721 asset.
-	function updateBuyOrder(
-		address payable _owner,
-		address _tokenContractAddress,
-		uint256 _tokenId,
-		uint256 _expiration,
-		uint256 _offer,
-		address _token
-	) external payable override whenNotPaused nonReentrant {
-		_token = _token == address(0) ? wETH : _token;
-		require(
-			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
-				IERC20(_token).allowance(_msgSender(), address(this)) >= _offer,
-			"EXCHANGE_NOT_APPROVED_SUFFICIENTLY_EIP20"
-		);
-
-		cancelBuyOrder(_tokenContractAddress, _tokenId);
-
-		BuyOrder memory buyOrder = BuyOrder(_owner, _token, _expiration, _offer);
-		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
-	}
-
 	function exerciseBuyOrder(
 		address payable _bidder,
 		address _tokenContractAddress,
@@ -271,9 +226,9 @@ contract ERC721ExchangeUpgradeable is
 		_cancelBuyOrder(_msgSender(), _tokenContractAddress, _tokenId);
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                          SELL ORDER VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                  SELL ORDER VIEW FUNCTIONS                                                  ///
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
 	/// @param _seller Address of the sell order owner.
@@ -310,9 +265,9 @@ contract ERC721ExchangeUpgradeable is
 		return 1 <= sellOrder.expiration;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                          BUY ORDER VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                  BUY ORDER VIEW FUNCTIONS                                                  ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
 	/// @param _buyer Address of the buy order creator.
@@ -353,9 +308,9 @@ contract ERC721ExchangeUpgradeable is
 		return 1 <= buyOrder.expiration;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                   INTERNAL ORDER MANIPULATION FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                                          INTERNAL ORDER MANIPULATION FUNCTIONS                                                                          ///
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @param _seller The address of the asset seller/owner.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
@@ -367,7 +322,6 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) private {
-		require(!sellOrderExists(_seller, _tokenContractAddress, _tokenId), "ORDER_EXISTS");
 		require(ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721), "CONTRACT_NOT_EIP721");
 		require(block.timestamp < _sellOrder.expiration, "ORDER_EXPIRED");
 
@@ -478,7 +432,6 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) private {
-		require(!buyOrderExists(_buyer, _tokenContractAddress, _tokenId), "ORDER_EXISTS");
 		require(ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721), "CONTRACT_NOT_EIP721");
 		require(block.timestamp < _buyOrder.expiration, "ORDER_EXPIRED");
 
@@ -580,9 +533,9 @@ contract ERC721ExchangeUpgradeable is
 		return abi.encode(_userAddress, _tokenContractAddress, _tokenId);
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                              SYSTEM FEE FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                        SYSTEM FEE FUNCTIONS                                        ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Sets the new wallet to which all system fees get paid.
 	/// @param _newSystemFeeWallet Address of the new system fee wallet.
@@ -596,9 +549,9 @@ contract ERC721ExchangeUpgradeable is
 		systemFeePerMille = _newSystemFeePerMille;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                        SHARED DEPLOYMENT FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                      SHARED DEPLOYMENT FUNCTIONS                                                      ///
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Sets the new RoyaltyEngine address.
 	/// @param _newRoyaltyEngine New address for the RoyaltyEngine.
@@ -612,9 +565,9 @@ contract ERC721ExchangeUpgradeable is
 		orderBook = _newOrderBook;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                        ADMINISTRATIVE FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                ADMINISTRATIVE FUNCTIONS                                                ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Pauses the execution and creation of sell orders on the exchange. Should only be used in emergencies.
 	function pause() external whenNotSunset onlyOwner {
@@ -632,9 +585,9 @@ contract ERC721ExchangeUpgradeable is
 		payable(msg.sender).transfer(balance);
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                           SUNSET FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////
+	///                                SUNSET FUNCTIONS                                ///
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	function goTowardsTheSunset() public whenNotSunset onlyOwner {
 		_pause();
@@ -646,27 +599,27 @@ contract ERC721ExchangeUpgradeable is
 		return _sunset;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                          SUNSET MODIFIERS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////
+	///                                SUNSET MODIFIERS                                ///
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	modifier whenNotSunset() {
 		require(!sunset(), "SUNSET");
 		_;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                        INFORMATIVE FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                          INFORMATIVE FUNCTIONS                                          ///
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @inheritdoc IERC721Exchange
 	function version() public pure virtual override returns (uint256) {
-		return 1;
+		return 2;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                        UTILITY FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////////////////////////
+	///                                  UTILITY FUNCTIONS                                  ///
+	///////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @dev Increments a loop within a unchecked context.
 	function uncheckedInc(uint256 i) private pure returns (uint256) {

@@ -70,10 +70,10 @@ describe('ERC721Exchange', () => {
 
 	describe('base v1', () => {
 		describe('initialization', () => {
-			it('version should equal "1"', async () => {
+			it('version should equal "2"', async () => {
 				const version = await contract.version();
 
-				expect(version.toString()).to.equal('1');
+				expect(version.toString()).to.equal('2');
 			});
 
 			it('should set sender as owner', async () => {

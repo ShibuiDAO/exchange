@@ -6,9 +6,9 @@ import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 
 /// @author ShibuiDAO
 interface IERC721Exchange is IERC165 {
-	/*///////////////////////////////////////////////////////////////
-                                  EVENTS
-    //////////////////////////////////////////////////////////////*/
+	////////////////////////////////////
+	///            EVENTS            ///
+	////////////////////////////////////
 
 	/// @notice Emitted when `bookSellOrder` is called.
 	/// @param seller Address of the ERC721 asset owner and seller.
@@ -89,9 +89,9 @@ interface IERC721Exchange is IERC165 {
 		address token
 	);
 
-	/*///////////////////////////////////////////////////////////////
-                                ORDER STORAGE
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////
+	///                          ORDER STORAGE                          ///
+	///////////////////////////////////////////////////////////////////////
 
 	/// @param expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param price The price in wei of the given ERC721 asset.
@@ -113,23 +113,23 @@ interface IERC721Exchange is IERC165 {
 		uint256 offer;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-                             SELL ORDER EXECUTION
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                        SELL ORDER EXECUTION                                        ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	struct SellOrderExecutionSenders {
 		address payable recipient;
 		address buyer;
 	}
 
-	/*///////////////////////////////////////////////////////////////
-          UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	///                    UPGRADEABLE CONTRACT INITIALIZER/CONTRUCTOR FUNCTION                    ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Function acting as the contracts constructor.
 	/// @param _systemFeePerMille The default system fee %. Example: 10 => 1%, 25 => 2,5%, 300 => 30%
-    /// @param _royaltyEngine Address of the RoyaltyEngine deployment.
-    /// @param _orderBook Address of the shared OrderBook deployment.
+	/// @param _royaltyEngine Address of the RoyaltyEngine deployment.
+	/// @param _orderBook Address of the shared OrderBook deployment.
 	/// @param _wethAddress Address of the canonical WETH deployment.
 	// solhint-disable-next-line func-name-mixedcase
 	function __ERC721Exchange_init(
@@ -139,9 +139,9 @@ interface IERC721Exchange is IERC165 {
 		address _wethAddress
 	) external;
 
-	/*///////////////////////////////////////////////////////////////
-                   PUBLIC SELL ORDER MANIPULATION FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                              PUBLIC SELL ORDER MANIPULATION FUNCTIONS                              ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
@@ -149,20 +149,6 @@ interface IERC721Exchange is IERC165 {
 	/// @param _price The price in wei of the given ERC721 asset.
 	/// @param _token Alternative ERC20 asset used for payment.
 	function bookSellOrder(
-		address _tokenContractAddress,
-		uint256 _tokenId,
-		uint256 _expiration,
-		uint256 _price,
-		address _token
-	) external payable;
-
-	/// @notice Updates/overwrites existing SellOrder.
-	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
-	/// @param _tokenId ID of the desired ERC721 asset.
-	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param _price The price in wei of the given ERC721 asset.
-	/// @param _token Alternative ERC20 asset used for payment.
-	function updateSellOrder(
 		address _tokenContractAddress,
 		uint256 _tokenId,
 		uint256 _expiration,
@@ -193,9 +179,9 @@ interface IERC721Exchange is IERC165 {
 	/// @param _tokenId ID of the token being sold.
 	function cancelSellOrder(address _tokenContractAddress, uint256 _tokenId) external payable;
 
-	/*///////////////////////////////////////////////////////////////
-                   PUBLIC BUY ORDER MANIPULATION FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                              PUBLIC BUY ORDER MANIPULATION FUNCTIONS                              ///
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Stores a new offer/bid for a given ERC721 asset.
 	/// @param _owner The current owner of the desired ERC721 asset.
@@ -204,21 +190,6 @@ interface IERC721Exchange is IERC165 {
 	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
 	/// @param _offer The offered amount in wei for the given ERC721 asset.
 	function bookBuyOrder(
-		address payable _owner,
-		address _tokenContractAddress,
-		uint256 _tokenId,
-		uint256 _expiration,
-		uint256 _offer,
-		address _token
-	) external payable;
-
-	/// @notice Updates/overwrites existing BuyOrder.
-	/// @param _owner The current owner of the desired ERC721 asset.
-	/// @param _tokenContractAddress The ERC721 asset contract address of the desired asset.
-	/// @param _tokenId ID of the desired ERC721 asset.
-	/// @param _expiration Time of order expiration defined as a UNIX timestamp.
-	/// @param _offer The offered amount in wei for the given ERC721 asset.
-	function updateBuyOrder(
 		address payable _owner,
 		address _tokenContractAddress,
 		uint256 _tokenId,
@@ -241,9 +212,9 @@ interface IERC721Exchange is IERC165 {
 	/// @param _tokenId ID of the token being bought.
 	function cancelBuyOrder(address _tokenContractAddress, uint256 _tokenId) external payable;
 
-	/*///////////////////////////////////////////////////////////////
-                          SELL ORDER VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                  SELL ORDER VIEW FUNCTIONS                                                  ///
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
 	/// @param _seller Address of the sell order owner.
@@ -268,9 +239,9 @@ interface IERC721Exchange is IERC165 {
 		uint256 _tokenId
 	) external view returns (bool);
 
-	/*///////////////////////////////////////////////////////////////
-                          BUY ORDER VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                                  BUY ORDER VIEW FUNCTIONS                                                  ///
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Finds the order matching the passed parameters. The returned order is possibly expired.
 	/// @param _buyer Address of the buy order creator.
@@ -295,9 +266,9 @@ interface IERC721Exchange is IERC165 {
 		uint256 _tokenId
 	) external view returns (bool);
 
-	/*///////////////////////////////////////////////////////////////
-                        INFORMATIVE FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                                          INFORMATIVE FUNCTIONS                                          ///
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @return The current exchange version.
 	function version() external returns (uint256);
