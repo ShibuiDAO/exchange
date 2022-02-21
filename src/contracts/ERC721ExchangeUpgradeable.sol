@@ -9,7 +9,6 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -18,12 +17,15 @@ import {IERC721Exchange} from "./interfaces/IERC721Exchange.sol";
 import {IOrderBook} from "./interfaces/IOrderBook.sol";
 
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {OrderBookVersioning} from "./libraries/OrderBookVersioning.sol";
 import {ExchangeOrderComparisonLib} from "./libraries/ExchangeOrderComparisonLib.sol";
 
-/// @dev Handles the creation and execution of sell orders as well as their storage.
-/// @author ShibuiDAO
+/// @title Shibui 🌊 ERC721 Exchange
+/// @notice Central exchange of the ShibuiNFT Marketplace for ERC721 assets.
+/// @dev Handles the creation and execution of sell and buy orders for ERC721 assets.
+/// @author ShibuiDAO (https://github.com/ShibuiDAO/exchange/blob/main/src/contracts/ERC721ExchangeUpgradeable.sol)
 contract ERC721ExchangeUpgradeable is
 	ERC165,
 	Initializable,
@@ -55,9 +57,11 @@ contract ERC721ExchangeUpgradeable is
 	//////////////////////////////////////////////
 
 	/// @notice Address of the "RoyaltyEngineV1" deployment.
+	/// @dev Based on "IRoyaltyEngine" (https://github.com/ShibuiDAO/royalty-registry/blob/main/src/contracts/IRoyaltyEngine.sol).
 	address public royaltyEngine;
 
 	/// @notice Address of the "OrderBook" deployment.
+	/// @dev Based on "IOrderBook" (https://github.com/ShibuiDAO/exchange/blob/main/src/contracts/interfaces/IOrderBook.sol).
 	address public orderBook;
 
 	/// @notice Addeess of the main canonical WETH deployment.
@@ -274,7 +278,10 @@ contract ERC721ExchangeUpgradeable is
 		address _recipient,
 		address _token
 	) external payable override whenNotPaused nonReentrant {
+		// Check if user sent enough ETH in the transaction if the isn't a ERC20 token present.
 		require(_token != address(0) || (_token == address(0) && msg.value >= _price), "PAYMENT_MISSING");
+		// Check if "ERC721ExhangeUpgradeable" is allowed to spend enough of a ERC20 token if it is present.
+		// solhint-disable-next-line reason-string
 		require(
 			_token == address(0) ||
 				((_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
@@ -393,6 +400,8 @@ contract ERC721ExchangeUpgradeable is
 		address _token
 	) external payable override whenNotPaused nonReentrant {
 		_token = _token == address(0) ? wETH : _token;
+		// Check if "ERC721ExhangeUpgradeable" is allowed to spend enough of a ERC20 token if it is present.
+		// solhint-disable-next-line reason-string
 		require(
 			(_token == wETH || !ERC165Checker.supportsInterface(_token, INTERFACE_ID_ERC20)) &&
 				IERC20(_token).allowance(_msgSender(), address(this)) >= _offer,
@@ -545,6 +554,7 @@ contract ERC721ExchangeUpgradeable is
 			_formOrderId(_seller, _tokenContractAddress, _tokenId)
 		);
 
+		// If the return value of the fetch has no length we can presume it turned up empty.
 		if (order.length == 0) return SellOrder(0, 0, address(0));
 		return abi.decode(order, (SellOrder));
 	}
@@ -562,6 +572,7 @@ contract ERC721ExchangeUpgradeable is
 	) public view override whenNotSunset returns (bool) {
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
+		// A non-existant order will have the "expiration" set as the default value aka. 0,
 		return 1 <= sellOrder.expiration;
 	}
 
@@ -584,6 +595,7 @@ contract ERC721ExchangeUpgradeable is
 			_formOrderId(_buyer, _tokenContractAddress, _tokenId)
 		);
 
+		// If the return value of the fetch has no length we can presume it turned up empty.
 		if (order.length == 0) return BuyOrder(payable(0), address(0), 0, 0);
 		return
 			abi.decode(
@@ -605,6 +617,7 @@ contract ERC721ExchangeUpgradeable is
 	) public view override whenNotSunset returns (bool) {
 		BuyOrder memory buyOrder = getBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 
+		// A non-existant order will have the "expiration" set as the default value aka. 0,
 		return 1 <= buyOrder.expiration;
 	}
 
@@ -622,13 +635,15 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) private {
+		// If the order exists we cancel it so it can get wiped and then written again.
 		if (sellOrderExists(_seller, _tokenContractAddress, _tokenId)) _cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 		require(ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721), "CONTRACT_NOT_EIP721");
+		// solhint-disable-next-line not-rely-on-time
 		require(block.timestamp < _sellOrder.expiration, "ORDER_EXPIRED");
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require(erc721.ownerOf(_tokenId) == _seller, "ASSET_STORED_OWNER_NOT_CURRENT_OWNER");
+		require(erc721.ownerOf(_tokenId) == _seller, "CALLER_NOT_CURRENT_OWNER");
 		require(erc721.isApprovedForAll(_seller, address(this)) || erc721.getApproved(_tokenId) == address(this), "EXCHANGE_NOT_APPROVED_EIP721");
 		require(
 			_sellOrder.token == address(0) || _sellOrder.token == wETH || ERC165Checker.supportsInterface(_sellOrder.token, INTERFACE_ID_ERC20),
@@ -660,6 +675,7 @@ contract ERC721ExchangeUpgradeable is
 		SellOrder memory sellOrder = getSellOrder(_seller, _tokenContractAddress, _tokenId);
 
 		require(ExchangeOrderComparisonLib.compareSellOrders(sellOrder, _sellOrder), "ORDER_PASSED_NOT_MATCH_STORED");
+		// solhint-disable-next-line not-rely-on-time
 		if (block.timestamp > sellOrder.expiration) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 			revert("ORDER_EXPIRED");
@@ -669,6 +685,7 @@ contract ERC721ExchangeUpgradeable is
 
 		if (erc721.ownerOf(_tokenId) != _seller) {
 			_cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
+			// solhint-disable-next-line reason-string
 			revert("ASSET_STORED_OWNER_NOT_CURRENT_OWNER");
 		}
 		if (!(erc721.isApprovedForAll(_seller, address(this)) || erc721.getApproved(_tokenId) == address(this))) {
@@ -735,11 +752,12 @@ contract ERC721ExchangeUpgradeable is
 	) private {
 		if (buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 		require(ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721), "CONTRACT_NOT_EIP721");
+		// solhint-disable-next-line not-rely-on-time
 		require(block.timestamp < _buyOrder.expiration, "ORDER_EXPIRED");
 
 		IERC721 erc721 = IERC721(_tokenContractAddress);
 
-		require(erc721.ownerOf(_tokenId) == _buyOrder.owner, "ASSET_STORED_OWNER_NOT_CURRENT_OWNER");
+		require(erc721.ownerOf(_tokenId) == _buyOrder.owner, "CALLER_NOT_CURRENT_OWNER");
 
 		IOrderBook(orderBook).bookOrder(
 			OrderBookVersioning.BUY_ORDER_INITIAL,
@@ -765,13 +783,16 @@ contract ERC721ExchangeUpgradeable is
 		address _token = buyOrder.token == address(0) ? wETH : buyOrder.token;
 
 		require(ExchangeOrderComparisonLib.compareBuyOrders(_buyOrder, buyOrder), "ORDER_PASSED_NOT_MATCH_STORED");
+		// solhint-disable-next-line reason-string
 		require(IERC20(_token).allowance(_buyer, address(this)) >= buyOrder.offer, "EXCHANGE_NOT_APPROVED_SUFFICIENTLY_EIP20");
+		// solhint-disable-next-line not-rely-on-time
 		if (block.timestamp > buyOrder.expiration) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 			revert("ORDER_EXPIRED");
 		}
 		if (!(IERC721(_tokenContractAddress).ownerOf(_tokenId) == buyOrder.owner)) {
 			_cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
+			// solhint-disable-next-line reason-string
 			revert("ASSET_STORED_OWNER_NOT_CURRENT_OWNER");
 		}
 		if (
@@ -892,6 +913,7 @@ contract ERC721ExchangeUpgradeable is
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Sunsets the contract.
+	/// @dev Pauses the contracts -> sets the owner to address(0) (kills any management features) -> sets the contract as sunset.
 	function goTowardsTheSunset() public whenNotSunset onlyOwner {
 		_pause();
 		renounceOwnership();
@@ -927,7 +949,7 @@ contract ERC721ExchangeUpgradeable is
 	///                                  UTILITY FUNCTIONS                                  ///
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	/// @dev Increments a loop within a unchecked context.
+	/// @dev Increments a loop counter within a unchecked context.
 	/// @param i The number to increment.
 	/// @return The incremented number.
 	function uncheckedInc(uint256 i) private pure returns (uint256) {

@@ -4,7 +4,7 @@ pragma abicoder v2;
 
 import {IERC165} from "@shibuidao/solid/src/utils/interfaces/IERC165.sol";
 
-/// @author ShibuiDAO
+/// @author ShibuiDAO (https://github.com/ShibuiDAO/exchange/blob/main/src/contracts/interfaces/IERC721Exchange.sol)
 interface IERC721Exchange is IERC165 {
 	////////////////////////////////////
 	///            EVENTS            ///

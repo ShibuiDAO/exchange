@@ -4,7 +4,7 @@ pragma abicoder v2;
 
 import {IERC721Exchange} from "../interfaces/IERC721Exchange.sol";
 
-/// @author ShibuiDAO
+/// @author ShibuiDAO (https://github.com/ShibuiDAO/exchange/blob/main/src/contracts/libraries/ExchangeOrderComparisonLib.sol)
 library ExchangeOrderComparisonLib {
 	/// @notice Compares 2 SellOrder instances to determine if they have the same parameters.
 	/// @param _left SellOrder instance to be compared on the left side of the operator.
@@ -14,6 +14,10 @@ library ExchangeOrderComparisonLib {
 		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
 	}
 
+	/// @notice Compares 2 SellOrder instances to determine if they have the same parameters.
+	/// @dev The orders come in 2 variants: encoded bytes and formed struct.
+	/// @param passed The formed SellOrder structs to be encoded to bytes and hashed.
+	/// @param stored A set of bytes to be hashed.
 	/// @return A boolean value indication if the stored SellOrder instance and found encoded data match.
 	function compareStoredSellOrders(IERC721Exchange.SellOrder memory passed, bytes memory stored) internal pure returns (bool) {
 		return keccak256(stored) == keccak256(abi.encode(passed));
@@ -27,6 +31,10 @@ library ExchangeOrderComparisonLib {
 		return keccak256(abi.encode(_left)) == keccak256(abi.encode(_right));
 	}
 
+	/// @notice Compares 2 BuyOrder instances to determine if they have the same parameters.
+	/// @dev The orders come in 2 variants: encoded bytes and formed struct.
+	/// @param passed The formed BuyOrder structs to be encoded to bytes and hashed.
+	/// @param stored A set of bytes to be hashed.
 	/// @return A boolean value indication if the stored BuyOrder instance and found encoded data match.
 	function compareStoredBuyOrders(IERC721Exchange.BuyOrder memory passed, bytes memory stored) internal pure returns (bool) {
 		return keccak256(stored) == keccak256(abi.encode(passed));
