@@ -1,0 +1,29 @@
+        ,-.                                                                                                        
+        `-'                                                                                                        
+        /|\                                                                                                        
+         |             ,-------------------------.                                           ,--------------------.
+        / \            |ERC721ExchangeUpgradeable|                                           |OrderBookUpgradeable|
+      Caller           `------------+------------'                                           `---------+----------'
+        |     cancelBuyOrder()      |                                                                  |           
+        | ------------------------->|                                                                  |           
+        |                           |                                                                  |           
+        |                           ----.                                                                          
+        |                               | _cancelBuyOrder(msg.sender(), _tokenContractAddress, _tokenId)           
+        |                           <---'                                                                          
+        |                           |                                                                  |           
+        |                           ----.                                                              |           
+        |                               | cancel BuyOrder                                              |           
+        |                           <---'                                                              |           
+        |                           |                                                                  |           
+        |                           |                  cancelOrder(_orderKey, _order)                  |           
+        |                           |------------------------------------------------------------------>           
+        |                           |                                                                  |           
+        |                           ----.                                                              |           
+        |                               | emit BuyOrderCanceled()                                      |           
+        |                           <---'                                                              |           
+      Caller           ,------------+------------.                                           ,---------+----------.
+        ,-.            |ERC721ExchangeUpgradeable|                                           |OrderBookUpgradeable|
+        `-'            `-------------------------'                                           `--------------------'
+        /|\                                                                                                        
+         |                                                                                                         
+        / \                                                                                                        

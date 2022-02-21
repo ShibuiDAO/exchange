@@ -1,0 +1,15 @@
+@startuml
+actor Caller
+participant ERC721ExchangeUpgradeable
+participant OrderBookUpgradeable
+
+Caller -> ERC721ExchangeUpgradeable : cancelBuyOrder()
+
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : _cancelBuyOrder(msg.sender(), _tokenContractAddress, _tokenId)
+
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : cancel BuyOrder
+
+ERC721ExchangeUpgradeable -> OrderBookUpgradeable : cancelOrder(_orderKey, _order)
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : emit BuyOrderCanceled()
+
+@enduml

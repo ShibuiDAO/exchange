@@ -1,0 +1,35 @@
+@startuml
+actor Caller
+actor Seller
+actor Collection
+participant ERC721ExchangeUpgradeable
+participant OrderBookUpgradeable
+
+Caller -> ERC721ExchangeUpgradeable : exerciseSellOrder(_seller, _tokenContractAddress, _tokenId)
+
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : _exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, _sellOrder)
+
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : exercise SellOrder
+
+alt Funds for system fees?
+    Caller -> ERC721ExchangeUpgradeable : transfer system fees
+else noop
+end
+
+alt Royalty recipients found?
+    Caller -> Collection : transfer royalties
+else noop
+end
+
+alt Remaining payout for seller?
+    Caller -> Seller : transfer remaining ETH
+else noop
+end
+
+Seller -> Caller : transfer asset
+
+ERC721ExchangeUpgradeable -> OrderBookUpgradeable : cancelOrder(_orderKey, _order)
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : emit SellOrderCanceled()
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : emit SellOrderExercised()
+
+@enduml

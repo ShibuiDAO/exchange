@@ -1,0 +1,22 @@
+@startuml
+actor Caller
+participant ERC721ExchangeUpgradeable
+participant OrderBookUpgradeable
+
+Caller -> ERC721ExchangeUpgradeable : bookBuyOrder()
+
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : _bookBuyOrder(_buyer, _tokenContractAddress, _tokenId, _buyOrder)
+
+alt BuyOrder already exists for this token?
+    ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId)
+    ERC721ExchangeUpgradeable -> OrderBookUpgradeable : cancelOrder(_orderKey, _order)
+    ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : emit BuyOrderCanceled()
+else noop
+end
+
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : create BuyOrder
+
+ERC721ExchangeUpgradeable -> OrderBookUpgradeable : bookOrder(_orderKey, _order)
+ERC721ExchangeUpgradeable -> ERC721ExchangeUpgradeable : emit BuyOrderBooked()
+
+@enduml

@@ -128,6 +128,53 @@ contract ERC721ExchangeUpgradeable is
 	///                              PUBLIC SELL ORDER MANIPULATION FUNCTIONS                              ///
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	//        ,-.
+	//        `-'
+	//        /|\
+	//         |             ,-------------------------.                                                 ,--------------------.
+	//        / \            |ERC721ExchangeUpgradeable|                                                 |OrderBookUpgradeable|
+	//      Caller           `------------+------------'                                                 `---------+----------'
+	//        |      bookSellOrder()      |                                                                        |
+	//        | ------------------------->|                                                                        |
+	//        |                           |                                                                        |
+	//        |                           ----.
+	//        |                               | _bookSellOrder(_seller, _tokenContractAddress, _tokenId, _sellOrder)
+	//        |                           <---'
+	//        |                           |                                                                        |
+	//        |                           |                                                                        |
+	//        |    _____________________________________________________________________________________________________________________
+	//        |    ! ALT  /  SellOrder already exists for this token?                                              |                    !
+	//        |    !_____/                |                                                                        |                    !
+	//        |    !                      ----.                                                                    |                    !
+	//        |    !                          | _cancelSellOrder(_seller, _tokenContractAddress, _tokenId)         |                    !
+	//        |    !                      <---'                                                                    |                    !
+	//        |    !                      |                                                                        |                    !
+	//        |    !                      |                     cancelOrder(_orderKey, _order)                     |                    !
+	//        |    !                      |------------------------------------------------------------------------>                    !
+	//        |    !                      |                                                                        |                    !
+	//        |    !                      ----.                                                                    |                    !
+	//        |    !                          | emit SellOrderCanceled()                                           |                    !
+	//        |    !                      <---'                                                                    |                    !
+	//        |    !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+	//        |    !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+	//        |                           |                                                                        |
+	//        |                           ----.                                                                    |
+	//        |                               | create SellOrder                                                   |
+	//        |                           <---'                                                                    |
+	//        |                           |                                                                        |
+	//        |                           |                      bookOrder(_orderKey, _order)                      |
+	//        |                           |------------------------------------------------------------------------>
+	//        |                           |                                                                        |
+	//        |                           ----.                                                                    |
+	//        |                               | emit SellOrderBooked()                                             |
+	//        |                           <---'                                                                    |
+	//      Caller           ,------------+------------.                                                 ,---------+----------.
+	//        ,-.            |ERC721ExchangeUpgradeable|                                                 |OrderBookUpgradeable|
+	//        `-'            `-------------------------'                                                 `--------------------'
+	//        /|\
+	//         |
+	//        / \
+	//
 	/// @dev If `_token` is a zero address then the order will treat it as plain ETH.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
 	/// @param _tokenId ID of the desired ERC721 asset.
@@ -146,6 +193,70 @@ contract ERC721ExchangeUpgradeable is
 		_bookSellOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, sellOrder);
 	}
 
+	//                       ,-.                     ,-.                 ,-.
+	//                       `-'                     `-'                 `-'
+	//                       /|\                     /|\                 /|\
+	//                        |                       |                   |               ,-------------------------.                                                     ,--------------------.
+	//                       / \                     / \                 / \              |ERC721ExchangeUpgradeable|                                                     |OrderBookUpgradeable|
+	//                     Caller                  Seller            Collection           `------------+------------'                                                     `---------+----------'
+	//                       |       exerciseSellOrder(_seller, _tokenContractAddress, _tokenId)       |                                                                            |
+	//                       | ----------------------------------------------------------------------->|                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             ----.
+	//                       |                       |                   |                                 | _exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, _sellOrder)
+	//                       |                       |                   |                             <---'
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             ----.                                                                        |
+	//                       |                       |                   |                                 | exercise SellOrder                                                     |
+	//                       |                       |                   |                             <---'                                                                        |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//          ______________________________________________________________________________________________________________                                                      |
+	//          ! ALT  /  Funds for system fees?     |                   |                             |                      !                                                     |
+	//          !_____/      |                       |                   |                             |                      !                                                     |
+	//          !            |                       |  transfer system fees                           |                      !                                                     |
+	//          !            | ----------------------------------------------------------------------->|                      !                                                     |
+	//          !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!                                                     |
+	//          !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!                                                     |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//          _________________________________________________________________________              |                                                                            |
+	//          ! ALT  /  Royalty recipients found?  |                   |               !             |                                                                            |
+	//          !_____/      |                       |                   |               !             |                                                                            |
+	//          !            |             transfer royalties            |               !             |                                                                            |
+	//          !            | ------------------------------------------>               !             |                                                                            |
+	//          !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!             |                                                                            |
+	//          !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!             |                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//          ___________________________________________________      |                             |                                                                            |
+	//          ! ALT  /  Remaining payout for seller?             !     |                             |                                                                            |
+	//          !_____/      |                       |             !     |                             |                                                                            |
+	//          !            | transfer remaining ETH|             !     |                             |                                                                            |
+	//          !            | ---------------------->             !     |                             |                                                                            |
+	//          !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!     |                             |                                                                            |
+	//          !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!     |                             |                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |     transfer asset    |                   |                             |                                                                            |
+	//                       | <----------------------                   |                             |                                                                            |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             |                       cancelOrder(_orderKey, _order)                       |
+	//                       |                       |                   |                             |---------------------------------------------------------------------------->
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             ----.                                                                        |
+	//                       |                       |                   |                                 | emit SellOrderCanceled()                                               |
+	//                       |                       |                   |                             <---'                                                                        |
+	//                       |                       |                   |                             |                                                                            |
+	//                       |                       |                   |                             ----.                                                                        |
+	//                       |                       |                   |                                 | emit SellOrderExercised()                                              |
+	//                       |                       |                   |                             <---'                                                                        |
+	//                     Caller                  Seller            Collection           ,------------+------------.                                                     ,---------+----------.
+	//                       ,-.                     ,-.                 ,-.              |ERC721ExchangeUpgradeable|                                                     |OrderBookUpgradeable|
+	//                       `-'                     `-'                 `-'              `-------------------------'                                                     `--------------------'
+	//                       /|\                     /|\                 /|\
+	//                        |                       |                   |
+	//                       / \                     / \                 / \
+	//
 	/// @dev If `_token` is a zero address then the order will treat it as plain ETH.
 	/// @param _seller The seller address of the desired SellOrder.
 	/// @param _tokenContractAddress The ERC721 asset contract address of the desired SellOrder.
@@ -176,6 +287,36 @@ contract ERC721ExchangeUpgradeable is
 		_exerciseSellOrder(_seller, _tokenContractAddress, _tokenId, sellOrder, SellOrderExecutionSenders(_recipient, _msgSender()));
 	}
 
+	//        ,-.
+	//        `-'
+	//        /|\
+	//         |             ,-------------------------.                                            ,--------------------.
+	//        / \            |ERC721ExchangeUpgradeable|                                            |OrderBookUpgradeable|
+	//      Caller           `------------+------------'                                            `---------+----------'
+	//        |     cancelSellOrder()     |                                                                   |
+	//        | ------------------------->|                                                                   |
+	//        |                           |                                                                   |
+	//        |                           ----.
+	//        |                               | _cancelSellOrder(msg.sender(), _tokenContractAddress, _tokenId)
+	//        |                           <---'
+	//        |                           |                                                                   |
+	//        |                           ----.                                                               |
+	//        |                               | cancel SellOrder                                              |
+	//        |                           <---'                                                               |
+	//        |                           |                                                                   |
+	//        |                           |                  cancelOrder(_orderKey, _order)                   |
+	//        |                           |------------------------------------------------------------------->
+	//        |                           |                                                                   |
+	//        |                           ----.                                                               |
+	//        |                               | emit SellOrderCanceled()                                      |
+	//        |                           <---'                                                               |
+	//      Caller           ,------------+------------.                                            ,---------+----------.
+	//        ,-.            |ERC721ExchangeUpgradeable|                                            |OrderBookUpgradeable|
+	//        `-'            `-------------------------'                                            `--------------------'
+	//        /|\
+	//         |
+	//        / \
+	//
 	/// @notice Cancels a given SellOrder and emits "SellOrderCanceled".
 	/// @dev Can only be executed by the listed SellOrder seller.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
@@ -188,6 +329,53 @@ contract ERC721ExchangeUpgradeable is
 	///                              PUBLIC BUY ORDER MANIPULATION FUNCTIONS                              ///
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	//        ,-.
+	//        `-'
+	//        /|\
+	//         |             ,-------------------------.                                              ,--------------------.
+	//        / \            |ERC721ExchangeUpgradeable|                                              |OrderBookUpgradeable|
+	//      Caller           `------------+------------'                                              `---------+----------'
+	//        |      bookBuyOrder()       |                                                                     |
+	//        | ------------------------->|                                                                     |
+	//        |                           |                                                                     |
+	//        |                           ----.
+	//        |                               | _bookBuyOrder(_buyer, _tokenContractAddress, _tokenId, _buyOrder)
+	//        |                           <---'
+	//        |                           |                                                                     |
+	//        |                           |                                                                     |
+	//        |    __________________________________________________________________________________________________________________
+	//        |    ! ALT  /  BuyOrder already exists for this token?                                            |                    !
+	//        |    !_____/                |                                                                     |                    !
+	//        |    !                      ----.                                                                 |                    !
+	//        |    !                          | _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId)        |                    !
+	//        |    !                      <---'                                                                 |                    !
+	//        |    !                      |                                                                     |                    !
+	//        |    !                      |                   cancelOrder(_orderKey, _order)                    |                    !
+	//        |    !                      |--------------------------------------------------------------------->                    !
+	//        |    !                      |                                                                     |                    !
+	//        |    !                      ----.                                                                 |                    !
+	//        |    !                          | emit BuyOrderCanceled()                                         |                    !
+	//        |    !                      <---'                                                                 |                    !
+	//        |    !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+	//        |    !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+	//        |                           |                                                                     |
+	//        |                           ----.                                                                 |
+	//        |                               | create BuyOrder                                                 |
+	//        |                           <---'                                                                 |
+	//        |                           |                                                                     |
+	//        |                           |                    bookOrder(_orderKey, _order)                     |
+	//        |                           |--------------------------------------------------------------------->
+	//        |                           |                                                                     |
+	//        |                           ----.                                                                 |
+	//        |                               | emit BuyOrderBooked()                                           |
+	//        |                           <---'                                                                 |
+	//      Caller           ,------------+------------.                                              ,---------+----------.
+	//        ,-.            |ERC721ExchangeUpgradeable|                                              |OrderBookUpgradeable|
+	//        `-'            `-------------------------'                                              `--------------------'
+	//        /|\
+	//         |
+	//        / \
+	//
 	/// @notice Stores a new offer/bid for a given ERC721 asset.
 	/// @dev If `_token` is a zero address then the order will treat it as being WETH.
 	/// @param _owner The current owner of the desired ERC721 asset.
@@ -216,6 +404,70 @@ contract ERC721ExchangeUpgradeable is
 		_bookBuyOrder(payable(_msgSender()), _tokenContractAddress, _tokenId, buyOrder);
 	}
 
+	//                       ,-.                       ,-.                 ,-.
+	//                       `-'                       `-'                 `-'
+	//                       /|\                       /|\                 /|\
+	//                        |                         |                   |               ,-------------------------.                                                  ,--------------------.
+	//                       / \                       / \                 / \              |ERC721ExchangeUpgradeable|                                                  |OrderBookUpgradeable|
+	//                     Caller                    Bidder            Collection           `------------+------------'                                                  `---------+----------'
+	//                       |         exerciseBuyOrder(_buyer, _tokenContractAddress, _tokenId)         |                                                                         |
+	//                       | ------------------------------------------------------------------------->|                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             ----.
+	//                       |                         |                   |                                 | _exerciseBuyOrder(_buyer, _tokenContractAddress, _tokenId, _buyOrder)
+	//                       |                         |                   |                             <---'
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             ----.                                                                     |
+	//                       |                         |                   |                                 | exercise BuyOrder                                                   |
+	//                       |                         |                   |                             <---'                                                                     |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |            ______________________________________________________________________________________                                                   |
+	//                       |            ! ALT  /  Funds for system fees? |                             |                      !                                                  |
+	//                       |            !_____/      |                   |                             |                      !                                                  |
+	//                       |            !            |              transfer system fees               |                      !                                                  |
+	//                       |            !            | ----------------------------------------------->|                      !                                                  |
+	//                       |            !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!                                                  |
+	//                       |            !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!                                                  |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |            _________________________________________________              |                                                                         |
+	//                       |            ! ALT  /  Royalty recipients found?              !             |                                                                         |
+	//                       |            !_____/      |                   |               !             |                                                                         |
+	//                       |            !            | transfer royalties|               !             |                                                                         |
+	//                       |            !            | ------------------>               !             |                                                                         |
+	//                       |            !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!             |                                                                         |
+	//                       |            !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!             |                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//          _____________________________________________________      |                             |                                                                         |
+	//          ! ALT  /  Remaining payout for owner?  |             !     |                             |                                                                         |
+	//          !_____/      |                         |             !     |                             |                                                                         |
+	//          !            | transfer remaining ERC20|             !     |                             |                                                                         |
+	//          !            | <------------------------             !     |                             |                                                                         |
+	//          !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!     |                             |                                                                         |
+	//          !~[noop]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!     |                             |                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |      transfer asset     |                   |                             |                                                                         |
+	//                       | ------------------------>                   |                             |                                                                         |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             |                     cancelOrder(_orderKey, _order)                      |
+	//                       |                         |                   |                             |------------------------------------------------------------------------->
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             ----.                                                                     |
+	//                       |                         |                   |                                 | emit BuyOrderCanceled()                                             |
+	//                       |                         |                   |                             <---'                                                                     |
+	//                       |                         |                   |                             |                                                                         |
+	//                       |                         |                   |                             ----.                                                                     |
+	//                       |                         |                   |                                 | emit BuyOrderExercised()                                            |
+	//                       |                         |                   |                             <---'                                                                     |
+	//                     Caller                    Bidder            Collection           ,------------+------------.                                                  ,---------+----------.
+	//                       ,-.                       ,-.                 ,-.              |ERC721ExchangeUpgradeable|                                                  |OrderBookUpgradeable|
+	//                       `-'                       `-'                 `-'              `-------------------------'                                                  `--------------------'
+	//                       /|\                       /|\                 /|\
+	//                        |                         |                   |
+	//                       / \                       / \                 / \
+	//
 	/// @dev If `_token` is a zero address then the order will treat it as being WETH.
 	/// @param _bidder Address that placed the bid.
 	/// @param _tokenContractAddress The ERC721 asset contract address.
@@ -236,6 +488,36 @@ contract ERC721ExchangeUpgradeable is
 		_exerciseBuyOrder(_bidder, _tokenContractAddress, _tokenId, buyOrder);
 	}
 
+	//        ,-.
+	//        `-'
+	//        /|\
+	//         |             ,-------------------------.                                           ,--------------------.
+	//        / \            |ERC721ExchangeUpgradeable|                                           |OrderBookUpgradeable|
+	//      Caller           `------------+------------'                                           `---------+----------'
+	//        |     cancelBuyOrder()      |                                                                  |
+	//        | ------------------------->|                                                                  |
+	//        |                           |                                                                  |
+	//        |                           ----.
+	//        |                               | _cancelBuyOrder(msg.sender(), _tokenContractAddress, _tokenId)
+	//        |                           <---'
+	//        |                           |                                                                  |
+	//        |                           ----.                                                              |
+	//        |                               | cancel BuyOrder                                              |
+	//        |                           <---'                                                              |
+	//        |                           |                                                                  |
+	//        |                           |                  cancelOrder(_orderKey, _order)                  |
+	//        |                           |------------------------------------------------------------------>
+	//        |                           |                                                                  |
+	//        |                           ----.                                                              |
+	//        |                               | emit BuyOrderCanceled()                                      |
+	//        |                           <---'                                                              |
+	//      Caller           ,------------+------------.                                           ,---------+----------.
+	//        ,-.            |ERC721ExchangeUpgradeable|                                           |OrderBookUpgradeable|
+	//        `-'            `-------------------------'                                           `--------------------'
+	//        /|\
+	//         |
+	//        / \
+	//
 	/// @notice Cancels a given BuyOrder and emits "BuyOrderCanceled".
 	/// @dev Can only be executed by the listed BuyOrder placer.
 	/// @param _tokenContractAddress Address of the ERC721 token contract.
@@ -340,6 +622,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		SellOrder memory _sellOrder
 	) private {
+		if (sellOrderExists(_seller, _tokenContractAddress, _tokenId)) _cancelSellOrder(_seller, _tokenContractAddress, _tokenId);
 		require(ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721), "CONTRACT_NOT_EIP721");
 		require(block.timestamp < _sellOrder.expiration, "ORDER_EXPIRED");
 
@@ -450,6 +733,7 @@ contract ERC721ExchangeUpgradeable is
 		uint256 _tokenId,
 		BuyOrder memory _buyOrder
 	) private {
+		if (buyOrderExists(_buyer, _tokenContractAddress, _tokenId)) _cancelBuyOrder(_buyer, _tokenContractAddress, _tokenId);
 		require(ERC165Checker.supportsInterface(_tokenContractAddress, INTERFACE_ID_ERC721), "CONTRACT_NOT_EIP721");
 		require(block.timestamp < _buyOrder.expiration, "ORDER_EXPIRED");
 
