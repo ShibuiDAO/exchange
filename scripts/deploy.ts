@@ -21,7 +21,7 @@ async function main() {
 	const ERC721ExchangeUpgradeableContract = await ethers.getContractFactory('ERC721ExchangeUpgradeable');
 	const ERC721ExchangeUpgradeable = (await upgrades.deployProxy(
 		ERC721ExchangeUpgradeableContract,
-		[SYSTEM_FEE, ROYALTY_ENGINE, OrderBookUpgradeable.address, WETHAddress],
+		[deployer.address, SYSTEM_FEE, ROYALTY_ENGINE, OrderBookUpgradeable.address, WETHAddress],
 		{
 			initializer: '__ERC721Exchange_init',
 			kind: 'transparent'
@@ -29,7 +29,6 @@ async function main() {
 	)) as ERC721ExchangeUpgradeable;
 	await ERC721ExchangeUpgradeable.deployed();
 
-	await ERC721ExchangeUpgradeable.setSystemFeeWallet(deployer.address);
 	await OrderBookUpgradeable.addOrderKeeper(ERC721ExchangeUpgradeable.address);
 
 	console.log(

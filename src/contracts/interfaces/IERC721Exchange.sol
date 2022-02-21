@@ -117,6 +117,9 @@ interface IERC721Exchange is IERC165 {
 	///                                        SELL ORDER EXECUTION                                        ///
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Stores execution parameters due to getting a stack to deep error when directly passing parameters to the function.
+    /// @param recipient The address of the recipient of the asset.
+    /// @param buyer The address that is paying for the asset.
 	struct SellOrderExecutionSenders {
 		address recipient;
 		address buyer;
