@@ -5,7 +5,7 @@ import { WETHAddress } from '../constants.hardhat';
 import type { ERC721ExchangeUpgradeable, OrderBookUpgradeable } from '../typechain';
 
 const ROYALTY_ENGINE = process.env.ROYALTY_ENGINE || '0x523DC4588ce47e17854B26296458946b9052b9ED';
-const SYSTEM_FEE = 29; // 2,9%
+const SYSTEM_FEE = 5; // 0,5%
 
 async function main() {
 	assert.notEqual(ROYALTY_ENGINE, undefined);
