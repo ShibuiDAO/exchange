@@ -17,8 +17,8 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 	///                                        ORDER KEEPER STORAGE                                        ///
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/// @notice Stores allowed order keepers.
-	mapping(address => bool) public orderKeepers;
+	/// @notice Stores allowed structures for a given address of a order keeper.
+	mapping(address => mapping(uint256 => bool)) public orderKeepers;
 
 	///////////////////////////////////////////////////////////////////////
 	///                          ORDER STORAGE                          ///
@@ -74,7 +74,7 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 		uint256 _dataStructureId,
 		bytes calldata _orderKey,
 		bytes calldata _order
-	) external override onlyOrderKeeper {
+	) external override onlyOrderKeeper(_dataStructureId) {
 		emit RawOrderBook(_dataStructureId, _orderKey, _order);
 		orders[_dataStructureId][_orderKey] = _order;
 	}
@@ -83,7 +83,7 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 	/// @param _dataStructureId ID of the structure getting manipulated.
 	/// @param _orderKey The key of the order getting canceled/deleted.
 	/// @inheritdoc IOrderBook
-	function cancelOrder(uint256 _dataStructureId, bytes calldata _orderKey) external override onlyOrderKeeper {
+	function cancelOrder(uint256 _dataStructureId, bytes calldata _orderKey) external override onlyOrderKeeper(_dataStructureId) {
 		emit RawOrderCancel(_dataStructureId, _orderKey);
 		delete orders[_dataStructureId][_orderKey];
 	}
@@ -93,8 +93,9 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// @notice Throws if the caller is a not a registered order keeper.
-	modifier onlyOrderKeeper() {
-		require(orderKeepers[msg.sender], "CALLER_NOT_KEEPER");
+    /// @param _dataStructureId The structure ID being used.
+	modifier onlyOrderKeeper(uint256 _dataStructureId) {
+		require(orderKeepers[msg.sender][_dataStructureId], "CALLER_NOT_STRUCTURE_KEEPER");
 		_;
 	}
 
@@ -104,13 +105,15 @@ contract OrderBookUpgradeable is ERC165, Initializable, ContextUpgradeable, Owna
 
 	/// @notice Adds a new order keeper.
 	/// @param _keeperAddress Address of the order keeper to add.
-	function addOrderKeeper(address _keeperAddress) public onlyOwner {
-		orderKeepers[_keeperAddress] = true;
+    /// @param _dataStructureId The ID of the structure to add to the order keeper.
+	function addOrderKeeper(address _keeperAddress, uint256 _dataStructureId) public onlyOwner {
+		orderKeepers[_keeperAddress][_dataStructureId] = true;
 	}
 
 	/// @notice Removes a order keeper.
 	/// @param _keeperAddress Address of the order keeper to remove.
-	function cancelOrderKeeper(address _keeperAddress) public onlyOwner {
-		orderKeepers[_keeperAddress] = false;
+    /// @param _dataStructureId The ID of the structure to remove from the order keeper.
+	function cancelOrderKeeper(address _keeperAddress, uint256 _dataStructureId) public onlyOwner {
+		orderKeepers[_keeperAddress][_dataStructureId] = false;
 	}
 }

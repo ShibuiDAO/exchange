@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { BigNumber } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
 import { WETHAddress } from '../constants.hardhat';
 import type { ERC721ExchangeUpgradeable, OrderBookUpgradeable } from '../typechain';
@@ -29,7 +30,8 @@ async function main() {
 	)) as ERC721ExchangeUpgradeable;
 	await ERC721ExchangeUpgradeable.deployed();
 
-	await OrderBookUpgradeable.addOrderKeeper(ERC721ExchangeUpgradeable.address);
+	await OrderBookUpgradeable.addOrderKeeper(ERC721ExchangeUpgradeable.address, BigNumber.from(1));
+	await OrderBookUpgradeable.addOrderKeeper(ERC721ExchangeUpgradeable.address, BigNumber.from(2));
 
 	console.log(
 		[

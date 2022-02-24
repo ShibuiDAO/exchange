@@ -63,7 +63,8 @@ describe('ERC721Exchange', () => {
 		)) as ERC721ExchangeUpgradeable;
 		await contract.deployed();
 
-		await contractOrderBookUpgradeable.addOrderKeeper(contract.address);
+		await contractOrderBookUpgradeable.addOrderKeeper(contract.address, BigNumber.from(1));
+		await contractOrderBookUpgradeable.addOrderKeeper(contract.address, BigNumber.from(2));
 
 		const TestERC721Contract = await ethers.getContractFactory('TestERC721');
 		contractERC721 = (await TestERC721Contract.deploy()) as TestERC721;
