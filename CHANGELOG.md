@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/shibuidao/exchange/compare/v1.5.2...v1.6.0) (2022-02-24)
+
+
+### Features
+
+* only allow certain structures for keepers ([692eadc](https://github.com/shibuidao/exchange/commit/692eadc811e1aed947f655b9cfd2dfd0346b4257))
+
 ### [1.5.2](https://github.com/shibuidao/exchange/compare/v1.5.1...v1.5.2) (2022-02-21)
 
 
