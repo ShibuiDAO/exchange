@@ -35,8 +35,8 @@ async function main() {
 
 	console.log(
 		[
-			` - "OrderBookUpgradeable" deployed to ${OrderBookUpgradeable.address}`,
-			` - "ERC721ExchangeUpgradeable" deployed to ${ERC721ExchangeUpgradeable.address}`,
+			` - "OrderBookUpgradeable" deployed to ${OrderBookUpgradeable.address} at #${OrderBookUpgradeable.deployTransaction.blockNumber}`,
+			` - "ERC721ExchangeUpgradeable" deployed to ${ERC721ExchangeUpgradeable.address} at #${ERC721ExchangeUpgradeable.deployTransaction.blockNumber}`,
 			`Deployer address is ${deployer.address}`
 		].join('\n')
 	);
