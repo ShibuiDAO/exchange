@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1](https://github.com/shibuidao/exchange/compare/v1.6.0...v1.6.1) (2022-05-09)
+
+
+### Bug Fixes
+
+* redeploy to testnet ([59aa1e0](https://github.com/shibuidao/exchange/commit/59aa1e0874fc1a38a29282f786195ace542c423f))
+
 ## [1.6.0](https://github.com/shibuidao/exchange/compare/v1.5.2...v1.6.0) (2022-02-24)
 
 
